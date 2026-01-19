@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ajout Élève</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+      body {
+        font-family: sans-serif;
+        background-color: var(--tg-theme-bg-color, #fff);
+        color: var(--tg-theme-text-color, #000);
+        padding: 20px;
+      }
+      input,
+      select {
+        width: 100%;
+        padding: 10px;
+        margin: 5px 0 15px 0;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        box-sizing: border-box;
+      }
+      label {
+        font-weight: bold;
+        font-size: 14px;
+      }
+      h2 {
+        text-align: center;
+      }
+      .btn-main {
+        background-color: var(--tg-theme-button-color, #2481cc);
+        color: var(--tg-theme-button-text-color, #fff);
+        width: 100%;
+        padding: 15px;
+        border: none;
+        border-radius: 8px;
+        font-size: 16px;
+        cursor: pointer;
+        margin-top: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>Nouveau Dossier</h2>
+
+    <label>Nom Complet</label>
+    <input type="text" id="nomComplet" placeholder="Ex: Jean Rakoto" />
+
+    <label>Téléphone</label>
+    <input type="tel" id="telephone" placeholder="034..." />
+
+    <label>Date de Naissance</label>
+    <input type="date" id="dateNaissance" />
+
+    <label>Adresse</label>
+    <input type="text" id="adresse" />
+
+    <label>Église</label>
+    <input type="text" id="eglise" />
+
+    <label>Profession</label>
+    <input type="text" id="profession" />
+
+    <label>Option</label>
+    <select id="option">
+      <option value="Journalier">Journalier</option>
+      <option value="Weekend">Weekend</option>
+    </select>
+
+    <hr />
+    <h3>Contact Tree</h3>
+
+    <label>ID Application</label>
+    <input type="text" id="idApp" />
+
+    <label>Nom Contact</label>
+    <input type="text" id="nomTree" />
+
+    <label>Tel Contact</label>
+    <input type="tel" id="telTree" />
+
+    <label>Liaison</label>
+    <input type="text" id="liaison" placeholder="Père, Mère..." />
+
+    <label>Département / Classe</label>
+    <input type="text" id="departement" />
+
+    <button class="btn-main" onclick="envoyerDonnees()">ENREGISTRER</button>
+
+    <script>
+      // Initialisation de la Mini App
+      const tg = window.Telegram.WebApp;
+      tg.expand(); // Prend tout l'écran
+
+      function envoyerDonnees() {
+        // 1. On récupère les valeurs
+        const data = {
+          nomComplet: document.getElementById("nomComplet").value,
+          telephone: document.getElementById("telephone").value,
+          dateNaissance: document.getElementById("dateNaissance").value,
+          adresse: document.getElementById("adresse").value,
+          eglise: document.getElementById("eglise").value,
+          profession: document.getElementById("profession").value,
+          option: document.getElementById("option").value,
+          idApp: document.getElementById("idApp").value,
+          nomTree: document.getElementById("nomTree").value,
+          telTree: document.getElementById("telTree").value,
+          liaison: document.getElementById("liaison").value,
+          departement: document.getElementById("departement").value,
+        };
+
+        // 2. Vérification simple
+        if (!data.nomComplet) {
+          tg.showAlert("Le nom est obligatoire !");
+          return;
+        }
+
+        // 3. On envoie les données au Bot Telegram
+        tg.sendData(JSON.stringify(data));
+      }
+    </script>
+  </body>
+</html>

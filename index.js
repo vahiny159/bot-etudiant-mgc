@@ -209,19 +209,19 @@ if (!BOT_TOKEN) {
       if (saved) {
         // Output
         const recap =
-          `✅ **Done !**\n\n` +
-          `🆔 **ID:** ${saved.id}\n` +
-          `👤 **Nom:** ${saved.nomComplet}\n` +
-          `📞 **Tel:** ${saved.telephone}\n` +
-          `🎂 **Né(e):** ${saved.dateNaissance}\n` +
-          `🏠 **Adresse:** ${saved.adresse}\n` +
-          `⛪ **Eglise:** ${saved.eglise}\n` +
-          `💼 **Profession:** ${saved.profession}\n` +
-          `📚 **Option fianarana:** ${saved.option}\n` +
+          `**Done !**\n\n` +
+          `**ID:** ${saved.id}\n` +
+          `**Nom:** ${saved.nomComplet}\n` +
+          `**Tel:** ${saved.telephone}\n` +
+          `**Né(e):** ${saved.dateNaissance}\n` +
+          `**Adresse:** ${saved.adresse}\n` +
+          `**Eglise:** ${saved.eglise}\n` +
+          `**Profession:** ${saved.profession}\n` +
+          `**Option fianarana:** ${saved.option}\n` +
           `--------------------\n` +
-          `🌳 **Tree:** ${saved.idApp} ${saved.nomTree} (${saved.liaison})\n` +
-          `📱 **Tel Tree:** ${saved.telTree}\n` +
-          `🏫 **Classe:** ${saved.departement}`;
+          `**Tree:** ${saved.idApp} ${saved.nomTree} (${saved.liaison})\n` +
+          `**Tel Tree:** ${saved.telTree}\n` +
+          `**Classe:** ${saved.departement}`;
 
         await ctx.replyWithMarkdown(recap);
       } else {
