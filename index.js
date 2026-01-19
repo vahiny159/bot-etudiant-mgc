@@ -9,15 +9,12 @@ require("dotenv").config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 const BOT_TOKEN = process.env.BOT_TOKEN;
-// URL pour que le bot parle à son propre serveur API
 const URL_API_INTERNE = `http://localhost:${PORT}/api/students`;
 
-// Middleware
 app.use(cors());
 app.use(bodyParser.json());
 
-// --- 2. PARTIE API (Simulation Base de Données) ---
-// On ajoute les nouveaux champs dans notre simulation
+// --- 2. BASE DE DONNÉES (SIMULATION) ---
 let students = [
   {
     id: 1,
@@ -33,8 +30,7 @@ let students = [
 ];
 let nextId = 2;
 
-// Route d'accueil
-app.get("/", (req, res) => res.send("Serveur et Bot actifs !"));
+app.get("/", (req, res) => res.send("Serveur et Bot actifs v3 !"));
 
 // API: Recherche
 app.get("/api/students", (req, res) => {
@@ -51,26 +47,36 @@ app.get("/api/students", (req, res) => {
 app.post("/api/students", (req, res) => {
   const newStudent = req.body;
   newStudent.id = nextId++;
-  newStudent.dateAjout = new Date().toLocaleDateString("fr-FR"); // Date auto
+  newStudent.dateAjout = new Date().toLocaleDateString("fr-FR");
   students.push(newStudent);
-  console.log(`[API] Nouvel ajout : ${newStudent.nomComplet}`);
   res.json(newStudent);
 });
 
-// --- 3. PARTIE BOT TELEGRAM ---
+// API: Suppression (NOUVEAU)
+app.delete("/api/students/:id", (req, res) => {
+  const id = parseInt(req.params.id);
+  const initialLength = students.length;
+  students = students.filter((s) => s.id !== id);
 
+  if (students.length < initialLength) {
+    res.json({ success: true });
+  } else {
+    res.status(404).json({ success: false });
+  }
+});
+
+// --- 3. BOT TELEGRAM ---
 if (!BOT_TOKEN) {
-  console.error("❌ ERREUR : Token manquant dans le .env ou sur Render");
+  console.error("❌ ERREUR : Token manquant !");
 } else {
   const bot = new Telegraf(BOT_TOKEN);
 
-  // -- Service interne (Appels API) --
+  // -- Service (Lien Bot <-> API) --
   const apiService = {
     add: async (data) => {
       try {
         return (await axios.post(URL_API_INTERNE, data)).data;
       } catch (e) {
-        console.error(e);
         return null;
       }
     },
@@ -81,114 +87,92 @@ if (!BOT_TOKEN) {
         return [];
       }
     },
+    // Nouvelle fonction Delete
+    delete: async (id) => {
+      try {
+        await axios.delete(`${URL_API_INTERNE}/${id}`);
+        return true;
+      } catch (e) {
+        return false;
+      }
+    },
   };
 
-  // -- CLAVIER PRINCIPAL (MENU) --
-  // Ce clavier reste affiché en bas
   const mainMenu = Markup.keyboard([
     ["➕ Ajouter un élève", "🔍 Rechercher"],
-    ["✏️ Modifier", "❓ Aide"],
-  ]).resize(); // resize rend les boutons plus jolis
+    ["❓ Aide"],
+  ]).resize();
 
-  // -- SCÈNE D'AJOUT (Le formulaire étape par étape) --
+  // -- SCÈNE D'AJOUT --
   const addWizard = new Scenes.WizardScene(
     "ADD_STUDENT_SCENE",
-
-    // Étape 1 : Nom complet
     (ctx) => {
       ctx.reply(
-        "📝 **Nouveau dossier**\n\nVeuillez entrer le **Nom Complet** :",
+        "📝 **Nouveau dossier**\n\nNom Complet :",
         Markup.removeKeyboard(),
       );
-      ctx.wizard.state.data = {}; // Init stockage
+      ctx.wizard.state.data = {};
       return ctx.wizard.next();
     },
-
-    // Étape 2 : Téléphone
     (ctx) => {
       ctx.wizard.state.data.nomComplet = ctx.message.text;
-      ctx.reply("Entrez le **Numéro de téléphone** :");
+      ctx.reply("Numéro de téléphone :");
       return ctx.wizard.next();
     },
-
-    // Étape 3 : Date de naissance
     (ctx) => {
       ctx.wizard.state.data.telephone = ctx.message.text;
-      ctx.reply("Entrez la **Date de naissance** (ex: 01/01/2000) :");
+      ctx.reply("Date de naissance (ex: 01/01/2000) :");
       return ctx.wizard.next();
     },
-
-    // Étape 4 : Adresse
     (ctx) => {
       ctx.wizard.state.data.dateNaissance = ctx.message.text;
-      ctx.reply("Entrez l'**Adresse** :");
+      ctx.reply("Adresse :");
       return ctx.wizard.next();
     },
-
-    // Étape 5 : Eglise
     (ctx) => {
       ctx.wizard.state.data.adresse = ctx.message.text;
-      ctx.reply("Nom de l'**Église** :");
+      ctx.reply("Nom de l'Église :");
       return ctx.wizard.next();
     },
-
-    // Étape 6 : Profession
     (ctx) => {
       ctx.wizard.state.data.eglise = ctx.message.text;
-      ctx.reply("Quelle est sa **Profession** ?");
+      ctx.reply("Profession :");
       return ctx.wizard.next();
     },
-
-    // Étape 7 : Option (Avec boutons spéciaux)
     (ctx) => {
       ctx.wizard.state.data.profession = ctx.message.text;
       ctx.reply(
-        "Choisissez l'**Option d'apprentissage** :",
+        "Option :",
         Markup.keyboard([["Journalier", "Weekend"]])
           .oneTime()
           .resize(),
       );
       return ctx.wizard.next();
     },
-
-    // Étape 8 : Confirmation et Sauvegarde
     async (ctx) => {
-      // Vérification si l'utilisateur a cliqué ou écrit
-      if (ctx.message.text !== "Journalier" && ctx.message.text !== "Weekend") {
+      if (!["Journalier", "Weekend"].includes(ctx.message.text)) {
         ctx.reply(
-          "⚠️ Veuillez utiliser les boutons ci-dessous.",
+          "Utilisez les boutons svp.",
           Markup.keyboard([["Journalier", "Weekend"]])
             .oneTime()
             .resize(),
         );
-        return; // On reste sur cette étape
+        return;
       }
-
       ctx.wizard.state.data.option = ctx.message.text;
-
-      ctx.reply("⏳ Enregistrement en cours...");
-
+      ctx.reply("💾 Sauvegarde...");
       const saved = await apiService.add(ctx.wizard.state.data);
 
       if (saved) {
-        const recap =
-          `✅ **Élève Ajouté !**\n\n` +
-          `🆔 ID : ${saved.id}\n` +
-          `📅 Ajouté le : ${saved.dateAjout}\n` +
-          `👤 Nom : ${saved.nomComplet}\n` +
-          `📞 Tel : ${saved.telephone}\n` +
-          `🎂 Né(e) le : ${saved.dateNaissance}\n` +
-          `🏠 Adresse : ${saved.adresse}\n` +
-          `⛪ Église : ${saved.eglise}\n` +
-          `💼 Job : ${saved.profession}\n` +
-          `📚 Option : ${saved.option}`;
-        await ctx.replyWithMarkdown(recap);
+        await ctx.replyWithMarkdown(
+          `✅ **Enregistré !** (ID: ${saved.id})\n` +
+            `👤 ${saved.nomComplet}\n` +
+            `📚 ${saved.option}`,
+        );
       } else {
-        ctx.reply("❌ Erreur lors de la sauvegarde.");
+        ctx.reply("Erreur de sauvegarde.");
       }
-
-      // Retour au menu principal
-      await ctx.reply("Que voulez-vous faire maintenant ?", mainMenu);
+      await ctx.reply("Menu principal :", mainMenu);
       return ctx.scene.leave();
     },
   );
@@ -197,78 +181,53 @@ if (!BOT_TOKEN) {
   bot.use(session());
   bot.use(stage.middleware());
 
-  // -- GESTION DES COMMANDES ET TEXTES --
-
-  // Démarrage
-  bot.start((ctx) => {
-    const welcomeMsg =
-      `👋 **Bienvenue sur le Bot de Gestion !**\n\n` +
-      `Je suis prêt à vous aider à gérer les élèves.\n` +
-      `Utilisez le menu ci-dessous pour commencer.`;
-    ctx.replyWithMarkdown(welcomeMsg, mainMenu);
-  });
-
-  // Clic sur le bouton "Ajouter"
+  // -- ACTIONS & COMMANDES --
+  bot.start((ctx) => ctx.reply("👋 Bonjour ! Utilisez le menu bas.", mainMenu));
   bot.hears("➕ Ajouter un élève", (ctx) =>
     ctx.scene.enter("ADD_STUDENT_SCENE"),
   );
-  bot.command("add", (ctx) => ctx.scene.enter("ADD_STUDENT_SCENE"));
-
-  // Clic sur le bouton "Rechercher"
   bot.hears("🔍 Rechercher", (ctx) =>
-    ctx.reply("Entrez le nom de l'élève à chercher (ex: /search Jean) :"),
+    ctx.reply("Entrez le nom à chercher avec /search (ex: /search Jean)"),
   );
 
-  // Logique de recherche
   bot.command("search", async (ctx) => {
     const query = ctx.message.text.split(" ").slice(1).join(" ");
-    if (!query)
-      return ctx.reply("❌ Veuillez indiquer un nom. Ex: /search Dupont");
+    if (!query) return ctx.reply("Il manque le nom. Ex: /search Jean");
 
     const results = await apiService.search(query);
-    if (results.length === 0) return ctx.reply("Aucun résultat trouvé 😕");
+    if (results.length === 0) return ctx.reply("Introuvable.");
 
     for (const s of results) {
-      const fiche =
-        `🎓 **${s.nomComplet}** (Option: ${s.option})\n` +
-        `📞 ${s.telephone} | 🏠 ${s.adresse}\n` +
-        `📅 Inscrit le : ${s.dateAjout}`;
-      // Ajout d'un bouton Modifier (Factice pour l'instant)
       await ctx.replyWithMarkdown(
-        fiche,
+        `🎓 **${s.nomComplet}**\n📞 ${s.telephone}\n🏠 ${s.adresse}\n📅 ${s.dateAjout}`,
         Markup.inlineKeyboard([
-          Markup.button.callback("✏️ Modifier", `edit_${s.id}`),
-          Markup.button.callback("🗑️ Supprimer", `del_${s.id}`),
+          Markup.button.callback("❌ Supprimer", `del_${s.id}`),
+          // Markup.button.callback('✏️ Modifier', `edit_${s.id}`) // Prochaine étape
         ]),
       );
     }
   });
 
-  // Actions pour les boutons "Modifier/Supprimer" (Placeholder)
-  bot.action(/edit_(\d+)/, (ctx) =>
-    ctx.answerCbQuery("La modification arrive bientôt !"),
-  );
-  bot.action(/del_(\d+)/, (ctx) =>
-    ctx.answerCbQuery("La suppression arrive bientôt !"),
-  );
+  // -- LOGIQUE DE SUPPRESSION (NOUVEAU) --
+  bot.action(/del_(\d+)/, async (ctx) => {
+    const idToDelete = ctx.match[1];
 
-  // Gestion de l'aide ou texte inconnu
-  bot.hears("❓ Aide", (ctx) =>
-    ctx.reply(
-      "Ce bot permet de gérer les inscriptions. Contactez l'admin pour plus d'infos.",
-    ),
-  );
+    // 1. Appel API
+    const success = await apiService.delete(idToDelete);
 
-  // Lancement
+    if (success) {
+      // 2. Si ça a marché, on modifie le message pour dire "Supprimé"
+      await ctx.editMessageText(
+        `🗑️ L'élève (ID: ${idToDelete}) a été supprimé.`,
+      );
+    } else {
+      await ctx.answerCbQuery("Erreur lors de la suppression.");
+    }
+  });
+
   bot.launch();
-  console.log("🤖 Bot Telegram v2 (Menu complet) démarré !");
-
-  // Arrêt propre
   process.once("SIGINT", () => bot.stop("SIGINT"));
   process.once("SIGTERM", () => bot.stop("SIGTERM"));
 }
 
-// --- 4. LANCEMENT DU SERVEUR ---
-app.listen(PORT, () => {
-  console.log(`🚀 Serveur Web écoutant sur le port ${PORT}`);
-});
+app.listen(PORT, () => console.log(`🚀 Serveur v3 sur le port ${PORT}`));
