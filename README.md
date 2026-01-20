@@ -124,15 +124,15 @@ function verifyTelegramData(initData) {
 ```
 
 ## 📝 TODO List (Reste à faire)
-- [x] Frontend : Interface UI/UX terminée (Thème Yellow, Animations, Validation).
+- [x] Frontend : UI Yellow Theme + Envoi du Header Auth.
 
-- [x] Bot : Connexion Telegram et lancement WebApp ok.
+- [x] Bot : Launcher WebApp prêt.
 
-- [x] API : Route /api/students créée et testée (mockup).
+- [x] Securité : Validation HMAC implémentée sur le squelette.
 
-- [x] Sécurité : Ajouter une authentification ou validation des données côté serveur.
+- [ ] Backend : Connexion BDD (MySQL/Postgres) à faire.
 
-- [ ] Backend : Remplacer le stockage mémoire par la connexion Base de Données (MySQL/Mongo/Postgres).
+- [ ] Backend : Gestion des erreurs (Doublons, champs manquants).
 
 
 
