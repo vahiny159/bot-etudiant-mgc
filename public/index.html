@@ -348,65 +348,71 @@
       tg.setHeaderColor("#F9FAFB");
 
       // --- FONCTION CHECK DOUBLON CORRIGÉE (Ne bloque plus) ---
+      // --- VERSION DEBUG AVEC ALERTES PARTOUT ---
       async function checkDuplicates() {
+        // ALERTE 0 : On vérifie si le bouton marche
+        alert("0. Fonction démarrée !");
+
         const nom = document.getElementById("nomComplet").value;
         const tel = document.getElementById("telephone").value;
         const btnText = document.getElementById("check-text");
-        const btnIcon = document.getElementById("check-icon");
 
-        // Validation
         if (!nom) {
-          if (tg.HapticFeedback)
-            tg.HapticFeedback.notificationOccurred("error");
-          tg.showAlert("Veuillez d'abord entrer un nom.");
+          alert("⚠️ Stop : Le nom est vide.");
           return;
         }
 
-        // UI Loading (Début recherche)
         btnText.innerText = "Recherche...";
-        btnIcon.innerText = "⏳";
 
         try {
+          // ALERTE 1 : On prépare l'envoi
+          alert("1. Préparation de l'envoi vers /api/check-duplicates...");
+
           const response = await fetch("/api/check-duplicates", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
-              "X-Telegram-Data": tg.initData || "",
+              // On log pour voir si initData est là
+              "X-Telegram-Data": tg.initData || "VIDE",
             },
             body: JSON.stringify({ nomComplet: nom, telephone: tel }),
           });
 
-          if (!response.ok) throw new Error("Erreur serveur");
+          // ALERTE 2 : Le serveur a répondu (Code 200 = OK, 404 = Introuvable, 500 = Erreur Code)
+          alert("2. Réponse serveur reçue ! Code HTTP : " + response.status);
+
+          if (!response.ok) {
+            // Si c'est 404 ou 500, on va direct dans le CATCH
+            throw new Error("Erreur HTTP " + response.status);
+          }
 
           const result = await response.json();
 
-          // --- CAS 1 : DOUBLON TROUVÉ ---
-          if (
-            result.found &&
-            result.candidates &&
-            result.candidates.length > 0
-          ) {
-            if (tg.HapticFeedback)
-              tg.HapticFeedback.notificationOccurred("warning");
-            showDuplicateModal(result.candidates);
-          }
-          // --- CAS 2 : PAS DE DOUBLON (C'est ici que ça bloquait) ---
-          else {
-            if (tg.HapticFeedback)
-              tg.HapticFeedback.notificationOccurred("success");
-            // On utilise alert() en fallback si tg.showAlert bug
-            if (tg.showAlert)
-              tg.showAlert("✅ C'est tout bon ! Aucun doublon détecté.");
-            else alert("✅ C'est tout bon ! Aucun doublon détecté.");
+          // ALERTE 3 : On affiche ce que le serveur a renvoyé
+          alert("3. Contenu JSON reçu : " + JSON.stringify(result));
+
+          btnText.innerText = "Vérifier les doublons";
+
+          if (result.found) {
+            alert(
+              "4A. Le serveur dit qu'il y a un doublon. J'ouvre la modale.",
+            );
+
+            // Vérification que la fonction showDuplicateModal existe
+            if (typeof showDuplicateModal === "function") {
+              showDuplicateModal(result.candidates);
+            } else {
+              alert("ERREUR : La fonction showDuplicateModal n'existe pas !");
+            }
+          } else {
+            alert("4B. Le serveur dit : Pas de doublon.");
+            tg.showAlert("✅ Aucun doublon détecté.");
           }
         } catch (error) {
+          // ALERTE ERREUR : Si ça plante n'importe où, ça arrive ici
+          alert("❌ ERREUR FATALE : " + error.message);
           console.error(error);
-          tg.showAlert("Erreur : Impossible de vérifier.");
-        } finally {
-          // --- IMPORTANT : CE BLOC S'EXÉCUTE TOUJOURS ---
-          // Quoi qu'il arrive (trouvé, pas trouvé, erreur), on remet le bouton normal
-          btnText.innerText = "Vérifier les doublons";
-          btnIcon.innerText = "🔍";
+          btnText.innerText = "Réessayer";
         }
       }
 
