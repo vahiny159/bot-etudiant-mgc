@@ -13,7 +13,7 @@
 
     <script>
       tailwind.config = {
-        // On désactive le mode sombre automatique pour éviter les bugs de contraste
+        // désactive le mode sombre auto pour éviter bugs contraste sur le texte des input
         darkMode: "class",
         theme: {
           extend: {
@@ -442,7 +442,11 @@
         try {
           await fetch("/api/students", {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: {
+              "Content-Type": "application/json",
+              // AJOUT ICI : On envoie la carte d'identité numérique donnée par Telegram
+              "X-Telegram-Data": tg.initData,
+            },
             body: JSON.stringify(data),
           });
 
