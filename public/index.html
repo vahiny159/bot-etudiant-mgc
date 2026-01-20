@@ -367,83 +367,56 @@
       tg.ready();
       tg.setHeaderColor("#F9FAFB");
 
-      // --- FONCTION CHECK DOUBLON ---
-      // --- FONCTION CHECK DOUBLON ROBUSTE ---
+      // --- VERSION DEBUG EXTRÊME ---
       async function checkDuplicates() {
         const nom = document.getElementById("nomComplet").value;
         const tel = document.getElementById("telephone").value;
         const btnText = document.getElementById("check-text");
-        const btnIcon = document.getElementById("check-icon");
 
-        // 1. Validation basique
         if (!nom) {
-          tg.showAlert("⚠️ Veuillez entrer un nom pour vérifier.");
+          alert("Mets un nom !");
           return;
         }
 
-        // 2. UI Loading (On montre que ça travaille)
-        const oldText = btnText.innerText;
-        btnText.innerText = "Recherche en cours...";
-        btnIcon.innerText = "⏳";
+        btnText.innerText = "Recherche...";
 
         try {
-          console.log("Envoi requête vers /api/check-duplicates..."); // Pour le debug (F12)
+          // ETAPE 1
+          alert("1. Envoi de la demande au serveur...");
 
-          // 3. Appel au serveur
           const response = await fetch("/api/check-duplicates", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
-              // On envoie une chaîne vide si initData n'existe pas (test local)
               "X-Telegram-Data": tg.initData || "",
             },
             body: JSON.stringify({ nomComplet: nom, telephone: tel }),
           });
 
-          // 4. Vérification si le serveur a répondu correctement (200 OK)
+          // ETAPE 2
+          alert("2. Réponse reçue ! Code HTTP : " + response.status);
+
           if (!response.ok) {
-            throw new Error(`Erreur Serveur: ${response.status}`);
+            throw new Error("Erreur Serveur : " + response.status); // Va aller dans le catch
           }
 
           const result = await response.json();
-          console.log("Réponse reçue :", result); // Pour le debug
 
-          // 5. Reset UI (On remet le bouton normal)
+          // ETAPE 3
+          alert("3. Données lues : " + JSON.stringify(result));
+
           btnText.innerText = "Vérifier les doublons";
-          btnIcon.innerText = "🔍";
 
-          // 6. Gestion du résultat
-          if (
-            result.found &&
-            result.candidates &&
-            result.candidates.length > 0
-          ) {
-            // CAS A : Doublon trouvé
-            if (tg.HapticFeedback)
-              tg.HapticFeedback.notificationOccurred("warning");
+          if (result.found) {
+            alert("4A. C'est un doublon ! J'ouvre la modale.");
             showDuplicateModal(result.candidates);
           } else {
-            // CAS B : Pas de doublon
-            if (tg.HapticFeedback)
-              tg.HapticFeedback.notificationOccurred("success");
-            tg.showAlert("✅ Aucun doublon détecté. Vous pouvez continuer.");
+            alert("4B. Pas de doublon trouvé dans la liste.");
           }
         } catch (error) {
-          // 7. GESTION DES ERREURS
-          console.error("Erreur JS :", error);
-
-          // On remet le texte initial
+          // ETAPE ERREUR
+          alert("❌ ERREUR FATALE : " + error.message);
           btnText.innerText = "Réessayer";
-          btnIcon.innerText = "❌";
-
-          // On affiche l'erreur à l'utilisateur
-          if (error.message.includes("404")) {
-            tg.showAlert(
-              "Erreur : La route /api/check-duplicates n'existe pas sur le serveur (index.js).",
-            );
-          } else {
-            tg.showAlert("Erreur technique : " + error.message);
-          }
         }
       }
       // --- GESTION MODALE ---
