@@ -8,13 +8,11 @@ require("dotenv").config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 const BOT_TOKEN = process.env.BOT_TOKEN;
-// L'URL publique de Render (nécessaire pour le bouton)
 const WEB_APP_URL =
   process.env.RENDER_EXTERNAL_URL || `https://ton-projet.onrender.com`;
 
 app.use(cors());
 app.use(bodyParser.json());
-// Servir le dossier public (où se trouve le formulaire)
 app.use(express.static(path.join(__dirname, "public")));
 
 // --- BASE DE DONNÉES SIMULÉE ---
@@ -23,7 +21,7 @@ let nextId = 1;
 
 app.get("/", (req, res) => res.send("Serveur Formulaire Actif"));
 
-// --- API : JUSTE LE CREATE (POST) ---
+// --- API : CREATE (POST) ---
 app.post("/api/students", (req, res) => {
   const newStudent = req.body;
 
@@ -41,18 +39,16 @@ app.post("/api/students", (req, res) => {
 if (BOT_TOKEN) {
   const bot = new Telegraf(BOT_TOKEN);
 
-  // Commande /start : Affiche juste le bouton
+  // Commande /start
   bot.start((ctx) => {
     ctx.reply(
       "👋 **Bienvenue !**\nCliquez ci-dessous pour remplir une nouvelle fiche d'inscription.",
       Markup.keyboard([
-        // Ce bouton ouvre la Mini App
         [Markup.button.webApp("📝 Remplir le Formulaire", WEB_APP_URL)],
       ]).resize(),
     );
   });
 
-  // Confirmation visuelle quand l'utilisateur a fini
   bot.on("message", (ctx) => {
     if (ctx.message.web_app_data) {
       ctx.reply(

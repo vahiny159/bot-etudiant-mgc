@@ -6,35 +6,45 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
     />
-    <title>Inscription</title>
+    <title>Inscription Yellow</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
     <script>
       tailwind.config = {
+        darkMode: "media",
         theme: {
           extend: {
             colors: {
-              tg: {
-                bg: "var(--tg-theme-secondary-bg-color, #f5f5f7)",
-                card: "var(--tg-theme-bg-color, #ffffff)",
-                text: "var(--tg-theme-text-color, #000000)",
-                hint: "var(--tg-theme-hint-color, #8e8e93)",
-                btn: "var(--tg-theme-button-color, #3390ec)",
-                "btn-text": "var(--tg-theme-button-text-color, #ffffff)",
-                error: "#ff3b30",
+              // Palette Jaune Vif personnalisée
+              lemon: {
+                300: "#fde047", // Jaune clair
+                400: "#facc15", // Jaune standard
+                500: "#eab308", // Jaune soutenu
+                900: "#713f12", // Pour le texte sombre
               },
             },
-            fontFamily: {
-              sans: [
-                "-apple-system",
-                "BlinkMacSystemFont",
-                "Segoe UI",
-                "Roboto",
-                "Helvetica",
-                "Arial",
-                "sans-serif",
-              ],
+            animation: {
+              blob: "blob 7s infinite",
+              "fade-in-up": "fadeInUp 0.6s ease-out forwards",
+              shimmer: "shimmer 2s linear infinite",
+            },
+            keyframes: {
+              blob: {
+                "0%": { transform: "translate(0px, 0px) scale(1)" },
+                "33%": { transform: "translate(30px, -50px) scale(1.1)" },
+                "66%": { transform: "translate(-20px, 20px) scale(0.9)" },
+                "100%": { transform: "translate(0px, 0px) scale(1)" },
+              },
+              fadeInUp: {
+                "0%": { opacity: "0", transform: "translateY(20px)" },
+                "100%": { opacity: "1", transform: "translateY(0)" },
+              },
+              shimmer: {
+                "0%": { backgroundPosition: "-200% 0" },
+                "100%": { backgroundPosition: "200% 0" },
+              },
             },
           },
         },
@@ -45,286 +55,358 @@
       body {
         -webkit-tap-highlight-color: transparent;
       }
-      .slide-bg {
-        transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+
+      .input-glass {
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(10px);
+        transition: all 0.3s ease;
+      }
+      .dark .input-glass {
+        background: rgba(30, 41, 59, 0.5);
       }
 
-      .spinner {
-        border-top-color: transparent;
-        -webkit-animation: spin 1s linear infinite;
-        animation: spin 1s linear infinite;
+      .input-glass:focus {
+        background: rgba(255, 255, 255, 1);
+        transform: translateY(-2px);
+        /* Ombre jaune vif */
+        box-shadow: 0 10px 25px rgba(250, 204, 21, 0.25);
+        border-color: #facc15;
       }
-      @keyframes spin {
-        0% {
-          transform: rotate(0deg);
-        }
-        100% {
-          transform: rotate(360deg);
-        }
+      .dark .input-glass:focus {
+        background: rgba(30, 41, 59, 0.9);
+        border-color: #facc15;
       }
 
-      /* --- LE FOND À MOTIFS (DOODLE) --- */
-      .bg-doodle {
-        /* Motif SVG encodé (Formes géométriques simples) */
-        background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.15'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-      }
-
-      /* En mode sombre, on réduit un peu l'opacité du motif pour que ce soit subtil */
-      @media (prefers-color-scheme: dark) {
-        .bg-doodle {
-          opacity: 0.05;
-        }
+      ::-webkit-scrollbar {
+        width: 0px;
+        background: transparent;
       }
     </style>
   </head>
-  <body class="bg-tg-bg text-tg-text antialiased pb-32 relative">
-    <div
-      class="fixed inset-0 z-0 bg-doodle pointer-events-none opacity-40"
-    ></div>
+  <body
+    class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white antialiased pb-32 relative overflow-x-hidden min-h-screen"
+  >
+    <div class="fixed inset-0 z-0 overflow-hidden pointer-events-none">
+      <div
+        class="absolute top-0 left-1/4 w-96 h-96 bg-yellow-200 dark:bg-yellow-900/40 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-3xl opacity-60 animate-blob"
+      ></div>
+      <div
+        class="absolute top-0 right-1/4 w-96 h-96 bg-yellow-100 dark:bg-yellow-800/30 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-3xl opacity-60 animate-blob animation-delay-2000"
+      ></div>
+      <div
+        class="absolute -bottom-32 left-1/3 w-96 h-96 bg-yellow-50 dark:bg-yellow-900/20 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-3xl opacity-60 animate-blob animation-delay-4000"
+      ></div>
+    </div>
 
-    <div class="relative z-10">
-      <header class="pt-6 pb-2 text-center px-4">
-        <h1 class="text-xl font-bold tracking-tight">Nouveau Dossier</h1>
-        <p class="text-sm text-tg-hint mt-1">
-          Remplissez les informations ci-dessous
+    <div class="relative z-10 px-4 pt-6">
+      <header class="text-center mb-8 animate-fade-in-up">
+        <h1
+          class="text-3xl font-black tracking-tighter text-gray-800 dark:text-yellow-400"
+        >
+          Inscription
+        </h1>
+        <p class="text-sm font-medium text-gray-500 dark:text-gray-400 mt-1">
+          Nouveau dossier élève
         </p>
       </header>
 
-      <div class="p-4 max-w-lg mx-auto space-y-6">
-        <div>
-          <div
-            class="flex items-center mb-3 ml-1 text-xs font-semibold uppercase tracking-wide text-tg-hint"
-          >
-            <span class="text-base mr-2">👤</span> Détails de l'élève
-          </div>
-
-          <div
-            class="bg-tg-card/90 backdrop-blur-sm rounded-2xl p-5 shadow-[0_2px_8px_rgba(0,0,0,0.04)] space-y-4"
-          >
-            <div class="relative group" id="grp-nom">
-              <label class="block text-xs font-medium text-tg-hint mb-1.5 ml-1"
-                >Nom Complet *</label
-              >
-              <input
-                type="text"
-                id="nomComplet"
-                placeholder="Ex: Jean Rakoto"
-                class="w-full bg-tg-bg text-tg-text p-3.5 rounded-xl border border-transparent focus:border-tg-btn focus:bg-tg-card focus:outline-none focus:ring-4 focus:ring-blue-500/10 transition-all placeholder-gray-400"
-                oninput="clearError()"
-              />
-            </div>
-
-            <div class="grid grid-cols-2 gap-3">
-              <div>
-                <label
-                  class="block text-xs font-medium text-tg-hint mb-1.5 ml-1"
-                  >Téléphone</label
-                >
-                <input
-                  type="tel"
-                  id="telephone"
-                  placeholder="034..."
-                  class="w-full bg-tg-bg text-tg-text p-3.5 rounded-xl border border-transparent focus:border-tg-btn focus:bg-tg-card focus:outline-none transition-all"
-                />
-              </div>
-              <div>
-                <label
-                  class="block text-xs font-medium text-tg-hint mb-1.5 ml-1"
-                  >Date Naissance</label
-                >
-                <input
-                  type="date"
-                  id="dateNaissance"
-                  class="w-full bg-tg-bg text-tg-text p-3.5 rounded-xl border border-transparent focus:border-tg-btn focus:bg-tg-card focus:outline-none transition-all"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label class="block text-xs font-medium text-tg-hint mb-1.5 ml-1"
-                >Adresse</label
-              >
-              <input
-                type="text"
-                id="adresse"
-                placeholder="Lot, Ville..."
-                class="w-full bg-tg-bg text-tg-text p-3.5 rounded-xl border border-transparent focus:border-tg-btn focus:bg-tg-card focus:outline-none transition-all"
-              />
-            </div>
-
-            <div class="grid grid-cols-2 gap-3">
-              <div>
-                <label
-                  class="block text-xs font-medium text-tg-hint mb-1.5 ml-1"
-                  >Église</label
-                >
-                <input
-                  type="text"
-                  id="eglise"
-                  class="w-full bg-tg-bg text-tg-text p-3.5 rounded-xl border border-transparent focus:border-tg-btn focus:bg-tg-card focus:outline-none transition-all"
-                />
-              </div>
-              <div>
-                <label
-                  class="block text-xs font-medium text-tg-hint mb-1.5 ml-1"
-                  >Profession</label
-                >
-                <input
-                  type="text"
-                  id="profession"
-                  class="w-full bg-tg-bg text-tg-text p-3.5 rounded-xl border border-transparent focus:border-tg-btn focus:bg-tg-card focus:outline-none transition-all"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label class="block text-xs font-medium text-tg-hint mb-2 ml-1"
-                >Option d'apprentissage</label
-              >
-              <div class="relative flex bg-tg-bg p-1 rounded-xl">
-                <div
-                  id="slide-bg"
-                  class="absolute top-1 bottom-1 left-1 w-[calc(50%-4px)] bg-tg-card rounded-lg shadow-sm slide-bg z-0"
-                ></div>
-                <button
-                  onclick="selectOption('Journalier', 0)"
-                  class="flex-1 py-2.5 text-sm font-semibold relative z-10 transition-colors duration-200 text-tg-text"
-                  id="btn-0"
-                >
-                  Journalier
-                </button>
-                <button
-                  onclick="selectOption('Weekend', 1)"
-                  class="flex-1 py-2.5 text-sm font-semibold relative z-10 text-tg-hint transition-colors duration-200"
-                  id="btn-1"
-                >
-                  Weekend
-                </button>
-              </div>
-              <input type="hidden" id="optionSelected" value="Journalier" />
-            </div>
-          </div>
-        </div>
-
-        <div>
-          <div
-            class="flex items-center mb-3 ml-1 text-xs font-semibold uppercase tracking-wide text-tg-hint"
-          >
-            <span class="text-base mr-2">🌳</span> Détails Tree
-          </div>
-
-          <div
-            class="bg-tg-card/90 backdrop-blur-sm rounded-2xl p-5 shadow-[0_2px_8px_rgba(0,0,0,0.04)] space-y-4"
-          >
-            <div>
-              <label class="block text-xs font-medium text-tg-hint mb-1.5 ml-1"
-                >ID SMADA</label
-              >
-              <input
-                type="text"
-                id="idApp"
-                placeholder="APP-..."
-                class="w-full bg-tg-bg text-tg-text p-3.5 rounded-xl border border-transparent focus:border-tg-btn focus:bg-tg-card focus:outline-none transition-all"
-              />
-            </div>
-
-            <div>
-              <label class="block text-xs font-medium text-tg-hint mb-1.5 ml-1"
-                >Nom Contact Tree</label
-              >
-              <input
-                type="text"
-                id="nomTree"
-                class="w-full bg-tg-bg text-tg-text p-3.5 rounded-xl border border-transparent focus:border-tg-btn focus:bg-tg-card focus:outline-none transition-all"
-              />
-            </div>
-
-            <div class="grid grid-cols-2 gap-3">
-              <div>
-                <label
-                  class="block text-xs font-medium text-tg-hint mb-1.5 ml-1"
-                  >Tel Tree</label
-                >
-                <input
-                  type="tel"
-                  id="telTree"
-                  class="w-full bg-tg-bg text-tg-text p-3.5 rounded-xl border border-transparent focus:border-tg-btn focus:bg-tg-card focus:outline-none transition-all"
-                />
-              </div>
-              <div>
-                <label
-                  class="block text-xs font-medium text-tg-hint mb-1.5 ml-1"
-                  >Liaison</label
-                >
-                <input
-                  type="text"
-                  id="liaison"
-                  placeholder="Père..."
-                  class="w-full bg-tg-bg text-tg-text p-3.5 rounded-xl border border-transparent focus:border-tg-btn focus:bg-tg-card focus:outline-none transition-all"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label class="block text-xs font-medium text-tg-hint mb-1.5 ml-1"
-                >Département / Classe</label
-              >
-              <input
-                type="text"
-                id="departement"
-                class="w-full bg-tg-bg text-tg-text p-3.5 rounded-xl border border-transparent focus:border-tg-btn focus:bg-tg-card focus:outline-none transition-all"
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div
-        class="fixed bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-tg-bg to-transparent pt-10 z-50"
-      >
-        <button
-          id="main-btn"
-          onclick="submitForm()"
-          class="w-full bg-tg-btn text-tg-btn-text font-bold text-lg py-4 rounded-2xl shadow-lg shadow-blue-500/30 active:scale-[0.98] transition-all flex justify-center items-center"
+      <div class="max-w-lg mx-auto space-y-6">
+        <div
+          class="relative group animate-fade-in-up"
+          style="animation-delay: 100ms"
         >
           <div
-            id="spinner"
-            class="spinner border-2 border-white w-5 h-5 rounded-full mr-3 hidden"
+            class="absolute -inset-0.5 bg-gradient-to-r from-yellow-300 to-yellow-500 rounded-2xl opacity-40 group-hover:opacity-100 transition duration-1000 group-hover:duration-200 blur"
           ></div>
-          <span id="btn-text">Enregistrer le dossier</span>
-        </button>
+
+          <div
+            class="relative bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl p-6 shadow-xl border border-yellow-400/20"
+          >
+            <div
+              class="flex items-center mb-4 text-xs font-bold uppercase tracking-wider text-yellow-600 dark:text-yellow-400"
+            >
+              <span class="text-lg mr-2">👤</span> L'Élève
+            </div>
+
+            <div class="space-y-5">
+              <div id="grp-nom">
+                <label
+                  class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1 ml-1"
+                  >NOM COMPLET *</label
+                >
+                <input
+                  type="text"
+                  id="nomComplet"
+                  placeholder="Ex: Rakoto Paoly Bert"
+                  class="input-glass w-full border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3.5 outline-none font-semibold placeholder-gray-400 text-gray-900 dark:text-white"
+                  oninput="clearError()"
+                />
+              </div>
+
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-xs font-bold text-gray-500 mb-1 ml-1"
+                    >TÉLÉPHONE</label
+                  >
+                  <input
+                    type="tel"
+                    id="telephone"
+                    placeholder="034..."
+                    class="input-glass w-full border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3.5 outline-none font-medium"
+                  />
+                </div>
+                <div>
+                  <label class="block text-xs font-bold text-gray-500 mb-1 ml-1"
+                    >NAISSANCE</label
+                  >
+                  <input
+                    type="date"
+                    id="dateNaissance"
+                    class="input-glass w-full border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3.5 outline-none font-medium text-gray-600 dark:text-gray-300"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-xs font-bold text-gray-500 mb-2 ml-1"
+                  >OPTION</label
+                >
+                <div
+                  class="bg-yellow-50 dark:bg-gray-900/50 p-1.5 rounded-full flex relative border border-yellow-100 dark:border-gray-700"
+                >
+                  <div
+                    id="capsule-bg"
+                    class="absolute left-1.5 top-1.5 bottom-1.5 w-[calc(50%-6px)] bg-white dark:bg-gray-700 rounded-full shadow-md transition-all duration-300 ease-out z-0"
+                  ></div>
+                  <button
+                    onclick="selectOption('Journalier', 0)"
+                    id="btn-0"
+                    class="flex-1 py-3 text-sm font-bold z-10 text-yellow-900 dark:text-white transition-colors"
+                  >
+                    Journalier
+                  </button>
+                  <button
+                    onclick="selectOption('Weekend', 1)"
+                    id="btn-1"
+                    class="flex-1 py-3 text-sm font-bold z-10 text-gray-500 transition-colors"
+                  >
+                    Weekend
+                  </button>
+                </div>
+                <input type="hidden" id="optionSelected" value="Journalier" />
+              </div>
+
+              <div class="pt-2">
+                <label class="block text-xs font-bold text-gray-500 mb-1 ml-1"
+                  >ADRESSE / VILLE</label
+                >
+                <input
+                  type="text"
+                  id="adresse"
+                  placeholder="Analakely..."
+                  class="input-glass w-full border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3.5 outline-none font-medium"
+                />
+              </div>
+
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-xs font-bold text-gray-500 mb-1 ml-1"
+                    >FINOANA</label
+                  >
+                  <input
+                    type="text"
+                    id="eglise"
+                    placeholder="Katolika, etc..."
+                    class="input-glass w-full border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3.5 outline-none font-medium"
+                  />
+                </div>
+                <div>
+                  <label class="block text-xs font-bold text-gray-500 mb-1 ml-1"
+                    >JOB</label
+                  >
+                  <input
+                    type="text"
+                    id="profession"
+                    class="input-glass w-full border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3.5 outline-none font-medium"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div
+          class="relative group animate-fade-in-up"
+          style="animation-delay: 200ms"
+        >
+          <div
+            class="absolute -inset-0.5 bg-gradient-to-r from-yellow-400 to-yellow-200 rounded-2xl opacity-40 group-hover:opacity-100 transition duration-1000 group-hover:duration-200 blur"
+          ></div>
+          <div
+            class="relative bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl p-6 shadow-xl border border-yellow-400/20"
+          >
+            <div
+              class="flex items-center mb-4 text-xs font-bold uppercase tracking-wider text-yellow-600 dark:text-yellow-400"
+            >
+              <span class="text-lg mr-2">🌳</span> Tree
+            </div>
+
+            <div class="space-y-4">
+              <div>
+                <label class="block text-xs font-bold text-gray-500 mb-1 ml-1"
+                  >ID SMADA</label
+                >
+                <input
+                  type="text"
+                  id="idApp"
+                  placeholder="..."
+                  class="input-glass w-full border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3.5 outline-none font-mono text-sm"
+                />
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-gray-500 mb-1 ml-1"
+                  >NOM TREE</label
+                >
+                <input
+                  type="text"
+                  id="nomTree"
+                  class="input-glass w-full border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3.5 outline-none font-medium"
+                />
+              </div>
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-xs font-bold text-gray-500 mb-1 ml-1"
+                    >TEL TREE</label
+                  >
+                  <input
+                    type="tel"
+                    id="telTree"
+                    class="input-glass w-full border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3.5 outline-none font-medium"
+                  />
+                </div>
+                <div>
+                  <label class="block text-xs font-bold text-gray-500 mb-1 ml-1"
+                    >LIAISON</label
+                  >
+                  <input
+                    type="text"
+                    id="liaison"
+                    placeholder="Namana, fianakaviana ..."
+                    class="input-glass w-full border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3.5 outline-none font-medium"
+                  />
+                </div>
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-gray-500 mb-1 ml-1"
+                  >DEPARTEMENT/CLASSE</label
+                >
+                <input
+                  type="text"
+                  id="departement"
+                  class="input-glass w-full border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3.5 outline-none font-medium"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
+    </div>
+
+    <div
+      class="fixed bottom-0 left-0 right-0 p-4 pt-12 bg-gradient-to-t from-gray-50 via-gray-50 to-transparent dark:from-gray-900 dark:via-gray-900 z-50"
+    >
+      <button
+        id="main-btn"
+        onclick="submitForm()"
+        class="relative w-full bg-gradient-to-r from-lemon-400 to-lemon-500 text-gray-900 font-bold text-lg py-4 rounded-2xl shadow-lg shadow-yellow-400/40 active:scale-[0.98] transition-transform overflow-hidden group"
+      >
+        <div
+          class="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full animate-shimmer group-hover:animate-none"
+        ></div>
+
+        <div class="relative flex justify-center items-center">
+          <span
+            id="spinner"
+            class="animate-spin h-5 w-5 border-2 border-gray-900 border-t-transparent rounded-full mr-3 hidden"
+          ></span>
+          <span id="btn-text">Enregistrer le dossier</span>
+        </div>
+      </button>
     </div>
 
     <script>
       const tg = window.Telegram.WebApp;
       tg.expand();
       tg.ready();
+      tg.setHeaderColor("#F9FAFB"); // Match bg-gray-50
 
       function selectOption(value, index) {
         if (tg.HapticFeedback) tg.HapticFeedback.selectionChanged();
         document.getElementById("optionSelected").value = value;
-        const bg = document.getElementById("slide-bg");
-        bg.style.transform = `translateX(${index * 100}%)`;
+
+        document.getElementById("capsule-bg").style.transform =
+          `translateX(${index * 100}%)`;
+
         const btn0 = document.getElementById("btn-0");
         const btn1 = document.getElementById("btn-1");
+
         if (index === 0) {
-          btn0.classList.replace("text-tg-hint", "text-tg-text");
-          btn1.classList.replace("text-tg-text", "text-tg-hint");
+          btn0.className =
+            "flex-1 py-3 text-sm font-bold z-10 text-yellow-900 dark:text-white transition-colors";
+          btn1.className =
+            "flex-1 py-3 text-sm font-bold z-10 text-gray-500 transition-colors";
         } else {
-          btn1.classList.replace("text-tg-hint", "text-tg-text");
-          btn0.classList.replace("text-tg-text", "text-tg-hint");
+          btn1.className =
+            "flex-1 py-3 text-sm font-bold z-10 text-yellow-900 dark:text-white transition-colors";
+          btn0.className =
+            "flex-1 py-3 text-sm font-bold z-10 text-gray-500 transition-colors";
         }
       }
 
       function clearError() {
         const input = document.getElementById("nomComplet");
-        input.classList.remove("border-red-500", "bg-red-50", "text-red-900");
-        input.classList.add("border-transparent", "bg-tg-bg");
+        input.classList.remove("border-red-500", "bg-red-50");
+        input.classList.add("border-gray-200");
+      }
+
+      function triggerConfetti() {
+        var duration = 3 * 1000;
+        var animationEnd = Date.now() + duration;
+        // Confetti JAUNE / CITRON / BLANC
+        var colors = ["#facc15", "#fde047", "#ffffff", "#000000"];
+        var defaults = {
+          startVelocity: 30,
+          spread: 360,
+          ticks: 60,
+          zIndex: 999,
+          colors: colors,
+        };
+
+        function randomInRange(min, max) {
+          return Math.random() * (max - min) + min;
+        }
+
+        var interval = setInterval(function () {
+          var timeLeft = animationEnd - Date.now();
+          if (timeLeft <= 0) return clearInterval(interval);
+          var particleCount = 50 * (timeLeft / duration);
+          confetti(
+            Object.assign({}, defaults, {
+              particleCount,
+              origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 },
+            }),
+          );
+          confetti(
+            Object.assign({}, defaults, {
+              particleCount,
+              origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 },
+            }),
+          );
+        }, 250);
       }
 
       async function submitForm() {
-        if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred("light");
+        if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred("medium");
 
         const nomInput = document.getElementById("nomComplet");
         const nom = nomInput.value;
@@ -332,10 +414,18 @@
         if (!nom) {
           if (tg.HapticFeedback)
             tg.HapticFeedback.notificationOccurred("error");
-          nomInput.classList.remove("border-transparent", "bg-tg-bg");
-          nomInput.classList.add("border-red-500", "bg-red-50", "text-red-900");
+          nomInput.classList.remove("border-gray-200");
+          nomInput.classList.add("border-red-500", "bg-red-50");
           nomInput.focus();
-          tg.showAlert("Le nom est obligatoire !");
+          nomInput.animate(
+            [
+              { transform: "translateX(0)" },
+              { transform: "translateX(-10px)" },
+              { transform: "translateX(10px)" },
+              { transform: "translateX(0)" },
+            ],
+            { duration: 300 },
+          );
           return;
         }
 
@@ -344,9 +434,8 @@
         const btnText = document.getElementById("btn-text");
 
         btn.disabled = true;
-        btn.classList.add("opacity-80", "cursor-not-allowed");
         spinner.classList.remove("hidden");
-        btnText.innerText = "Envoi en cours...";
+        btnText.innerText = "Enregistrement...";
 
         const data = {
           nomComplet: nom,
@@ -372,10 +461,24 @@
 
           if (tg.HapticFeedback)
             tg.HapticFeedback.notificationOccurred("success");
-          tg.sendData(data.nomComplet);
+          btnText.innerText = "Succès !";
+          // Succès Vert (Pour changer du Jaune)
+          btn.classList.remove(
+            "from-lemon-400",
+            "to-lemon-500",
+            "text-gray-900",
+          );
+          btn.classList.add("bg-green-500", "text-white");
+          // Spinner blanc
+          spinner.classList.replace("border-gray-900", "border-white");
+
+          triggerConfetti();
+
+          setTimeout(() => {
+            tg.sendData(data.nomComplet);
+          }, 2000);
         } catch (error) {
           btn.disabled = false;
-          btn.classList.remove("opacity-80", "cursor-not-allowed");
           spinner.classList.add("hidden");
           btnText.innerText = "Réessayer";
           tg.showAlert("Erreur : " + error.message);
