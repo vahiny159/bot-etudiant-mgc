@@ -13,16 +13,16 @@
 
     <script>
       tailwind.config = {
-        darkMode: "media",
+        // On désactive le mode sombre automatique pour éviter les bugs de contraste
+        darkMode: "class",
         theme: {
           extend: {
             colors: {
-              // Palette Jaune Vif personnalisée
               lemon: {
-                300: "#fde047", // Jaune clair
-                400: "#facc15", // Jaune standard
-                500: "#eab308", // Jaune soutenu
-                900: "#713f12", // Pour le texte sombre
+                300: "#fde047",
+                400: "#facc15",
+                500: "#eab308",
+                900: "#713f12",
               },
             },
             animation: {
@@ -57,23 +57,15 @@
       }
 
       .input-glass {
-        background: rgba(255, 255, 255, 0.7);
+        background: rgba(255, 255, 255, 0.8);
         backdrop-filter: blur(10px);
         transition: all 0.3s ease;
       }
-      .dark .input-glass {
-        background: rgba(30, 41, 59, 0.5);
-      }
 
       .input-glass:focus {
-        background: rgba(255, 255, 255, 1);
+        background: #ffffff;
         transform: translateY(-2px);
-        /* Ombre jaune vif */
         box-shadow: 0 10px 25px rgba(250, 204, 21, 0.25);
-        border-color: #facc15;
-      }
-      .dark .input-glass:focus {
-        background: rgba(30, 41, 59, 0.9);
         border-color: #facc15;
       }
 
@@ -84,28 +76,26 @@
     </style>
   </head>
   <body
-    class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white antialiased pb-32 relative overflow-x-hidden min-h-screen"
+    class="bg-gray-50 text-gray-900 antialiased pb-32 relative overflow-x-hidden min-h-screen"
   >
     <div class="fixed inset-0 z-0 overflow-hidden pointer-events-none">
       <div
-        class="absolute top-0 left-1/4 w-96 h-96 bg-yellow-200 dark:bg-yellow-900/40 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-3xl opacity-60 animate-blob"
+        class="absolute top-0 left-1/4 w-96 h-96 bg-yellow-200 rounded-full mix-blend-multiply filter blur-3xl opacity-60 animate-blob"
       ></div>
       <div
-        class="absolute top-0 right-1/4 w-96 h-96 bg-yellow-100 dark:bg-yellow-800/30 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-3xl opacity-60 animate-blob animation-delay-2000"
+        class="absolute top-0 right-1/4 w-96 h-96 bg-yellow-100 rounded-full mix-blend-multiply filter blur-3xl opacity-60 animate-blob animation-delay-2000"
       ></div>
       <div
-        class="absolute -bottom-32 left-1/3 w-96 h-96 bg-yellow-50 dark:bg-yellow-900/20 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-3xl opacity-60 animate-blob animation-delay-4000"
+        class="absolute -bottom-32 left-1/3 w-96 h-96 bg-yellow-50 rounded-full mix-blend-multiply filter blur-3xl opacity-60 animate-blob animation-delay-4000"
       ></div>
     </div>
 
     <div class="relative z-10 px-4 pt-6">
       <header class="text-center mb-8 animate-fade-in-up">
-        <h1
-          class="text-3xl font-black tracking-tighter text-gray-800 dark:text-yellow-400"
-        >
+        <h1 class="text-3xl font-black tracking-tighter text-gray-900">
           Inscription
         </h1>
-        <p class="text-sm font-medium text-gray-500 dark:text-gray-400 mt-1">
+        <p class="text-sm font-medium text-gray-500 mt-1">
           Nouveau dossier élève
         </p>
       </header>
@@ -120,25 +110,24 @@
           ></div>
 
           <div
-            class="relative bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl p-6 shadow-xl border border-yellow-400/20"
+            class="relative bg-white/90 backdrop-blur-xl rounded-2xl p-6 shadow-xl border border-yellow-400/20"
           >
             <div
-              class="flex items-center mb-4 text-xs font-bold uppercase tracking-wider text-yellow-600 dark:text-yellow-400"
+              class="flex items-center mb-4 text-xs font-bold uppercase tracking-wider text-yellow-600"
             >
               <span class="text-lg mr-2">👤</span> L'Élève
             </div>
 
             <div class="space-y-5">
               <div id="grp-nom">
-                <label
-                  class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1 ml-1"
+                <label class="block text-xs font-bold text-gray-500 mb-1 ml-1"
                   >NOM COMPLET *</label
                 >
                 <input
                   type="text"
                   id="nomComplet"
-                  placeholder="Ex: Rakoto Paoly Bert"
-                  class="input-glass w-full border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3.5 outline-none font-semibold placeholder-gray-400 text-gray-900 dark:text-white"
+                  placeholder="Ex: Rakoto Paul Bert"
+                  class="input-glass w-full border border-gray-200 rounded-xl px-4 py-3.5 outline-none font-semibold placeholder-gray-400 text-gray-900"
                   oninput="clearError()"
                 />
               </div>
@@ -152,7 +141,7 @@
                     type="tel"
                     id="telephone"
                     placeholder="034..."
-                    class="input-glass w-full border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3.5 outline-none font-medium"
+                    class="input-glass w-full border border-gray-200 rounded-xl px-4 py-3.5 outline-none font-medium text-gray-900"
                   />
                 </div>
                 <div>
@@ -162,7 +151,7 @@
                   <input
                     type="date"
                     id="dateNaissance"
-                    class="input-glass w-full border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3.5 outline-none font-medium text-gray-600 dark:text-gray-300"
+                    class="input-glass w-full border border-gray-200 rounded-xl px-4 py-3.5 outline-none font-medium text-gray-900"
                   />
                 </div>
               </div>
@@ -172,16 +161,16 @@
                   >OPTION</label
                 >
                 <div
-                  class="bg-yellow-50 dark:bg-gray-900/50 p-1.5 rounded-full flex relative border border-yellow-100 dark:border-gray-700"
+                  class="bg-yellow-50 p-1.5 rounded-full flex relative border border-yellow-100"
                 >
                   <div
                     id="capsule-bg"
-                    class="absolute left-1.5 top-1.5 bottom-1.5 w-[calc(50%-6px)] bg-white dark:bg-gray-700 rounded-full shadow-md transition-all duration-300 ease-out z-0"
+                    class="absolute left-1.5 top-1.5 bottom-1.5 w-[calc(50%-6px)] bg-white rounded-full shadow-md transition-all duration-300 ease-out z-0"
                   ></div>
                   <button
                     onclick="selectOption('Journalier', 0)"
                     id="btn-0"
-                    class="flex-1 py-3 text-sm font-bold z-10 text-yellow-900 dark:text-white transition-colors"
+                    class="flex-1 py-3 text-sm font-bold z-10 text-yellow-900 transition-colors"
                   >
                     Journalier
                   </button>
@@ -204,20 +193,19 @@
                   type="text"
                   id="adresse"
                   placeholder="Analakely..."
-                  class="input-glass w-full border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3.5 outline-none font-medium"
+                  class="input-glass w-full border border-gray-200 rounded-xl px-4 py-3.5 outline-none font-medium text-gray-900"
                 />
               </div>
 
               <div class="grid grid-cols-2 gap-4">
                 <div>
                   <label class="block text-xs font-bold text-gray-500 mb-1 ml-1"
-                    >FINOANA</label
+                    >ÉGLISE</label
                   >
                   <input
                     type="text"
                     id="eglise"
-                    placeholder="Katolika, etc..."
-                    class="input-glass w-full border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3.5 outline-none font-medium"
+                    class="input-glass w-full border border-gray-200 rounded-xl px-4 py-3.5 outline-none font-medium text-gray-900"
                   />
                 </div>
                 <div>
@@ -227,7 +215,7 @@
                   <input
                     type="text"
                     id="profession"
-                    class="input-glass w-full border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3.5 outline-none font-medium"
+                    class="input-glass w-full border border-gray-200 rounded-xl px-4 py-3.5 outline-none font-medium text-gray-900"
                   />
                 </div>
               </div>
@@ -243,12 +231,12 @@
             class="absolute -inset-0.5 bg-gradient-to-r from-yellow-400 to-yellow-200 rounded-2xl opacity-40 group-hover:opacity-100 transition duration-1000 group-hover:duration-200 blur"
           ></div>
           <div
-            class="relative bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl p-6 shadow-xl border border-yellow-400/20"
+            class="relative bg-white/90 backdrop-blur-xl rounded-2xl p-6 shadow-xl border border-yellow-400/20"
           >
             <div
-              class="flex items-center mb-4 text-xs font-bold uppercase tracking-wider text-yellow-600 dark:text-yellow-400"
+              class="flex items-center mb-4 text-xs font-bold uppercase tracking-wider text-yellow-600"
             >
-              <span class="text-lg mr-2">🌳</span> Tree
+              <span class="text-lg mr-2">🌳</span> Tree / Parrainage
             </div>
 
             <div class="space-y-4">
@@ -260,7 +248,7 @@
                   type="text"
                   id="idApp"
                   placeholder="..."
-                  class="input-glass w-full border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3.5 outline-none font-mono text-sm"
+                  class="input-glass w-full border border-gray-200 rounded-xl px-4 py-3.5 outline-none font-mono text-sm text-gray-900"
                 />
               </div>
               <div>
@@ -270,7 +258,7 @@
                 <input
                   type="text"
                   id="nomTree"
-                  class="input-glass w-full border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3.5 outline-none font-medium"
+                  class="input-glass w-full border border-gray-200 rounded-xl px-4 py-3.5 outline-none font-medium text-gray-900"
                 />
               </div>
               <div class="grid grid-cols-2 gap-4">
@@ -281,7 +269,7 @@
                   <input
                     type="tel"
                     id="telTree"
-                    class="input-glass w-full border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3.5 outline-none font-medium"
+                    class="input-glass w-full border border-gray-200 rounded-xl px-4 py-3.5 outline-none font-medium text-gray-900"
                   />
                 </div>
                 <div>
@@ -291,8 +279,8 @@
                   <input
                     type="text"
                     id="liaison"
-                    placeholder="Namana, fianakaviana ..."
-                    class="input-glass w-full border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3.5 outline-none font-medium"
+                    placeholder="Namana,..."
+                    class="input-glass w-full border border-gray-200 rounded-xl px-4 py-3.5 outline-none font-medium text-gray-900"
                   />
                 </div>
               </div>
@@ -303,7 +291,7 @@
                 <input
                   type="text"
                   id="departement"
-                  class="input-glass w-full border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3.5 outline-none font-medium"
+                  class="input-glass w-full border border-gray-200 rounded-xl px-4 py-3.5 outline-none font-medium text-gray-900"
                 />
               </div>
             </div>
@@ -313,7 +301,7 @@
     </div>
 
     <div
-      class="fixed bottom-0 left-0 right-0 p-4 pt-12 bg-gradient-to-t from-gray-50 via-gray-50 to-transparent dark:from-gray-900 dark:via-gray-900 z-50"
+      class="fixed bottom-0 left-0 right-0 p-4 pt-12 bg-gradient-to-t from-gray-50 via-gray-50 to-transparent z-50"
     >
       <button
         id="main-btn"
@@ -338,7 +326,7 @@
       const tg = window.Telegram.WebApp;
       tg.expand();
       tg.ready();
-      tg.setHeaderColor("#F9FAFB"); // Match bg-gray-50
+      tg.setHeaderColor("#F9FAFB");
 
       function selectOption(value, index) {
         if (tg.HapticFeedback) tg.HapticFeedback.selectionChanged();
@@ -352,12 +340,12 @@
 
         if (index === 0) {
           btn0.className =
-            "flex-1 py-3 text-sm font-bold z-10 text-yellow-900 dark:text-white transition-colors";
+            "flex-1 py-3 text-sm font-bold z-10 text-yellow-900 transition-colors";
           btn1.className =
             "flex-1 py-3 text-sm font-bold z-10 text-gray-500 transition-colors";
         } else {
           btn1.className =
-            "flex-1 py-3 text-sm font-bold z-10 text-yellow-900 dark:text-white transition-colors";
+            "flex-1 py-3 text-sm font-bold z-10 text-yellow-900 transition-colors";
           btn0.className =
             "flex-1 py-3 text-sm font-bold z-10 text-gray-500 transition-colors";
         }
@@ -372,7 +360,6 @@
       function triggerConfetti() {
         var duration = 3 * 1000;
         var animationEnd = Date.now() + duration;
-        // Confetti JAUNE / CITRON / BLANC
         var colors = ["#facc15", "#fde047", "#ffffff", "#000000"];
         var defaults = {
           startVelocity: 30,
@@ -462,14 +449,12 @@
           if (tg.HapticFeedback)
             tg.HapticFeedback.notificationOccurred("success");
           btnText.innerText = "Succès !";
-          // Succès Vert (Pour changer du Jaune)
           btn.classList.remove(
             "from-lemon-400",
             "to-lemon-500",
             "text-gray-900",
           );
           btn.classList.add("bg-green-500", "text-white");
-          // Spinner blanc
           spinner.classList.replace("border-gray-900", "border-white");
 
           triggerConfetti();
