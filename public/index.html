@@ -384,6 +384,22 @@
         btnIcon.innerText = "⏳";
 
         try {
+          console.log("Envoi de la requête au serveur..."); // AJOUT DEBUG
+
+          const res = await fetch("/api/check-duplicates", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              // Si tg.initData est vide en local, ça peut bloquer, on gère le cas :
+              "X-Telegram-Data": tg.initData || "",
+            },
+            body: JSON.stringify({ nomComplet: nom, telephone: tel }),
+          });
+
+          if (!res.ok) throw new Error(`Erreur Serveur: ${res.status}`); // AJOUT DEBUG
+
+          const result = await res.json();
+          console.log("Réponse serveur:", result); // AJOUT DEBUG
           // On appelle le nouveau endpoint du serveur
           const res = await fetch("/api/check-duplicates", {
             method: "POST",
