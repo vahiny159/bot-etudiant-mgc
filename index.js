@@ -3,7 +3,7 @@ const bodyParser = require("body-parser");
 const cors = require("cors");
 const { Telegraf, Markup } = require("telegraf");
 const path = require("path");
-const crypto = require("crypto"); // Nécessaire pour la sécurité
+const crypto = require("crypto"); // sécurité
 require("dotenv").config();
 
 const app = express();
@@ -19,44 +19,37 @@ app.use(express.static(path.join(__dirname, "public")));
 let students = [];
 let nextId = 1;
 
-// --- FONCTION DE SÉCURITÉ (AUTHENTIFICATION) ---
-// C'est la fonction qui vérifie le "Sceau" de Telegram
+// --- SÉCURITÉ (AUTH) ---
 const verifyTelegramData = (initData) => {
   if (!initData) return false;
 
-  // 1. On récupère le hash envoyé par le front
   const urlParams = new URLSearchParams(initData);
   const hash = urlParams.get("hash");
   urlParams.delete("hash");
 
-  // 2. On trie les données par ordre alphabétique
   const dataCheckString = Array.from(urlParams.entries())
     .sort((a, b) => a[0].localeCompare(b[0]))
     .map(([key, val]) => `${key}=${val}`)
     .join("\n");
 
-  // 3. On crée la clé secrète avec le TOKEN du bot
   const secretKey = crypto
     .createHmac("sha256", "WebAppData")
     .update(BOT_TOKEN)
     .digest();
 
-  // 4. On recalcule la signature
   const calculatedHash = crypto
     .createHmac("sha256", secretKey)
     .update(dataCheckString)
     .digest("hex");
 
-  // 5. On compare : Si c'est pareil, c'est authentique !
   return calculatedHash === hash;
 };
 
 // --- API SÉCURISÉE ---
 app.post("/api/students", (req, res) => {
-  // 1. On récupère la preuve d'identité dans le Header
   const telegramProof = req.header("X-Telegram-Data");
 
-  // 2. On vérifie si c'est authentique
+  // On vérifie si c'est authentique
   const isValid = verifyTelegramData(telegramProof);
 
   if (!isValid) {
@@ -66,8 +59,6 @@ app.post("/api/students", (req, res) => {
       .json({ success: false, message: "Non autorisé (Fake Data)" });
   }
 
-  // 3. Si on est là, c'est que c'est bien un utilisateur Telegram valide
-  // On peut même récupérer son ID unique si on veut
   const userData = new URLSearchParams(telegramProof).get("user");
   const user = JSON.parse(userData);
   console.log(
