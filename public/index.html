@@ -328,34 +328,41 @@
     <!-- POP UP CHECK DOUBLON -->
     <div
       id="duplicate-modal"
-      class="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300"
+      class="fixed inset-0 z-[60] flex items-center justify-center bg-gray-900/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300"
     >
       <div
-        class="bg-white w-11/12 max-w-sm rounded-2xl p-6 shadow-2xl transform scale-95 transition-transform duration-300"
+        class="relative bg-white/95 w-11/12 max-w-sm rounded-3xl p-6 shadow-2xl border border-yellow-400/30 transform scale-95 transition-transform duration-300"
         id="modal-content"
       >
-        <div class="text-center mb-5">
+        <div
+          class="absolute top-0 left-0 w-full h-20 bg-gradient-to-b from-yellow-50 to-transparent rounded-t-3xl -z-10"
+        ></div>
+
+        <div class="text-center mb-6">
           <div
-            class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-orange-100 mb-4 text-2xl"
+            class="mx-auto flex items-center justify-center h-14 w-14 rounded-full bg-yellow-100 text-3xl shadow-sm border border-yellow-200 mb-3"
           >
             ⚠️
           </div>
-          <h3 class="text-lg font-bold text-gray-900">Doublon détecté</h3>
-          <p class="text-sm text-gray-500 mt-2">
-            Nous avons trouvé des profils similaires. S'agit-il de cette
-            personne ?
+          <h3 class="text-xl font-black text-gray-900 tracking-tight">
+            Attention !
+          </h3>
+          <p class="text-sm font-medium text-gray-500 mt-1">
+            Ce nom ressemble à des dossiers existants.
           </p>
         </div>
+
         <div
           id="duplicate-list"
-          class="space-y-3 mb-6 max-h-48 overflow-y-auto pr-1"
+          class="space-y-3 mb-6 max-h-60 overflow-y-auto pr-1 scrollbar-hide"
         ></div>
-        <div class="flex flex-col gap-3">
+
+        <div class="space-y-3">
           <button
             onclick="closeModal()"
-            class="w-full py-3 bg-gray-100 text-gray-600 rounded-xl font-bold text-sm"
+            class="w-full py-3.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-bold text-sm transition-colors"
           >
-            Fermer / Continuer l'inscription
+            Non, c'est une nouvelle personne
           </button>
         </div>
       </div>
@@ -367,23 +374,26 @@
       tg.ready();
       tg.setHeaderColor("#F9FAFB");
 
-      // --- VERSION DEBUG EXTRÊME ---
+      // --- FONCTION CHECK DUPLICATES ---
       async function checkDuplicates() {
         const nom = document.getElementById("nomComplet").value;
         const tel = document.getElementById("telephone").value;
         const btnText = document.getElementById("check-text");
+        const btnIcon = document.getElementById("check-icon");
 
         if (!nom) {
-          alert("Mets un nom !");
+          if (tg.HapticFeedback)
+            tg.HapticFeedback.notificationOccurred("error");
+          tg.showAlert("Veuillez d'abord entrer un nom.");
           return;
         }
 
+        // UI Loading
+        const originalText = btnText.innerText;
         btnText.innerText = "Recherche...";
+        btnIcon.innerText = "⏳";
 
         try {
-          // ETAPE 1
-          alert("1. Envoi de la demande au serveur...");
-
           const response = await fetch("/api/check-duplicates", {
             method: "POST",
             headers: {
@@ -393,31 +403,69 @@
             body: JSON.stringify({ nomComplet: nom, telephone: tel }),
           });
 
-          // ETAPE 2
-          alert("2. Réponse reçue ! Code HTTP : " + response.status);
-
-          if (!response.ok) {
-            throw new Error("Erreur Serveur : " + response.status); // Va aller dans le catch
-          }
+          if (!response.ok) throw new Error("Erreur serveur");
 
           const result = await response.json();
 
-          // ETAPE 3
-          alert("3. Données lues : " + JSON.stringify(result));
-
+          // Reset UI
           btnText.innerText = "Vérifier les doublons";
+          btnIcon.innerText = "🔍";
 
-          if (result.found) {
-            alert("4A. C'est un doublon ! J'ouvre la modale.");
+          if (result.found && result.candidates.length > 0) {
+            // DOUBLON TROUVÉ -> On ouvre la belle modale
+            if (tg.HapticFeedback)
+              tg.HapticFeedback.notificationOccurred("warning");
             showDuplicateModal(result.candidates);
           } else {
-            alert("4B. Pas de doublon trouvé dans la liste.");
+            // RIEN TROUVÉ -> Tout va bien
+            if (tg.HapticFeedback)
+              tg.HapticFeedback.notificationOccurred("success");
+            tg.showAlert("✅ Aucun doublon détecté. Vous pouvez continuer.");
           }
         } catch (error) {
-          // ETAPE ERREUR
-          alert("❌ ERREUR FATALE : " + error.message);
+          console.error(error);
           btnText.innerText = "Réessayer";
+          btnIcon.innerText = "❌";
+          tg.showAlert("Erreur de connexion au serveur.");
         }
+      }
+
+      function loadExistingStudent(student) {
+        // 1. On ferme la modale
+        closeModal();
+
+        // 2. On remplit les champs avec les données reçues
+        document.getElementById("nomComplet").value = student.nomComplet || "";
+        document.getElementById("telephone").value = student.telephone || "";
+        document.getElementById("dateNaissance").value =
+          student.dateNaissance || ""; // Attention au format date
+        document.getElementById("adresse").value = student.adresse || "";
+        document.getElementById("eglise").value = student.eglise || "";
+        document.getElementById("profession").value = student.profession || "";
+
+        // Champs Tree
+        document.getElementById("idApp").value = student.idApp || "";
+        document.getElementById("nomTree").value = student.nomTree || "";
+        document.getElementById("telTree").value = student.telTree || "";
+        document.getElementById("liaison").value = student.liaison || "";
+        document.getElementById("departement").value =
+          student.departement || "";
+
+        // Gestion de l'option (Journalier/Weekend)
+        if (student.option) {
+          // On simule le clic sur le bon bouton d'option
+          const index = student.option === "Weekend" ? 1 : 0;
+          selectOption(student.option, index);
+        }
+
+        // 3. Feedback visuel
+        if (tg.HapticFeedback)
+          tg.HapticFeedback.notificationOccurred("success");
+        tg.showAlert(`📂 Profil de ${student.nomComplet} chargé !`);
+
+        // 4. On change le texte du bouton principal pour indiquer une modification
+        const btnText = document.getElementById("btn-text");
+        btnText.innerText = "Mettre à jour le dossier";
       }
       // --- GESTION MODALE ---
       function showDuplicateModal(candidates) {
@@ -425,24 +473,43 @@
         const list = document.getElementById("duplicate-list");
         const content = document.getElementById("modal-content");
 
+        // On vide la liste
         list.innerHTML = "";
+
         candidates.forEach((s) => {
-          const item = document.createElement("div");
-          item.className =
-            "text-left p-3 rounded-xl bg-orange-50 border border-orange-100";
-          item.innerHTML = `
-                    <div class="font-bold text-gray-900">${s.nomComplet}</div>
-                    <div class="text-xs text-gray-500">Tel: ${s.telephone || "N/A"}</div>
-                `;
-          list.appendChild(item);
+          const btn = document.createElement("button");
+
+          // DESIGN DE LA CARTE : Jaune pâle, ombre douce, animation au clic
+          btn.className =
+            "w-full relative flex items-center justify-between p-4 rounded-2xl bg-yellow-50 border border-yellow-200 hover:bg-yellow-100 transition-all active:scale-[0.98] group text-left shadow-sm";
+
+          btn.onclick = () => loadExistingStudent(s);
+
+          btn.innerHTML = `
+            <div>
+                <div class="font-bold text-gray-900 text-base group-hover:text-yellow-800 transition-colors">
+                    ${s.nomComplet}
+                </div>
+                <div class="text-xs font-medium text-yellow-600/80 mt-1 flex items-center gap-1">
+                    <span>📱 ${s.telephone || "Non renseigné"}</span>
+                </div>
+            </div>
+            
+            <div class="h-8 w-8 rounded-full bg-white text-yellow-500 flex items-center justify-center shadow-sm border border-yellow-100 group-hover:scale-110 transition-transform">
+                ✏️
+            </div>
+        `;
+          list.appendChild(btn);
         });
 
+        // Animation d'ouverture
         modal.classList.remove("hidden");
-        setTimeout(() => {
+        // Petit délai pour permettre la transition CSS
+        requestAnimationFrame(() => {
           modal.classList.remove("opacity-0");
           content.classList.remove("scale-95");
           content.classList.add("scale-100");
-        }, 10);
+        });
       }
 
       function closeModal() {
