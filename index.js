@@ -130,6 +130,7 @@ app.post("/api/check-duplicates", (req, res) => {
 // --- BOT TELEGRAM ---
 if (BOT_TOKEN) {
   const bot = new Telegraf(BOT_TOKEN);
+
   bot.start((ctx) => {
     ctx.reply(
       "👋 **Bienvenue !**\nCliquez ci-dessous pour remplir une fiche.",
@@ -138,7 +139,16 @@ if (BOT_TOKEN) {
       ]).resize(),
     );
   });
+
+  //on écoute "web_app_data"
+  bot.on("web_app_data", (ctx) => {
+    const data = ctx.message.web_app_data.data;
+    ctx.reply(`✅ Dossier reçu pour : ${data} !`);
+  });
+
   bot.launch();
+
+  // Gestion arrêt propre
   process.once("SIGINT", () => bot.stop("SIGINT"));
   process.once("SIGTERM", () => bot.stop("SIGTERM"));
 }
