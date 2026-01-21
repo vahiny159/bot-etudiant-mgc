@@ -341,6 +341,53 @@
       </div>
     </div>
 
+    <!-- affichage ID -->
+    <div
+      id="success-modal"
+      class="fixed inset-0 z-[70] flex items-center justify-center bg-gray-900/80 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300"
+    >
+      <div
+        class="relative bg-white w-11/12 max-w-sm rounded-3xl p-6 shadow-2xl border-2 border-green-400 transform scale-95 transition-transform duration-300 text-center"
+      >
+        <div
+          class="mx-auto flex items-center justify-center h-20 w-20 rounded-full bg-green-100 text-5xl shadow-sm border-4 border-white -mt-16 mb-4 relative z-10"
+        >
+          🎉
+        </div>
+
+        <h3 class="text-2xl font-black text-gray-900 tracking-tight mb-2">
+          Inscription Réussie !
+        </h3>
+        <p class="text-gray-500 font-medium text-sm mb-6">
+          Le dossier a été créé avec succès.
+        </p>
+
+        <div
+          class="bg-yellow-50 border border-yellow-200 rounded-xl p-4 mb-6 relative overflow-hidden group"
+        >
+          <div
+            class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-yellow-300 to-orange-400"
+          ></div>
+          <p
+            class="text-xs font-bold text-yellow-700 uppercase tracking-widest mb-1"
+          >
+            ID ÉLÈVE
+          </p>
+          <div
+            id="generated-id"
+            class="text-3xl font-mono font-black text-gray-900 tracking-wider"
+          ></div>
+        </div>
+
+        <button
+          onclick="closeSuccessModal()"
+          class="w-full py-4 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white rounded-xl font-bold text-lg shadow-lg shadow-green-200 transition-all active:scale-95"
+        >
+          Génial, merci !
+        </button>
+      </div>
+    </div>
+
     <script>
       const tg = window.Telegram.WebApp;
       tg.expand();
@@ -352,10 +399,8 @@
         const nom = document.getElementById("nomComplet").value;
         const tel = document.getElementById("telephone").value;
 
-        // On cible les éléments
         const btn = document.getElementById("btn-check");
         const btnText = document.getElementById("check-text");
-        // On récupère le SVG (l'icône) s'il existe, sinon on cible le span
         let btnIcon = document.getElementById("check-icon");
 
         // 1. Validation
@@ -368,18 +413,17 @@
           return;
         }
 
-        // 2. UI Loading (On sauvegarde l'état initial)
+        // 2. UI Loading
         const originalClass = btn.className;
         const originalText = "Vérifier les doublons"; // Texte fixe pour éviter les bugs
 
         btnText.innerText = "Recherche...";
         if (btnIcon) btnIcon.innerText = "⏳";
 
-        // On désactive le bouton pour éviter le double-clic
         btn.disabled = true;
 
         try {
-          // --- TIMEOUT DE SÉCURITÉ (10 secondes max) ---
+          // --- TIMEOUT DE SÉCURITÉ ---
           const controller = new AbortController();
           const timeoutId = setTimeout(() => controller.abort(), 10000);
 
@@ -390,10 +434,10 @@
               "X-Telegram-Data": tg.initData || "",
             },
             body: JSON.stringify({ nomComplet: nom, telephone: tel }),
-            signal: controller.signal, // On lie le timeout
+            signal: controller.signal,
           });
 
-          clearTimeout(timeoutId); // On annule le timeout si ça a répondu
+          clearTimeout(timeoutId);
 
           if (!response.ok) {
             throw new Error(`Erreur Server ${response.status}`);
@@ -407,27 +451,23 @@
             result.candidates &&
             result.candidates.length > 0
           ) {
-            // CAS A : DOUBLON TROUVÉ
+            // DOUBLON TROUVÉ
             if (tg.HapticFeedback)
               tg.HapticFeedback.notificationOccurred("warning");
 
-            // On remet le bouton normal tout de suite
             resetBtn(btn, btnText, btnIcon, originalClass, originalText);
 
-            // Et on ouvre la modale
             showDuplicateModal(result.candidates);
           } else {
-            // CAS B : PAS DE DOUBLON (Succès)
+            // PAS DE DOUBLON (Succès)
             if (tg.HapticFeedback)
               tg.HapticFeedback.notificationOccurred("success");
 
-            // On change le style en VERT
             btn.className =
               "w-full flex justify-center items-center gap-2 py-3.5 rounded-xl font-bold text-sm transition-all bg-green-100 text-green-700 border border-green-300";
             btnText.innerText = "✅ C'est tout bon !";
             if (btnIcon) btnIcon.innerText = "";
 
-            // On remet normal après 2.5 secondes
             setTimeout(() => {
               resetBtn(btn, btnText, btnIcon, originalClass, originalText);
             }, 2500);
@@ -437,35 +477,29 @@
           if (tg.HapticFeedback)
             tg.HapticFeedback.notificationOccurred("error");
 
-          // On affiche l'erreur DANS LE BOUTON
           btn.className =
             "w-full flex justify-center items-center gap-2 py-3.5 rounded-xl font-bold text-sm transition-all bg-red-100 text-red-700 border border-red-300";
 
           if (error.name === "AbortError") {
             btnText.innerText = "⏳ Trop long (Timeout)";
           } else {
-            btnText.innerText = "❌ Erreur Serveur"; // Message court
+            btnText.innerText = "❌ Erreur Serveur";
           }
 
-          // On remet normal après 3 secondes
           setTimeout(() => {
             resetBtn(btn, btnText, btnIcon, originalClass, originalText);
           }, 3000);
         } finally {
           // --- SÉCURITÉ ABSOLUE ---
-          // Quoi qu'il arrive, on réactive le clic sur le bouton
           btn.disabled = false;
         }
       }
 
-      // Fonction utilitaire pour remettre le bouton à zéro
       function resetBtn(btn, txtSpan, iconSpan, css, txt) {
         btn.className = css;
         txtSpan.innerText = txt;
         if (iconSpan) iconSpan.innerText = "🔍";
       }
-
-      // --- LE RESTE DES FONCTIONS (MODALE, ETC.) ---
 
       function showDuplicateModal(candidates) {
         const modal = document.getElementById("duplicate-modal");
@@ -512,7 +546,6 @@
 
       function loadExistingStudent(student) {
         closeModal();
-        // Remplissage des champs
         if (document.getElementById("nomComplet"))
           document.getElementById("nomComplet").value =
             student.nomComplet || "";
@@ -605,8 +638,37 @@
         })();
       }
 
+      // --- Affichage ID script ---
+      function showSuccessModal(id) {
+        const modal = document.getElementById("success-modal");
+        const idSpan = document.getElementById("generated-id");
+
+        idSpan.innerText = id;
+
+        modal.classList.remove("hidden");
+        requestAnimationFrame(() => {
+          modal.classList.remove("opacity-0");
+          const content = modal.querySelector("div");
+          content.classList.remove("scale-95");
+          content.classList.add("scale-100");
+        });
+
+        triggerConfetti();
+      }
+
+      function closeSuccessModal() {
+        const modal = document.getElementById("success-modal");
+        modal.classList.add("opacity-0");
+        setTimeout(() => {
+          modal.classList.add("hidden");
+          tg.close();
+        }, 300);
+      }
+
       async function submitForm() {
         if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred("medium");
+
+        // Validation
         const nomInput = document.getElementById("nomComplet");
         const nom = nomInput.value;
         if (!nom) {
@@ -617,6 +679,7 @@
           nomInput.focus();
           return;
         }
+
         const btn = document.getElementById("main-btn");
         const spinner = document.getElementById("spinner");
         const btnText = document.getElementById("btn-text");
@@ -640,7 +703,7 @@
         };
 
         try {
-          await fetch("/api/students", {
+          const response = await fetch("/api/students", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -648,20 +711,21 @@
             },
             body: JSON.stringify(data),
           });
-          if (tg.HapticFeedback)
-            tg.HapticFeedback.notificationOccurred("success");
-          btnText.innerText = "Succès !";
-          btn.classList.remove(
-            "from-lemon-400",
-            "to-lemon-500",
-            "text-gray-900",
-          );
-          btn.classList.add("bg-green-500", "text-white");
-          spinner.classList.replace("border-gray-900", "border-white");
-          triggerConfetti();
-          setTimeout(() => {
-            tg.sendData(data.nomComplet);
-          }, 2000);
+
+          const result = await response.json();
+
+          if (response.ok && result.success) {
+            if (tg.HapticFeedback)
+              tg.HapticFeedback.notificationOccurred("success");
+
+            btn.disabled = false;
+            spinner.classList.add("hidden");
+            btnText.innerText = "Enregistrer le dossier";
+
+            showSuccessModal(result.id);
+          } else {
+            throw new Error(result.message || "Erreur inconnue");
+          }
         } catch (error) {
           btn.disabled = false;
           spinner.classList.add("hidden");
