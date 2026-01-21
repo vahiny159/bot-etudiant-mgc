@@ -50,31 +50,41 @@ const verifyTelegramData = (initData) => {
   return calculatedHash === hash;
 };
 
-// --- API SÉCURISÉE ---
+// --- API SÉCURISÉE (AVEC MODE TEST AUTORISÉ) ---
 app.post("/api/students", (req, res) => {
   try {
     const telegramProof = req.header("X-Telegram-Data");
+    let user = { id: 99999, first_name: "TestUser" };
+
     const isValid = verifyTelegramData(telegramProof);
 
-    if (!isValid) {
-      console.log("⚠️ Tentative d'intrusion bloquée !");
-      return res.status(403).json({ success: false, message: "Non autorisé" });
+    if (isValid) {
+      const userData = new URLSearchParams(telegramProof).get("user");
+      user = JSON.parse(userData);
+      console.log(`✅ Authentifié : ${user.first_name}`);
+    } else {
+      console.log(
+        "⚠️ Mode TEST (Pas de sécu Telegram ou vérification échouée)",
+      );
+      // pour bloquer strictement plus tard, décommente la ligne ci-dessous :
+      // return res.status(403).json({ success: false, message: "Non autorisé" });
     }
 
-    const userData = new URLSearchParams(telegramProof).get("user");
-    const user = JSON.parse(userData);
-    console.log(`✅ Nouvel élève ajouté par : ${user.first_name}`);
-
     const newStudent = req.body;
+
+    newStudent.id = Date.now().toString().slice(-6);
+
     newStudent.createdByTelegramId = user.id;
-    newStudent.id = nextId++;
     newStudent.dateAjout = new Date().toLocaleDateString("fr-FR");
 
     students.push(newStudent);
+
+    console.log(`📝 Élève créé avec ID: ${newStudent.id}`);
+
     res.json({ success: true, id: newStudent.id });
   } catch (e) {
     console.error("Erreur Inscription:", e);
-    res.status(500).json({ success: false, message: "Erreur interne" });
+    res.status(500).json({ success: false, message: "Erreur interne serveur" });
   }
 });
 
