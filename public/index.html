@@ -107,6 +107,44 @@
                 />
               </div>
 
+              <div>
+                <label class="block text-xs font-bold text-gray-500 mb-2 ml-1"
+                  >SEXE</label
+                >
+
+                <input type="hidden" id="sexeInput" value="" />
+
+                <div class="flex items-center space-x-6 pl-2">
+                  <label class="flex items-center cursor-pointer group">
+                    <input
+                      type="radio"
+                      name="sexe_radio"
+                      value="Homme"
+                      onclick="setSexe('Homme')"
+                      class="w-5 h-5 accent-yellow-500 cursor-pointer transition-transform group-active:scale-90"
+                    />
+                    <span
+                      class="ml-2 text-gray-700 font-bold text-sm group-hover:text-yellow-700 transition-colors"
+                      >Homme</span
+                    >
+                  </label>
+
+                  <label class="flex items-center cursor-pointer group">
+                    <input
+                      type="radio"
+                      name="sexe_radio"
+                      value="Femme"
+                      onclick="setSexe('Femme')"
+                      class="w-5 h-5 accent-yellow-500 cursor-pointer transition-transform group-active:scale-90"
+                    />
+                    <span
+                      class="ml-2 text-gray-700 font-bold text-sm group-hover:text-yellow-700 transition-colors"
+                      >Femme</span
+                    >
+                  </label>
+                </div>
+              </div>
+
               <div class="grid grid-cols-2 gap-4">
                 <div>
                   <label class="block text-xs font-bold text-gray-500 mb-1 ml-1"
@@ -578,6 +616,14 @@
           selectOption(student.option, index);
         }
 
+        if (student.sexe) {
+          document.getElementById("sexeInput").value = student.sexe;
+          const radios = document.getElementsByName("sexe_radio");
+          for (let r of radios) {
+            if (r.value === student.sexe) r.checked = true;
+          }
+        }
+
         if (tg.HapticFeedback)
           tg.HapticFeedback.notificationOccurred("success");
         tg.showAlert(`📂 Profil chargé : ${student.nomComplet}`);
@@ -665,12 +711,26 @@
         }, 300);
       }
 
+      function setSexe(valeur) {
+        document.getElementById("sexeInput").value = valeur;
+
+        if (tg.HapticFeedback) tg.HapticFeedback.selectionChanged();
+      }
+
       async function submitForm() {
         if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred("medium");
 
         // Validation
         const nomInput = document.getElementById("nomComplet");
         const nom = nomInput.value;
+        const sexe = document.getElementById("sexeInput").value;
+        if (!sexe) {
+          tg.showAlert("Veuillez sélectionner le sexe (Homme/Femme).");
+          btn.disabled = false;
+          spinner.classList.add("hidden");
+          btnText.innerText = "Enregistrer le dossier";
+          return;
+        }
         if (!nom) {
           if (tg.HapticFeedback)
             tg.HapticFeedback.notificationOccurred("error");
@@ -689,6 +749,7 @@
 
         const data = {
           nomComplet: nom,
+          sexe: document.getElementById("sexeInput").value,
           telephone: document.getElementById("telephone").value,
           dateNaissance: document.getElementById("dateNaissance").value,
           adresse: document.getElementById("adresse").value,
