@@ -664,26 +664,27 @@
       }
 
       function triggerConfetti() {
-        var duration = 3000;
-        var end = Date.now() + duration;
-        var colors = ["#facc15", "#fde047", "#ffffff", "#000000"];
-        (function frame() {
-          confetti({
-            particleCount: 5,
-            angle: 60,
-            spread: 55,
-            origin: { x: 0 },
-            colors: colors,
-          });
-          confetti({
-            particleCount: 5,
-            angle: 120,
-            spread: 55,
-            origin: { x: 1 },
-            colors: colors,
-          });
-          if (Date.now() < end) requestAnimationFrame(frame);
-        })();
+        var colors = ["#facc15", "#fde047", "#ffffff"];
+
+        // Tir à gauche
+        confetti({
+          particleCount: 40,
+          angle: 60,
+          spread: 55,
+          origin: { x: 0.1, y: 0.7 },
+          colors: colors,
+          disableForReducedMotion: true,
+        });
+
+        // Tir à gauche
+        confetti({
+          particleCount: 40,
+          angle: 120,
+          spread: 55,
+          origin: { x: 0.9, y: 0.7 },
+          colors: colors,
+          disableForReducedMotion: true,
+        });
       }
 
       // --- Affichage ID script ---
