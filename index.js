@@ -86,6 +86,30 @@ app.post("/api/students", (req, res) => {
   }
 });
 
+// --- API MISE À JOUR (PUT) ---
+app.put("/api/students/:id", (req, res) => {
+  const idToUpdate = req.params.id;
+  console.log(`🔄 Demande de mise à jour pour l'ID : ${idToUpdate}`);
+
+  const index = students.findIndex((s) => s.id == idToUpdate);
+
+  if (index !== -1) {
+    const oldData = students[index];
+    const newData = req.body;
+
+    students[index] = {
+      ...oldData,
+      ...newData,
+      id: oldData.id,
+    };
+
+    console.log(`✅ Dossier ${idToUpdate} mis à jour !`);
+    res.json({ success: true, id: idToUpdate });
+  } else {
+    res.status(404).json({ success: false, message: "Dossier introuvable" });
+  }
+});
+
 // --- API CHECK DOUBLONS ---
 app.post("/api/check-duplicates", (req, res) => {
   console.log("🔍 Check Duplicates demandé");

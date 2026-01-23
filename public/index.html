@@ -94,6 +94,7 @@
             </div>
 
             <div class="space-y-5">
+              <input type="hidden" id="studentId" value="" />
               <div id="grp-nom">
                 <label class="block text-xs font-bold text-gray-500 mb-1 ml-1"
                   >NOM COMPLET *</label
@@ -584,6 +585,7 @@
 
       function loadExistingStudent(student) {
         closeModal();
+        document.getElementById("studentId").value = student.id;
         if (document.getElementById("nomComplet"))
           document.getElementById("nomComplet").value =
             student.nomComplet || "";
@@ -720,17 +722,23 @@
       async function submitForm() {
         if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred("medium");
 
-        // Validation
+        const btn = document.getElementById("main-btn");
+        const spinner = document.getElementById("spinner");
+        const btnText = document.getElementById("btn-text");
         const nomInput = document.getElementById("nomComplet");
+        const sexeInput = document.getElementById("sexeInput");
+        const idHiddenInput = document.getElementById("studentId");
+
         const nom = nomInput.value;
-        const sexe = document.getElementById("sexeInput").value;
+        const sexe = sexeInput.value;
+
         if (!sexe) {
           tg.showAlert("Veuillez sélectionner le sexe (Homme/Femme).");
-          btn.disabled = false;
-          spinner.classList.add("hidden");
-          btnText.innerText = "Enregistrer le dossier";
+          if (spinner) spinner.classList.add("hidden");
+          if (btn) btn.disabled = false;
           return;
         }
+
         if (!nom) {
           if (tg.HapticFeedback)
             tg.HapticFeedback.notificationOccurred("error");
@@ -740,16 +748,13 @@
           return;
         }
 
-        const btn = document.getElementById("main-btn");
-        const spinner = document.getElementById("spinner");
-        const btnText = document.getElementById("btn-text");
         btn.disabled = true;
         spinner.classList.remove("hidden");
         btnText.innerText = "Enregistrement...";
 
         const data = {
           nomComplet: nom,
-          sexe: document.getElementById("sexeInput").value,
+          sexe: sexe,
           telephone: document.getElementById("telephone").value,
           dateNaissance: document.getElementById("dateNaissance").value,
           adresse: document.getElementById("adresse").value,
@@ -763,9 +768,18 @@
           departement: document.getElementById("departement").value,
         };
 
+        const existingId = idHiddenInput.value;
+        let url = "/api/students";
+        let method = "POST";
+
+        if (existingId) {
+          url = `/api/students/${existingId}`;
+          method = "PUT";
+        }
+
         try {
-          const response = await fetch("/api/students", {
-            method: "POST",
+          const response = await fetch(url, {
+            method: method,
             headers: {
               "Content-Type": "application/json",
               "X-Telegram-Data": tg.initData || "",
@@ -782,6 +796,15 @@
             btn.disabled = false;
             spinner.classList.add("hidden");
             btnText.innerText = "Enregistrer le dossier";
+
+            idHiddenInput.value = "";
+
+            document.getElementById("nomComplet").value = "";
+            document.getElementById("telephone").value = "";
+
+            document.getElementById("sexeInput").value = "";
+            const radios = document.getElementsByName("sexe_radio");
+            for (const r of radios) r.checked = false;
 
             showSuccessModal(result.id);
           } else {
