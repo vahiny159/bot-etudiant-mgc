@@ -25,8 +25,6 @@
               },
             },
             animation: {
-              blob: "blob 7s infinite",
-              "fade-in-up": "fadeInUp 0.6s ease-out forwards",
               shimmer: "shimmer 2s linear infinite",
             },
           },
@@ -36,18 +34,21 @@
     <style>
       body {
         -webkit-tap-highlight-color: transparent;
+        -webkit-overflow-scrolling: touch;
       }
-      .input-glass {
-        background: rgba(255, 255, 255, 0.8);
-        backdrop-filter: blur(10px);
-        transition: all 0.3s ease;
-      }
-      .input-glass:focus {
+
+      .input-fast {
         background: #ffffff;
-        transform: translateY(-2px);
-        box-shadow: 0 10px 25px rgba(250, 204, 21, 0.25);
-        border-color: #facc15;
+        transition:
+          border-color 0.2s ease,
+          box-shadow 0.2s ease;
       }
+      .input-fast:focus {
+        border-color: #facc15;
+        box-shadow: 0 0 0 4px rgba(250, 204, 21, 0.2);
+        outline: none;
+      }
+
       ::-webkit-scrollbar {
         width: 0px;
         background: transparent;
@@ -61,7 +62,6 @@
       <div
         class="absolute inset-0 bg-gradient-to-br from-gray-100 via-yellow-50 to-gray-100"
       ></div>
-
       <div
         class="absolute inset-0 opacity-[0.06]"
         style="
@@ -76,7 +76,7 @@
           Inscription
         </h1>
         <p class="text-sm font-medium text-gray-500 mt-1">
-          Nouveau dossier élève
+          Nouveau dossier fruit
         </p>
       </header>
 
@@ -86,12 +86,17 @@
             class="absolute -inset-0.5 bg-gradient-to-r from-yellow-300 to-yellow-500 rounded-2xl opacity-40 group-hover:opacity-100 transition duration-1000 group-hover:duration-200 blur"
           ></div>
           <div
-            class="relative bg-white/90 backdrop-blur-xl rounded-2xl p-6 shadow-xl border border-yellow-400/20"
+            class="relative bg-white rounded-2xl p-6 shadow-xl border border-yellow-400/20"
           >
             <div
               class="flex items-center mb-4 text-xs font-bold uppercase tracking-wider text-yellow-600"
             >
-              <span class="text-lg mr-2">👤</span> L'Élève
+              <img
+                src="icons/fruit.svg"
+                alt="Icone Utilisateur"
+                class="w-6 h-6 mr-2 object-contain"
+              />
+              Fruit
             </div>
 
             <div class="space-y-5">
@@ -104,7 +109,7 @@
                   type="text"
                   id="nomComplet"
                   placeholder="Ex: Razafimahandry Vahiny"
-                  class="input-glass w-full border border-gray-200 rounded-xl px-4 py-3.5 outline-none font-semibold placeholder-gray-400 text-gray-900"
+                  class="input-fast w-full border border-gray-200 rounded-xl px-4 py-3.5 font-semibold placeholder-gray-400 text-gray-900"
                   oninput="clearError()"
                 />
               </div>
@@ -156,7 +161,7 @@
                     type="tel"
                     id="telephone"
                     placeholder="034..."
-                    class="input-glass w-full border border-gray-200 rounded-xl px-4 py-3.5 outline-none font-medium text-gray-900"
+                    class="input-fast w-full border border-gray-200 rounded-xl px-4 py-3.5 font-medium text-gray-900"
                   />
                 </div>
                 <div>
@@ -166,7 +171,7 @@
                   <input
                     type="date"
                     id="dateNaissance"
-                    class="input-glass w-full border border-gray-200 rounded-xl px-4 py-3.5 outline-none font-medium text-gray-900"
+                    class="input-fast w-full border border-gray-200 rounded-xl px-4 py-3.5 font-medium text-gray-900"
                   />
                 </div>
               </div>
@@ -179,7 +184,7 @@
                   type="text"
                   id="adresse"
                   placeholder="Analakely..."
-                  class="input-glass w-full border border-gray-200 rounded-xl px-4 py-3.5 outline-none font-medium text-gray-900"
+                  class="input-fast w-full border border-gray-200 rounded-xl px-4 py-3.5 font-medium text-gray-900"
                 />
               </div>
 
@@ -191,7 +196,7 @@
                   <input
                     type="text"
                     id="eglise"
-                    class="input-glass w-full border border-gray-200 rounded-xl px-4 py-3.5 outline-none font-medium text-gray-900"
+                    class="input-fast w-full border border-gray-200 rounded-xl px-4 py-3.5 font-medium text-gray-900"
                   />
                 </div>
                 <div>
@@ -201,7 +206,7 @@
                   <input
                     type="text"
                     id="profession"
-                    class="input-glass w-full border border-gray-200 rounded-xl px-4 py-3.5 outline-none font-medium text-gray-900"
+                    class="input-fast w-full border border-gray-200 rounded-xl px-4 py-3.5 font-medium text-gray-900"
                   />
                 </div>
               </div>
@@ -250,12 +255,17 @@
             class="absolute -inset-0.5 bg-gradient-to-r from-yellow-400 to-yellow-200 rounded-2xl opacity-40 group-hover:opacity-100 transition duration-1000 group-hover:duration-200 blur"
           ></div>
           <div
-            class="relative bg-white/90 backdrop-blur-xl rounded-2xl p-6 shadow-xl border border-yellow-400/20"
+            class="relative bg-white rounded-2xl p-6 shadow-xl border border-yellow-400/20"
           >
             <div
               class="flex items-center mb-4 text-xs font-bold uppercase tracking-wider text-yellow-600"
             >
-              <span class="text-lg mr-2">🌳</span> Tree
+              <img
+                src="icons/tree.svg"
+                alt="Icone tree"
+                class="w-6 h-6 mr-2 object-contain"
+              />
+              Tree
             </div>
             <div class="space-y-4">
               <div>
@@ -266,7 +276,7 @@
                   type="text"
                   id="idApp"
                   placeholder="APP-001"
-                  class="input-glass w-full border border-gray-200 rounded-xl px-4 py-3.5 outline-none font-mono text-sm text-gray-900"
+                  class="input-fast w-full border border-gray-200 rounded-xl px-4 py-3.5 font-mono text-sm text-gray-900"
                 />
               </div>
               <div>
@@ -276,7 +286,7 @@
                 <input
                   type="text"
                   id="nomTree"
-                  class="input-glass w-full border border-gray-200 rounded-xl px-4 py-3.5 outline-none font-medium text-gray-900"
+                  class="input-fast w-full border border-gray-200 rounded-xl px-4 py-3.5 font-medium text-gray-900"
                 />
               </div>
               <div class="grid grid-cols-2 gap-4">
@@ -287,7 +297,7 @@
                   <input
                     type="tel"
                     id="telTree"
-                    class="input-glass w-full border border-gray-200 rounded-xl px-4 py-3.5 outline-none font-medium text-gray-900"
+                    class="input-fast w-full border border-gray-200 rounded-xl px-4 py-3.5 font-medium text-gray-900"
                   />
                 </div>
                 <div>
@@ -298,7 +308,7 @@
                     type="text"
                     id="liaison"
                     placeholder="Namana,..."
-                    class="input-glass w-full border border-gray-200 rounded-xl px-4 py-3.5 outline-none font-medium text-gray-900"
+                    class="input-fast w-full border border-gray-200 rounded-xl px-4 py-3.5 font-medium text-gray-900"
                   />
                 </div>
               </div>
@@ -309,7 +319,7 @@
                 <input
                   type="text"
                   id="departement"
-                  class="input-glass w-full border border-gray-200 rounded-xl px-4 py-3.5 outline-none font-medium text-gray-900"
+                  class="input-fast w-full border border-gray-200 rounded-xl px-4 py-3.5 font-medium text-gray-900"
                 />
               </div>
             </div>
@@ -381,7 +391,6 @@
       </div>
     </div>
 
-    <!-- affichage ID -->
     <div
       id="success-modal"
       class="fixed inset-0 z-[70] flex items-center justify-center bg-gray-900/80 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300"
@@ -559,7 +568,7 @@
           btn.onclick = () => loadExistingStudent(s);
 
           btn.innerHTML = `
-             <div>
+              <div>
                 <div class="font-bold text-gray-900 text-base group-hover:text-yellow-800 transition-colors">${s.nomComplet}</div>
                 <div class="text-xs font-medium text-yellow-600/80 mt-1 flex items-center gap-1">
                    <span>📱 ${s.telephone || "Non renseigné"}</span>
@@ -580,7 +589,12 @@
 
       function closeModal() {
         const modal = document.getElementById("duplicate-modal");
+        const modalContent = document.getElementById("modal-content");
         modal.classList.add("opacity-0");
+        if (modalContent) {
+          modalContent.classList.remove("scale-100");
+          modalContent.classList.add("scale-95");
+        }
         setTimeout(() => modal.classList.add("hidden"), 300);
       }
 
