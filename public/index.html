@@ -171,6 +171,7 @@
                   <label class="block text-xs font-bold text-gray-500 mb-1 ml-1"
                     >NAISSANCE</label
                   >
+                  <span id="ageCalc" class="text-yellow-600 font-normal"></span>
                   <input
                     type="date"
                     id="dateNaissance"
@@ -902,6 +903,34 @@
               x[2] +
               (x[3] ? " " + x[3] : "") +
               (x[4] ? " " + x[4] : "");
+        });
+
+      // Pour eviter erreur DatedeNaissance
+      document
+        .getElementById("dateNaissance")
+        .addEventListener("change", function (e) {
+          const dateStr = e.target.value;
+          if (!dateStr) return;
+
+          const today = new Date();
+          const birthDate = new Date(dateStr);
+          let age = today.getFullYear() - birthDate.getFullYear();
+          const m = today.getMonth() - birthDate.getMonth();
+
+          // Ajustement précis (si l'anniversaire n'est pas encore passé cette année)
+          if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+            age--;
+          }
+
+          const span = document.getElementById("ageCalc");
+          if (age < 0) {
+            span.innerText = "Voyageur temporel ? 🤔";
+            span.className = "text-red-500 font-bold";
+          } else {
+            span.innerText = `${age} ans`;
+            span.className =
+              "text-yellow-600 font-bold transition-all duration-500";
+          }
         });
     </script>
   </body>
