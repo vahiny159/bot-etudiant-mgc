@@ -1,942 +1,339 @@
 <!doctype html>
 <html lang="fr">
-  <head>
-    <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
-    />
-    <title>Inscription MGC</title>
-    <link rel="icon" type="image/svg+xml" href="icons/mgc.svg" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
-      rel="stylesheet"
-    />
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
-    <script>
-      tailwind.config = {
-        darkMode: "class",
-        theme: {
-          extend: {
-            fontFamily: {
-              sans: ['"Plus Jakarta Sans"', "sans-serif"],
-            },
-            colors: {
-              lemon: {
-                300: "#fde047",
-                400: "#facc15",
-                500: "#eab308",
-                900: "#713f12",
-              },
-            },
-            animation: {
-              shimmer: "shimmer 2s linear infinite",
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Inscription MGC</title>
+  <link rel="icon" type="image/svg+xml" href="icons/mgc.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet" />
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', "sans-serif"],
+          },
+          colors: {
+            lemon: {
+              300: "#fde047",
+              400: "#facc15",
+              500: "#eab308",
+              900: "#713f12",
             },
           },
+          animation: {
+            shimmer: "shimmer 2s linear infinite",
+          },
         },
-      };
-    </script>
-    <style>
-      body {
-        -webkit-tap-highlight-color: transparent;
-        -webkit-overflow-scrolling: touch;
-      }
+      },
+    };
+  </script>
+  <style>
+    body {
+      -webkit-tap-highlight-color: transparent;
+      -webkit-overflow-scrolling: touch;
+    }
 
-      .input-fast {
-        background: #f9fafb;
-        transition:
-          border-color 0.2s ease,
-          box-shadow 0.2s ease;
-      }
-      .input-fast:focus {
-        background: #ffffff;
-        border-color: #facc15;
-        box-shadow: 0 0 0 4px rgba(250, 204, 21, 0.15);
-        outline: none;
-      }
+    .input-fast {
+      background: #f9fafb;
+      transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+    }
 
-      ::-webkit-scrollbar {
-        width: 0px;
-        background: transparent;
-      }
-    </style>
-  </head>
-  <body
-    class="antialiased pb-32 relative overflow-x-hidden min-h-screen text-gray-900 bg-gray-50"
-  >
-    <div class="fixed inset-0 z-0 pointer-events-none">
-      <div
-        class="absolute inset-0 bg-gradient-to-br from-gray-100 via-yellow-50 to-gray-100"
-      ></div>
-      <div
-        class="absolute inset-0 opacity-[0.06]"
-        style="
+    .input-fast:focus {
+      background: #ffffff;
+      border-color: #facc15;
+      box-shadow: 0 0 0 4px rgba(250, 204, 21, 0.15);
+      outline: none;
+    }
+
+    ::-webkit-scrollbar {
+      width: 0px;
+      background: transparent;
+    }
+  </style>
+</head>
+
+<body class="antialiased pb-32 relative overflow-x-hidden min-h-screen text-gray-900 bg-gray-50">
+  <div class="fixed inset-0 z-0 pointer-events-none">
+    <div class="absolute inset-0 bg-gradient-to-br from-gray-100 via-yellow-50 to-gray-100"></div>
+    <div class="absolute inset-0 opacity-[0.06]" style="
           background-image: url(&quot;data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%239C92AC' fill-opacity='1' fill-rule='evenodd'/%3E%3C/svg%3E&quot;);
-        "
-      ></div>
-    </div>
+        "></div>
+  </div>
 
-    <div class="relative z-10 px-4 pt-6">
-      <header class="text-center mb-8">
-        <h1 class="text-3xl font-black tracking-tighter text-gray-900">
-          Inscription MGC
-        </h1>
-        <p class="text-sm font-medium text-gray-500 mt-1">
-          Formulaire d'enregistrement
-        </p>
-      </header>
+  <div class="relative z-10 px-4 pt-6">
+    <header class="text-center mb-8">
+      <h1 class="text-3xl font-black tracking-tighter text-gray-900">
+        Inscription MGC
+      </h1>
+      <p class="text-sm font-medium text-gray-500 mt-1">
+        Formulaire d'enregistrement
+      </p>
+    </header>
 
-      <div class="max-w-lg mx-auto space-y-6">
-        <div class="relative group">
-          <div
-            class="absolute -inset-0.5 bg-gradient-to-r from-yellow-300 to-yellow-500 rounded-2xl opacity-40 group-hover:opacity-100 transition duration-1000 group-hover:duration-200 blur"
-          ></div>
-          <div
-            class="relative bg-white rounded-2xl p-6 shadow-xl border border-yellow-400/20"
-          >
-            <div
-              class="flex items-center mb-4 text-xs font-bold uppercase tracking-wider text-yellow-700"
-            >
-              <img
-                src="icons/fruit.svg"
-                alt="Icone Utilisateur"
-                class="w-6 h-6 mr-2 object-contain"
-              />
-              Fruit
-            </div>
+    <div class="max-w-lg mx-auto space-y-6">
+      <div class="relative group">
+        <div
+          class="absolute -inset-0.5 bg-gradient-to-r from-yellow-300 to-yellow-500 rounded-2xl opacity-40 group-hover:opacity-100 transition duration-1000 group-hover:duration-200 blur">
+        </div>
+        <div class="relative bg-white rounded-2xl p-6 shadow-xl border border-yellow-400/20">
+          <div class="flex items-center mb-4 text-xs font-bold uppercase tracking-wider text-yellow-700">
+            <img src="icons/fruit.svg" alt="Icone Utilisateur" class="w-6 h-6 mr-2 object-contain" />
+            Fruit
+          </div>
 
-            <div class="space-y-5">
-              <input type="hidden" id="studentId" value="" />
-              <div id="grp-nom">
-                <label class="block text-xs font-bold text-gray-500 mb-1 ml-1"
-                  >NOM COMPLET *</label
-                >
-                <input
-                  type="text"
-                  id="nomComplet"
-                  placeholder="Ex: Razafimahandry Vahiny"
-                  class="input-fast w-full border border-gray-200 rounded-xl px-4 py-3.5 font-semibold placeholder-gray-400 text-gray-900 uppercase"
-                  oninput="
+          <div class="space-y-5">
+            <input type="hidden" id="studentId" value="" />
+            <div id="grp-nom">
+              <label class="block text-xs font-bold text-gray-500 mb-1 ml-1">NOM COMPLET *</label>
+              <input type="text" id="nomComplet" placeholder="Ex: Razafimahandry Vahiny"
+                class="input-fast w-full border border-gray-200 rounded-xl px-4 py-3.5 font-semibold placeholder-gray-400 text-gray-900 uppercase"
+                oninput="
                     clearError();
                     this.value = this.value.toUpperCase();
-                  "
-                />
-              </div>
+                  " />
+            </div>
 
-              <div>
-                <label class="block text-xs font-bold text-gray-500 mb-2 ml-1"
-                  >SEXE</label
-                >
+            <div>
+              <label class="block text-xs font-bold text-gray-500 mb-2 ml-1">SEXE</label>
 
-                <input type="hidden" id="sexeInput" value="" />
+              <input type="hidden" id="sexeInput" value="" />
 
-                <div class="flex items-center space-x-6 pl-2">
-                  <label class="flex items-center cursor-pointer group">
-                    <input
-                      type="radio"
-                      name="sexe_radio"
-                      value="Homme"
-                      onclick="setSexe('Homme')"
-                      class="w-5 h-5 accent-yellow-500 cursor-pointer transition-transform group-active:scale-90"
-                    />
-                    <span
-                      class="ml-2 text-gray-700 font-bold text-sm group-hover:text-yellow-700 transition-colors"
-                      >Homme</span
-                    >
-                  </label>
-
-                  <label class="flex items-center cursor-pointer group">
-                    <input
-                      type="radio"
-                      name="sexe_radio"
-                      value="Femme"
-                      onclick="setSexe('Femme')"
-                      class="w-5 h-5 accent-yellow-500 cursor-pointer transition-transform group-active:scale-90"
-                    />
-                    <span
-                      class="ml-2 text-gray-700 font-bold text-sm group-hover:text-yellow-700 transition-colors"
-                      >Femme</span
-                    >
-                  </label>
-                </div>
-              </div>
-
-              <div class="grid grid-cols-2 gap-4">
-                <div>
-                  <label class="block text-xs font-bold text-gray-500 mb-1 ml-1"
-                    >TÉLÉPHONE</label
-                  >
-                  <input
-                    type="tel"
-                    id="telephone"
-                    placeholder="034..."
-                    class="input-fast w-full border border-gray-200 rounded-xl px-4 py-3.5 font-medium text-gray-900"
-                  />
-                </div>
-                <div>
-                  <label
-                    class="flex justify-between items-center text-xs font-bold text-gray-500 mb-1 ml-1"
-                  >
-                    <span>NAISSANCE</span>
-                    <span
-                      id="ageCalc"
-                      class="text-sm text-yellow-600 font-normal"
-                    ></span>
-                  </label>
-
-                  <input
-                    type="date"
-                    id="dateNaissance"
-                    class="input-fast w-full border border-gray-200 rounded-xl px-4 py-3.5 font-medium text-gray-900"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label class="block text-xs font-bold text-gray-500 mb-1 ml-1"
-                  >ADRESSE / VILLE</label
-                >
-                <input
-                  type="text"
-                  id="adresse"
-                  placeholder="Analakely..."
-                  class="input-fast w-full border border-gray-200 rounded-xl px-4 py-3.5 font-medium text-gray-900"
-                />
-              </div>
-
-              <div class="grid grid-cols-2 gap-4">
-                <div>
-                  <label class="block text-xs font-bold text-gray-500 mb-1 ml-1"
-                    >ÉGLISE</label
-                  >
-                  <input
-                    type="text"
-                    id="eglise"
-                    class="input-fast w-full border border-gray-200 rounded-xl px-4 py-3.5 font-medium text-gray-900"
-                  />
-                </div>
-                <div>
-                  <label class="block text-xs font-bold text-gray-500 mb-1 ml-1"
-                    >PROFESSION</label
-                  >
-                  <input
-                    type="text"
-                    id="profession"
-                    class="input-fast w-full border border-gray-200 rounded-xl px-4 py-3.5 font-medium text-gray-900"
-                  />
-                </div>
-              </div>
-              <div>
-                <label class="block text-xs font-bold text-gray-500 mb-2 ml-1"
-                  >OPTION</label
-                >
-                <div
-                  class="bg-yellow-50 p-1.5 rounded-full flex relative border border-yellow-100"
-                >
-                  <div
-                    id="capsule-bg"
-                    class="absolute left-1.5 top-1.5 bottom-1.5 w-[calc(50%-6px)] bg-white rounded-full shadow-md transition-all duration-300 ease-out z-0"
-                  ></div>
-                  <button
-                    onclick="selectOption('Journalier', 0)"
-                    id="btn-0"
-                    class="flex-1 py-3 text-sm font-bold z-10 text-yellow-900 transition-colors"
-                  >
-                    Journalier
-                  </button>
-                  <button
-                    onclick="selectOption('Weekend', 1)"
-                    id="btn-1"
-                    class="flex-1 py-3 text-sm font-bold z-10 text-gray-500 transition-colors"
-                  >
-                    Weekend
-                  </button>
-                </div>
-                <input type="hidden" id="optionSelected" value="Journalier" />
-              </div>
-              <div>
-                <label class="block text-xs font-bold text-gray-500 mb-1 ml-1">
-                  CLASSE BB
+              <div class="flex items-center space-x-6 pl-2">
+                <label class="flex items-center cursor-pointer group">
+                  <input type="radio" name="sexe_radio" value="H" onclick="setSexe('M')"
+                    class="w-5 h-5 accent-yellow-500 cursor-pointer transition-transform group-active:scale-90" />
+                  <span
+                    class="ml-2 text-gray-700 font-bold text-sm group-hover:text-yellow-700 transition-colors">Homme</span>
                 </label>
-                <div class="relative">
-                  <select
-                    id="classeSelect"
-                    class="input-fast w-full border border-gray-200 rounded-xl px-4 py-3.5 font-medium text-gray-900 appearance-none bg-white transition-colors cursor-pointer"
-                  >
-                    <option value="" disabled selected>
-                      Chargement des classes...
-                    </option>
-                  </select>
 
-                  <div
-                    class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-500"
-                  >
-                    <svg
-                      class="h-4 w-4 fill-current"
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 20 20"
-                    >
-                      <path
-                        d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"
-                      />
-                    </svg>
-                  </div>
+                <label class="flex items-center cursor-pointer group">
+                  <input type="radio" name="sexe_radio" value="F" onclick="setSexe('F')"
+                    class="w-5 h-5 accent-yellow-500 cursor-pointer transition-transform group-active:scale-90" />
+                  <span
+                    class="ml-2 text-gray-700 font-bold text-sm group-hover:text-yellow-700 transition-colors">Femme</span>
+                </label>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-bold text-gray-500 mb-1 ml-1">TÉLÉPHONE</label>
+                <input type="tel" id="telephone" placeholder="034..."
+                  class="input-fast w-full border border-gray-200 rounded-xl px-4 py-3.5 font-medium text-gray-900" />
+              </div>
+              <div>
+                <label class="flex justify-between items-center text-xs font-bold text-gray-500 mb-1 ml-1">
+                  <span>NAISSANCE</span>
+                  <span id="ageCalc" class="text-sm text-yellow-600 font-normal"></span>
+                </label>
+
+                <input type="date" id="dateNaissance"
+                  class="input-fast w-full border border-gray-200 rounded-xl px-4 py-3.5 font-medium text-gray-900" />
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-gray-500 mb-1 ml-1">ADRESSE / VILLE</label>
+              <input type="text" id="adresse" placeholder="Analakely..."
+                class="input-fast w-full border border-gray-200 rounded-xl px-4 py-3.5 font-medium text-gray-900" />
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-bold text-gray-500 mb-1 ml-1">ÉGLISE</label>
+                <input type="text" id="eglise"
+                  class="input-fast w-full border border-gray-200 rounded-xl px-4 py-3.5 font-medium text-gray-900" />
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-gray-500 mb-1 ml-1">PROFESSION</label>
+                <input type="text" id="profession"
+                  class="input-fast w-full border border-gray-200 rounded-xl px-4 py-3.5 font-medium text-gray-900" />
+              </div>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-gray-500 mb-2 ml-1">OPTION</label>
+              <div class="bg-yellow-50 p-1.5 rounded-full flex relative border border-yellow-100">
+                <div id="capsule-bg"
+                  class="absolute left-1.5 top-1.5 bottom-1.5 w-[calc(50%-6px)] bg-white rounded-full shadow-md transition-all duration-300 ease-out z-0">
+                </div>
+                <button onclick="selectOption('weekday', 0)" id="btn-0"
+                  class="flex-1 py-3 text-sm font-bold z-10 text-yellow-900 transition-colors">
+                  Journalier
+                </button>
+                <button onclick="selectOption('weekend', 1)" id="btn-1"
+                  class="flex-1 py-3 text-sm font-bold z-10 text-gray-500 transition-colors">
+                  Weekend
+                </button>
+              </div>
+              <input type="hidden" id="optionSelected" value="weekday" />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-gray-500 mb-1 ml-1">
+                CLASSE BB
+              </label>
+              <div class="relative">
+                <select id="classeSelect"
+                  class="input-fast w-full border border-gray-200 rounded-xl px-4 py-3.5 font-medium text-gray-900 appearance-none bg-white transition-colors cursor-pointer">
+                  <option value="" disabled selected>
+                    Sélectonner une classe
+                  </option>
+                </select>
+
+                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-500">
+                  <svg class="h-4 w-4 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                    <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
+                  </svg>
                 </div>
               </div>
-              <button
-                type="button"
-                onclick="checkDuplicates()"
-                id="btn-check"
-                class="w-full flex justify-center items-center gap-2 py-3.5 rounded-xl font-bold text-sm transition-all active:scale-95 bg-yellow-50 text-yellow-800 border border-yellow-200 hover:bg-yellow-100 hover:border-yellow-300"
-              >
-                <img
-                  src="icons/duplicate.svg"
-                  alt="Icone Duplicate"
-                  class="w-5 h-5 object-contain"
-                />
-
-                <span id="check-text">Check doublons</span>
-              </button>
             </div>
+            <button type="button" onclick="checkDuplicates()" id="btn-check"
+              class="w-full flex justify-center items-center gap-2 py-3.5 rounded-xl font-bold text-sm transition-all active:scale-95 bg-yellow-50 text-yellow-800 border border-yellow-200 hover:bg-yellow-100 hover:border-yellow-300">
+              <img src="icons/duplicate.svg" alt="Icone Duplicate" class="w-5 h-5 object-contain" />
+
+              <span id="check-text">Check doublons</span>
+            </button>
           </div>
         </div>
+      </div>
 
-        <div class="relative group">
-          <div
-            class="absolute -inset-0.5 bg-gradient-to-r from-yellow-400 to-yellow-200 rounded-2xl opacity-40 group-hover:opacity-100 transition duration-1000 group-hover:duration-200 blur"
-          ></div>
-          <div
-            class="relative bg-white rounded-2xl p-6 shadow-xl border border-yellow-400/20"
-          >
-            <div
-              class="flex items-center mb-4 text-xs font-bold uppercase tracking-wider text-yellow-600"
-            >
-              <img
-                src="icons/tree.svg"
-                alt="Icone tree"
-                class="w-6 h-6 mr-2 object-contain"
-              />
-              Tree
+      <div class="relative group">
+        <div
+          class="absolute -inset-0.5 bg-gradient-to-r from-yellow-400 to-yellow-200 rounded-2xl opacity-40 group-hover:opacity-100 transition duration-1000 group-hover:duration-200 blur">
+        </div>
+        <div class="relative bg-white rounded-2xl p-6 shadow-xl border border-yellow-400/20">
+          <div class="flex items-center mb-4 text-xs font-bold uppercase tracking-wider text-yellow-600">
+            <img src="icons/tree.svg" alt="Icone tree" class="w-6 h-6 mr-2 object-contain" />
+            Tree
+          </div>
+          <div class="space-y-4">
+            <div>
+              <label class="block text-xs font-bold text-gray-500 mb-1 ml-1">ID SMADA</label>
+              <input type="text" id="idApp" placeholder="APP-001" onblur="getDataTree()"
+                class="input-fast w-full border border-gray-200 rounded-xl px-4 py-3.5 font-mono text-sm text-gray-900" />
             </div>
-            <div class="space-y-4">
+            <div>
+              <label class="block text-xs font-bold text-gray-500 mb-1 ml-1">NOM TREE</label>
+              <input type="text" id="nomTree"
+                class="input-fast w-full border border-gray-200 rounded-xl px-4 py-3.5 font-medium text-gray-900" />
+            </div>
+            <div class="grid grid-cols-2 gap-4">
               <div>
-                <label class="block text-xs font-bold text-gray-500 mb-1 ml-1"
-                  >ID SMADA</label
-                >
-                <input
-                  type="text"
-                  id="idApp"
-                  placeholder="APP-001"
-                  class="input-fast w-full border border-gray-200 rounded-xl px-4 py-3.5 font-mono text-sm text-gray-900"
-                />
-              </div>
-              <div>
-                <label class="block text-xs font-bold text-gray-500 mb-1 ml-1"
-                  >NOM TREE</label
-                >
-                <input
-                  type="text"
-                  id="nomTree"
-                  class="input-fast w-full border border-gray-200 rounded-xl px-4 py-3.5 font-medium text-gray-900"
-                />
-              </div>
-              <div class="grid grid-cols-2 gap-4">
-                <div>
-                  <label class="block text-xs font-bold text-gray-500 mb-1 ml-1"
-                    >TEL TREE</label
-                  >
-                  <input
-                    type="tel"
-                    id="telTree"
-                    class="input-fast w-full border border-gray-200 rounded-xl px-4 py-3.5 font-medium text-gray-900"
-                  />
-                </div>
-                <div>
-                  <label class="block text-xs font-bold text-gray-500 mb-1 ml-1"
-                    >LIAISON</label
-                  >
-                  <input
-                    type="text"
-                    id="liaison"
-                    placeholder="Namana,..."
-                    class="input-fast w-full border border-gray-200 rounded-xl px-4 py-3.5 font-medium text-gray-900"
-                  />
-                </div>
+                <label class="block text-xs font-bold text-gray-500 mb-1 ml-1">TEL TREE</label>
+                <input type="tel" id="telTree"
+                  class="input-fast w-full border border-gray-200 rounded-xl px-4 py-3.5 font-medium text-gray-900" />
               </div>
               <div>
-                <label class="block text-xs font-bold text-gray-500 mb-1 ml-1"
-                  >DEPARTEMENT/CLASSE</label
-                >
-                <input
-                  type="text"
-                  id="departement"
-                  class="input-fast w-full border border-gray-200 rounded-xl px-4 py-3.5 font-medium text-gray-900"
-                />
+                <label class="block text-xs font-bold text-gray-500 mb-1 ml-1">LIAISON</label>
+                <input type="text" id="liaison" placeholder="Namana,..."
+                  class="input-fast w-full border border-gray-200 rounded-xl px-4 py-3.5 font-medium text-gray-900" />
               </div>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-gray-500 mb-1 ml-1">DEPARTEMENT/CLASSE</label>
+              <input type="text" id="departement"
+                class="input-fast w-full border border-gray-200 rounded-xl px-4 py-3.5 font-medium text-gray-900" />
             </div>
           </div>
         </div>
       </div>
     </div>
+  </div>
 
-    <div
-      class="fixed bottom-0 left-0 right-0 p-4 pt-12 bg-gradient-to-t from-gray-50 via-gray-50 to-transparent z-40"
-    >
-      <button
-        id="main-btn"
-        onclick="submitForm()"
-        class="relative w-full bg-gradient-to-r from-lemon-400 to-lemon-500 text-gray-900 font-bold text-lg py-4 rounded-2xl shadow-lg shadow-xl shadow-black/5 active:scale-[0.98] transition-transform overflow-hidden group"
-      >
-        <div
-          class="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full animate-shimmer group-hover:animate-none"
-        ></div>
-        <div class="relative flex justify-center items-center">
-          <span
-            id="spinner"
-            class="animate-spin h-5 w-5 border-2 border-gray-900 border-t-transparent rounded-full mr-3 hidden"
-          ></span>
-
-          <span id="btn-text" class="flex items-center gap-2">
-            <img
-              src="icons/save.svg"
-              alt="Icone save"
-              class="w-8 h-8 object-contain"
-            />
-            <span>Enregistrer le dossier</span>
-          </span>
-        </div>
-      </button>
-    </div>
-
-    <div
-      id="duplicate-modal"
-      class="fixed inset-0 z-[60] flex items-center justify-center bg-gray-900/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300"
-    >
+  <div class="fixed bottom-0 left-0 right-0 p-4 pt-12 bg-gradient-to-t from-gray-50 via-gray-50 to-transparent z-40">
+    <button id="main-btn" onclick="submitForm()"
+      class="relative w-full bg-gradient-to-r from-lemon-400 to-lemon-500 text-gray-900 font-bold text-lg py-4 rounded-2xl shadow-lg shadow-xl shadow-black/5 active:scale-[0.98] transition-transform overflow-hidden group">
       <div
-        class="relative bg-white/95 w-11/12 max-w-sm rounded-3xl p-6 shadow-2xl border border-yellow-400/30 transform scale-95 transition-transform duration-300"
-        id="modal-content"
-      >
-        <div
-          class="absolute top-0 left-0 w-full h-20 bg-gradient-to-b from-yellow-50 to-transparent rounded-t-3xl -z-10"
-        ></div>
-
-        <div class="text-center mb-6">
-          <div
-            class="mx-auto flex items-center justify-center h-14 w-14 rounded-full bg-yellow-100 text-3xl shadow-sm border border-yellow-200 mb-3"
-          >
-            ⚠️
-          </div>
-          <h3 class="text-xl font-black text-gray-900 tracking-tight">
-            Attention !
-          </h3>
-          <p class="text-sm font-medium text-gray-500 mt-1">
-            Ce nom ressemble à des dossiers existants.
-          </p>
-        </div>
-
-        <div
-          id="duplicate-list"
-          class="space-y-3 mb-6 max-h-60 overflow-y-auto pr-1"
-        ></div>
-
-        <div class="space-y-3">
-          <button
-            onclick="closeModal()"
-            class="w-full py-3.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-bold text-sm transition-colors"
-          >
-            Non, c'est une nouvelle personne
-          </button>
-        </div>
+        class="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full animate-shimmer group-hover:animate-none">
       </div>
-    </div>
+      <div class="relative flex justify-center items-center">
+        <span id="spinner"
+          class="animate-spin h-5 w-5 border-2 border-gray-900 border-t-transparent rounded-full mr-3 hidden"></span>
 
+        <span id="btn-text" class="flex items-center gap-2">
+          <img src="icons/save.svg" alt="Icone save" class="w-8 h-8 object-contain" />
+          <span>Enregistrer le dossier</span>
+        </span>
+      </div>
+    </button>
+  </div>
+
+  <div id="duplicate-modal"
+    class="fixed inset-0 z-[60] flex items-center justify-center bg-gray-900/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
     <div
-      id="success-modal"
-      class="fixed inset-0 z-[70] flex items-center justify-center bg-gray-900/80 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300"
-    >
-      <div
-        class="relative bg-white w-11/12 max-w-sm rounded-3xl p-6 shadow-2xl border-2 border-green-400 transform scale-95 transition-transform duration-300 text-center"
-      >
-        <div
-          class="mx-auto flex items-center justify-center h-20 w-20 rounded-full bg-green-100 text-5xl shadow-sm border-4 border-white -mt-16 mb-4 relative z-10"
-        >
-          🎉
-        </div>
+      class="relative bg-white/95 w-11/12 max-w-sm rounded-3xl p-6 shadow-2xl border border-yellow-400/30 transform scale-95 transition-transform duration-300"
+      id="modal-content">
+      <div class="absolute top-0 left-0 w-full h-20 bg-gradient-to-b from-yellow-50 to-transparent rounded-t-3xl -z-10">
+      </div>
 
-        <h3 class="text-2xl font-black text-gray-900 tracking-tight mb-2">
-          Inscription Réussie !
+      <div class="text-center mb-6">
+        <div
+          class="mx-auto flex items-center justify-center h-14 w-14 rounded-full bg-yellow-100 text-3xl shadow-sm border border-yellow-200 mb-3">
+          ⚠️
+        </div>
+        <h3 class="text-xl font-black text-gray-900 tracking-tight">
+          Attention !
         </h3>
-        <p class="text-gray-500 font-medium text-sm mb-6">
-          Le dossier a été créé avec succès.
+        <p class="text-sm font-medium text-gray-500 mt-1">
+          Ce nom ressemble à des dossiers existants.
         </p>
+      </div>
 
-        <div
-          class="bg-yellow-50 border border-yellow-200 rounded-xl p-4 mb-6 relative overflow-hidden group"
-        >
-          <div
-            class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-yellow-300 to-orange-400"
-          ></div>
-          <p
-            class="text-xs font-bold text-yellow-700 uppercase tracking-widest mb-1"
-          >
-            ID ÉLÈVE
-          </p>
-          <div
-            id="generated-id"
-            class="text-3xl font-mono font-black text-gray-900 tracking-wider"
-          ></div>
-        </div>
+      <div id="duplicate-list" class="space-y-3 mb-6 max-h-60 overflow-y-auto pr-1"></div>
 
-        <button
-          onclick="closeSuccessModal()"
-          class="w-full py-4 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white rounded-xl font-bold text-lg shadow-lg shadow-green-200 transition-all active:scale-95"
-        >
-          Génial, merci !
+      <div class="space-y-3">
+        <button onclick="closeModal()"
+          class="w-full py-3.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-bold text-sm transition-colors">
+          Non, c'est une nouvelle personne
         </button>
       </div>
     </div>
+  </div>
 
-    <script>
-      const tg = window.Telegram.WebApp;
-      tg.expand();
-      tg.ready();
-      tg.setHeaderColor("#F9FAFB");
+  <div id="success-modal"
+    class="fixed inset-0 z-[70] flex items-center justify-center bg-gray-900/80 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
+    <div
+      class="relative bg-white w-11/12 max-w-sm rounded-3xl p-6 shadow-2xl border-2 border-green-400 transform scale-95 transition-transform duration-300 text-center">
+      <div
+        class="mx-auto flex items-center justify-center h-20 w-20 rounded-full bg-green-100 text-5xl shadow-sm border-4 border-white -mt-16 mb-4 relative z-10">
+        🎉
+      </div>
 
-      // --- GESTION CLAVIER MOBILE (UX) ---
-      // Empêche le clavier de cacher le champ en cours
-      const inputs = document.querySelectorAll("input, select");
-      inputs.forEach((input) => {
-        input.addEventListener("focus", function () {
-          setTimeout(() => {
-            this.scrollIntoView({ behavior: "smooth", block: "center" });
-          }, 300);
-        });
-      });
+      <h3 class="text-2xl font-black text-gray-900 tracking-tight mb-2">
+        Inscription Réussie !
+      </h3>
+      <p class="text-gray-500 font-medium text-sm mb-6">
+        Le dossier a été créé avec succès.
+      </p>
 
-      // --- CHECK DOUBLON ---
-      async function checkDuplicates() {
-        const nom = document.getElementById("nomComplet").value;
-        const tel = document.getElementById("telephone").value;
+      <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-4 mb-6 relative overflow-hidden group">
+        <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-yellow-300 to-orange-400"></div>
+        <p class="text-xs font-bold text-yellow-700 uppercase tracking-widest mb-1">
+          ID ÉLÈVE
+        </p>
+        <div id="generated-id" class="text-3xl font-mono font-black text-gray-900 tracking-wider"></div>
+      </div>
 
-        const btn = document.getElementById("btn-check");
-        const btnText = document.getElementById("check-text");
-        let btnIcon = document.getElementById("check-icon");
+      <button onclick="closeSuccessModal()"
+        class="w-full py-4 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white rounded-xl font-bold text-lg shadow-lg shadow-green-200 transition-all active:scale-95">
+        Génial, merci !
+      </button>
+    </div>
+  </div>
 
-        if (!nom) {
-          if (tg.HapticFeedback)
-            tg.HapticFeedback.notificationOccurred("error");
-          const oldText = btnText.innerText;
-          btnText.innerText = "⚠️ Nom manquant !";
-          setTimeout(() => (btnText.innerText = oldText), 2000);
-          return;
-        }
+  <script src="js/config.js"></script>
+  <script src="js/app.js"></script>
+</body>
 
-        const originalClass = btn.className;
-        const originalText = "Vérifier les doublons";
-
-        btnText.innerText = "Recherche...";
-        if (btnIcon) btnIcon.innerText = "⏳";
-        btn.disabled = true;
-
-        try {
-          const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 10000);
-
-          const response = await fetch("/api/check-duplicates", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "X-Telegram-Data": tg.initData || "",
-            },
-            body: JSON.stringify({ nomComplet: nom, telephone: tel }),
-            signal: controller.signal,
-          });
-
-          clearTimeout(timeoutId);
-
-          if (!response.ok) throw new Error(`Erreur Server ${response.status}`);
-          const result = await response.json();
-
-          if (
-            result.found &&
-            result.candidates &&
-            result.candidates.length > 0
-          ) {
-            if (tg.HapticFeedback)
-              tg.HapticFeedback.notificationOccurred("warning");
-
-            resetBtn(btn, btnText, btnIcon, originalClass, originalText);
-            showDuplicateModal(result.candidates);
-          } else {
-            if (tg.HapticFeedback)
-              tg.HapticFeedback.notificationOccurred("success");
-
-            btn.className =
-              "w-full flex justify-center items-center gap-2 py-3.5 rounded-xl font-bold text-sm transition-all bg-green-100 text-green-700 border border-green-300";
-            btnText.innerText = "✅ C'est tout bon !";
-            if (btnIcon) btnIcon.innerText = "";
-
-            setTimeout(() => {
-              resetBtn(btn, btnText, btnIcon, originalClass, originalText);
-            }, 2500);
-          }
-        } catch (error) {
-          console.error("Erreur Check:", error);
-          if (tg.HapticFeedback)
-            tg.HapticFeedback.notificationOccurred("error");
-
-          btn.className =
-            "w-full flex justify-center items-center gap-2 py-3.5 rounded-xl font-bold text-sm transition-all bg-red-100 text-red-700 border border-red-300";
-
-          if (error.name === "AbortError") {
-            btnText.innerText = "⏳ Trop long (Timeout)";
-          } else {
-            btnText.innerText = "❌ Erreur Serveur";
-          }
-
-          setTimeout(() => {
-            resetBtn(btn, btnText, btnIcon, originalClass, originalText);
-          }, 3000);
-        } finally {
-          btn.disabled = false;
-        }
-      }
-
-      // --- UTILITAIRES ---
-      function resetBtn(btn, txtSpan, iconSpan, css, txt) {
-        btn.className = css;
-        txtSpan.innerText = txt;
-        if (iconSpan) iconSpan.innerText = "🔍";
-      }
-
-      function showDuplicateModal(candidates) {
-        const modal = document.getElementById("duplicate-modal");
-        const list = document.getElementById("duplicate-list");
-        const content = document.getElementById("modal-content");
-        if (!modal || !list) return;
-
-        list.innerHTML = "";
-        candidates.forEach((s) => {
-          const btn = document.createElement("button");
-          btn.className =
-            "w-full relative flex items-center justify-between p-4 rounded-2xl bg-yellow-50 border border-yellow-200 hover:bg-yellow-100 transition-all active:scale-[0.98] group text-left shadow-sm mb-2";
-          btn.onclick = () => loadExistingStudent(s);
-          btn.innerHTML = `
-              <div>
-                <div class="font-bold text-gray-900 text-base group-hover:text-yellow-800 transition-colors">${s.nomComplet}</div>
-                <div class="text-xs font-medium text-yellow-600/80 mt-1 flex items-center gap-1"><span>📱 ${s.telephone || "Non renseigné"}</span></div>
-             </div>
-             <div class="h-8 w-8 rounded-full bg-white text-yellow-500 flex items-center justify-center shadow-sm border border-yellow-100 group-hover:scale-110 transition-transform">✏️</div>
-          `;
-          list.appendChild(btn);
-        });
-
-        modal.classList.remove("hidden");
-        requestAnimationFrame(() => {
-          modal.classList.remove("opacity-0");
-          content.classList.remove("scale-95");
-          content.classList.add("scale-100");
-        });
-      }
-
-      function closeModal() {
-        const modal = document.getElementById("duplicate-modal");
-        const modalContent = document.getElementById("modal-content");
-        modal.classList.add("opacity-0");
-        if (modalContent) {
-          modalContent.classList.remove("scale-100");
-          modalContent.classList.add("scale-95");
-        }
-        setTimeout(() => modal.classList.add("hidden"), 300);
-      }
-
-      function loadExistingStudent(student) {
-        closeModal();
-        document.getElementById("studentId").value = student.id;
-
-        const setVal = (id, val) => {
-          if (document.getElementById(id))
-            document.getElementById(id).value = val || "";
-        };
-
-        setVal("nomComplet", student.nomComplet);
-        setVal("telephone", student.telephone);
-        setVal("dateNaissance", student.dateNaissance);
-        setVal("adresse", student.adresse);
-        setVal("eglise", student.eglise);
-        setVal("profession", student.profession);
-        setVal("idApp", student.idApp);
-        setVal("nomTree", student.nomTree);
-        setVal("telTree", student.telTree);
-        setVal("liaison", student.liaison);
-        setVal("departement", student.departement);
-
-        // Déclenche le calcul d'âge visuellement si une date est chargée
-        if (student.dateNaissance) {
-          document
-            .getElementById("dateNaissance")
-            .dispatchEvent(new Event("change"));
-        }
-
-        if (student.option) {
-          const index = student.option === "Weekend" ? 1 : 0;
-          selectOption(student.option, index);
-        }
-
-        if (student.sexe) {
-          document.getElementById("sexeInput").value = student.sexe;
-          const radios = document.getElementsByName("sexe_radio");
-          for (let r of radios) {
-            if (r.value === student.sexe) r.checked = true;
-          }
-        }
-
-        if (tg.HapticFeedback)
-          tg.HapticFeedback.notificationOccurred("success");
-        tg.showAlert(`📂 Profil chargé : ${student.nomComplet}`);
-
-        const btnText = document.getElementById("btn-text");
-        if (btnText) btnText.innerText = "Mettre à jour le dossier";
-      }
-
-      function selectOption(value, index) {
-        if (tg.HapticFeedback) tg.HapticFeedback.selectionChanged();
-        document.getElementById("optionSelected").value = value;
-        document.getElementById("capsule-bg").style.transform =
-          `translateX(${index * 100}%)`;
-
-        const btn0 = document.getElementById("btn-0");
-        const btn1 = document.getElementById("btn-1");
-
-        btn0.className =
-          "flex-1 py-3 text-sm font-bold z-10 transition-colors " +
-          (index === 0 ? "text-yellow-900" : "text-gray-500");
-        btn1.className =
-          "flex-1 py-3 text-sm font-bold z-10 transition-colors " +
-          (index === 1 ? "text-yellow-900" : "text-gray-500");
-      }
-
-      // Squelette liste déroulante classe pour le backend
-      function updateClassesList(data) {
-        const select = document.getElementById("classeSelect");
-        if (!select) return;
-        select.innerHTML =
-          '<option value="" disabled selected>Sélectionner une classe</option>';
-        if (data && Array.isArray(data)) {
-          data.forEach((item) => {
-            const option = document.createElement("option");
-            option.value = item.id;
-            option.innerText = item.name;
-            select.appendChild(option);
-          });
-        }
-      }
-
-      function clearError() {
-        const input = document.getElementById("nomComplet");
-        input.classList.remove("border-red-500", "bg-red-50");
-        input.classList.add("border-gray-200");
-      }
-
-      function triggerConfetti() {
-        var colors = ["#facc15", "#fde047", "#ffffff"];
-        const opts = {
-          particleCount: 40,
-          spread: 55,
-          colors: colors,
-          disableForReducedMotion: true,
-        };
-        confetti({ ...opts, angle: 60, origin: { x: 0.1, y: 0.7 } });
-        confetti({ ...opts, angle: 120, origin: { x: 0.9, y: 0.7 } });
-      }
-
-      // --- MODALS & SUCCESS ---
-      function showSuccessModal(id) {
-        const modal = document.getElementById("success-modal");
-        const idSpan = document.getElementById("generated-id");
-        idSpan.innerText = id;
-        modal.classList.remove("hidden");
-        requestAnimationFrame(() => {
-          modal.classList.remove("opacity-0");
-          const content = modal.querySelector("div");
-          content.classList.remove("scale-95");
-          content.classList.add("scale-100");
-        });
-        triggerConfetti();
-      }
-
-      function closeSuccessModal() {
-        const modal = document.getElementById("success-modal");
-        modal.classList.add("opacity-0");
-        setTimeout(() => {
-          modal.classList.add("hidden");
-          tg.close();
-        }, 300);
-      }
-
-      function setSexe(valeur) {
-        document.getElementById("sexeInput").value = valeur;
-        if (tg.HapticFeedback) tg.HapticFeedback.selectionChanged();
-      }
-
-      // --- SOUMISSION ---
-      async function submitForm() {
-        if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred("medium");
-
-        const btn = document.getElementById("main-btn");
-        const spinner = document.getElementById("spinner");
-        const btnText = document.getElementById("btn-text");
-        const nomInput = document.getElementById("nomComplet");
-        const sexeInput = document.getElementById("sexeInput");
-        const idHiddenInput = document.getElementById("studentId");
-
-        const nom = nomInput.value;
-        const sexe = sexeInput.value;
-
-        // Validations
-        if (!sexe) {
-          tg.showAlert("Veuillez sélectionner le sexe (Homme/Femme).");
-          if (spinner) spinner.classList.add("hidden");
-          if (btn) btn.disabled = false;
-          return;
-        }
-        if (!nom) {
-          if (tg.HapticFeedback)
-            tg.HapticFeedback.notificationOccurred("error");
-          nomInput.classList.remove("border-gray-200");
-          nomInput.classList.add("border-red-500", "bg-red-50");
-          nomInput.focus();
-          return;
-        }
-
-        btn.disabled = true;
-        spinner.classList.remove("hidden");
-        btnText.innerText = "Enregistrement...";
-
-        // Collecte des données
-        const data = {
-          nomComplet: nom,
-          sexe: sexe,
-          telephone: document.getElementById("telephone").value,
-          dateNaissance: document.getElementById("dateNaissance").value,
-          adresse: document.getElementById("adresse").value,
-          eglise: document.getElementById("eglise").value,
-          profession: document.getElementById("profession").value,
-          option: document.getElementById("optionSelected").value,
-          idApp: document.getElementById("idApp").value,
-          nomTree: document.getElementById("nomTree").value,
-          telTree: document.getElementById("telTree").value,
-          liaison: document.getElementById("liaison").value,
-          departement: document.getElementById("departement").value,
-        };
-
-        const existingId = idHiddenInput.value;
-        let url = "/api/students";
-        let method = "POST";
-
-        if (existingId) {
-          url = `/api/students/${existingId}`;
-          method = "PUT";
-        }
-
-        try {
-          const response = await fetch(url, {
-            method: method,
-            headers: {
-              "Content-Type": "application/json",
-              "X-Telegram-Data": tg.initData || "",
-            },
-            body: JSON.stringify(data),
-          });
-
-          const result = await response.json();
-
-          if (response.ok && result.success) {
-            if (tg.HapticFeedback)
-              tg.HapticFeedback.notificationOccurred("success");
-
-            btn.disabled = false;
-            spinner.classList.add("hidden");
-            btnText.innerText = "Enregistrer le dossier";
-
-            // --- GRAND NETTOYAGE (OPTIMISATION) ---
-            idHiddenInput.value = "";
-            document
-              .querySelectorAll(
-                'input[type="text"], input[type="tel"], input[type="date"]',
-              )
-              .forEach((el) => (el.value = ""));
-
-            document.getElementById("sexeInput").value = "";
-            document
-              .getElementsByName("sexe_radio")
-              .forEach((r) => (r.checked = false));
-
-            document.getElementById("ageCalc").innerText = "";
-
-            showSuccessModal(result.id);
-          } else {
-            throw new Error(result.message || "Erreur inconnue");
-          }
-        } catch (error) {
-          btn.disabled = false;
-          spinner.classList.add("hidden");
-          btnText.innerText = "Réessayer";
-          tg.showAlert("Erreur : " + error.message);
-        }
-      }
-
-      // Formatage Tel
-      document
-        .getElementById("telephone")
-        .addEventListener("input", function (e) {
-          let x = e.target.value
-            .replace(/\D/g, "")
-            .match(/(\d{0,3})(\d{0,2})(\d{0,3})(\d{0,2})/);
-          e.target.value = !x[2]
-            ? x[1]
-            : x[1] +
-              " " +
-              x[2] +
-              (x[3] ? " " + x[3] : "") +
-              (x[4] ? " " + x[4] : "");
-        });
-
-      // Calcul Age
-      document
-        .getElementById("dateNaissance")
-        .addEventListener("change", function (e) {
-          const dateStr = e.target.value;
-          const span = document.getElementById("ageCalc");
-
-          if (!dateStr) {
-            span.innerText = "";
-            return;
-          }
-
-          const today = new Date();
-          const birthDate = new Date(dateStr);
-          let age = today.getFullYear() - birthDate.getFullYear();
-          const m = today.getMonth() - birthDate.getMonth();
-
-          if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
-            age--;
-          }
-
-          if (age < 0) {
-            span.innerText = "Erreur date";
-            span.className = "text-sm text-red-500 font-bold";
-          } else {
-            span.innerText = `${age} ans`;
-            span.className =
-              "text-sm text-yellow-600 font-bold transition-all duration-500";
-          }
-        });
-    </script>
-  </body>
 </html>

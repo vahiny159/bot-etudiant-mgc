@@ -1,3 +1,4 @@
+const checkIdTelegram = require('./services/user.service.js');
 require("dotenv").config();
 
 const express = require("express");
@@ -38,17 +39,17 @@ app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, "public")));
 
 // --- DONNÉES DE TEST (Base de données temporaire) ---
-let students = [
-  {
-    id: 999,
-    nomComplet: "Test Doublon",
-    telephone: "0340000000",
-    option: "Journalier",
-    idApp: "TEST-01",
-    departement: "Informatique",
-  },
-];
-let nextId = 1000;
+// let students = [
+//   {
+//     id: 999,
+//     nomComplet: "Test Doublon",
+//     telephone: "0340000000",
+//     option: "Journalier",
+//     idApp: "TEST-01",
+//     departement: "Informatique",
+//   },
+// ];
+// let nextId = 1000;
 
 // --- FONCTION SÉCURITÉ TELEGRAM ---
 const verifyTelegramData = (initData) => {
@@ -74,10 +75,42 @@ const verifyTelegramData = (initData) => {
 
   return calculatedHash === hash;
 };
+/**
+ * LIST OF API CALL
+ */
+// --- CRÉATION STUDENTS---
+app.post('/auth/telegram', async (req, res) => {
+  const { initData } = req.body;
 
-// --- CRÉATION (POST) ---
-app.post("/api/students", (req, res) => {
+  if (!initData) {
+    return res.status(400).json({ ok: false });
+  }
+
+  const isValid = verifyTelegramData(initData);
+  if (!isValid) {
+    return res.status(401).json({ ok: false });
+  }
+
+  const params = new URLSearchParams(initData);
+  const user = JSON.parse(params.get('user'));
+  const telegramId = user.id;
+
+  const exists = await checkIdTelegram(telegramId);
+  if (!exists) {
+    return res.status(403).json({ ok: false });
+  }
+
+  // ✅ utilisateur validé
+  req.session.authorized = true;
+  req.session.telegramId = telegramId;
+
+  res.json({ ok: true });
+});
+
+app.post("/api/classes/:class/people", async (req, res) => {
   try {
+    const { classe } = req.params;
+
     const telegramProof = req.header("X-Telegram-Data");
     let user = { id: 99999, first_name: "WebUser" };
 
@@ -91,74 +124,171 @@ app.post("/api/students", (req, res) => {
       console.log("⚠️ Accès hors Telegram ou signature invalide (Mode Test)");
     }
 
-    const newStudent = req.body;
+    const response = await fetch(`${process.env.STRAPI_API_URL}/api/classes/${classe}/people`, {
+      // method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${process.env.APP_TOKEN}`,
+        "Content-Type": "application/json",
+        // "X-Telegram-Data": tg.initData || "",
+      },
+    });
 
-    newStudent.id = Date.now().toString().slice(-6);
-    newStudent.createdByTelegramId = user.id;
-    newStudent.dateAjout = new Date().toLocaleDateString("fr-FR");
+    const result = await response.json();
 
-    students.push(newStudent);
-    console.log(
-      `📝 Élève créé : ${newStudent.nomComplet} (ID: ${newStudent.id})`,
-    );
+    if (!response.ok) {
+      return res.status(response.status).json(result);
+    }
 
-    res.json({ success: true, id: newStudent.id });
+    res.json(result);
   } catch (e) {
-    console.error("Erreur Inscription:", e);
-    res.status(500).json({ success: false, message: "Erreur serveur" });
+    console.error("Erreur :", e);
+    res.status(500).json({ error: e.message });
   }
 });
 
-// --- MISE À JOUR (PUT) ---
-app.put("/api/students/:id", (req, res) => {
+// --- MISE À JOUR STUDENTS (PUT) ---
+app.put("/api/people/:id", async (req, res) => {
   const idToUpdate = req.params.id;
   console.log(`🔄 Update demandé pour ID : ${idToUpdate}`);
+  try {
+    const response = await fetch(`${process.env.STRAPI_API_URL}/api/people/${idToUpdate}`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${process.env.APP_TOKEN}`,
+        "Content-Type": "application/json",
+        // "X-Telegram-Data": tg.initData || "",
+      },
+    });
+    const result = await response.json();
 
-  const index = students.findIndex((s) => s.id == idToUpdate);
+    if (!response.ok) {
+      return res.status(response.status).json(result);
+    }
 
-  if (index !== -1) {
-    const oldData = students[index];
-    const newData = req.body;
-
-    students[index] = {
-      ...oldData,
-      ...newData,
-      id: oldData.id,
-    };
-
-    console.log(`✅ Dossier ${idToUpdate} mis à jour !`);
-    res.json({ success: true, id: idToUpdate });
-  } else {
-    res.status(404).json({ success: false, message: "Dossier introuvable" });
+    res.json(result);
   }
+  catch (e) {
+    console.error("Erreur doublons:", e);
+    res.status(500).json({ error: e.message });
+  }
+
 });
 
 // --- CHECK DOUBLONS ---
-app.post("/api/check-duplicates", (req, res) => {
+app.get("/api/students/findByName/:names", async (req, res) => {
   console.log("🔍 Vérification doublons...");
   try {
-    const { nomComplet, telephone } = req.body;
-    const candidates = students.filter((s) => {
-      let match = false;
-      if (telephone && s.telephone) {
-        if (telephone.replace(/\s/g, "") === s.telephone.replace(/\s/g, ""))
-          match = true;
-      }
-      if (nomComplet && s.nomComplet) {
-        const n1 = nomComplet.trim().toLowerCase();
-        const n2 = s.nomComplet.trim().toLowerCase();
-        if (n1 && n2 && (n2.includes(n1) || n1.includes(n2))) match = true;
-      }
-      return match;
-    });
+    const { names } = req.params;
 
-    console.log(`📊 Résultat : ${candidates.length} candidat(s) trouvé(s)`);
-    res.json({ found: candidates.length > 0, candidates: candidates });
+    const response = await fetch(`${process.env.STRAPI_API_URL}/api/students/findByName/${names}`, {
+      // method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${process.env.APP_TOKEN}`,
+        "Content-Type": "application/json",
+        // "X-Telegram-Data": tg.initData || "",
+      },
+    });
+    const result = await response.json();
+
+    if (!response.ok) {
+      return res.status(response.status).json(result);
+    }
+
+    res.json(result);
   } catch (e) {
     console.error("Erreur doublons:", e);
     res.status(500).json({ error: e.message });
   }
 });
+
+// FIND PERSON BY ID
+app.get("/api/people/:id", async (req, res) => {
+  console.log("🔍 Vérification doublons...");
+  try {
+    const { id } = req.params;
+
+    const response = await fetch(`${process.env.STRAPI_API_URL}/api/people/${id}`, {
+      //   method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${process.env.APP_TOKEN}`,
+        "Content-Type": "application/json",
+        // "X-Telegram-Data": tg.initData || "",
+      },
+    });
+    const result = await response.json();
+
+    if (!response.ok) {
+      return res.status(response.status).json(result);
+    }
+
+    res.json(result);
+  } catch (e) {
+    console.error("Erreur :", e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// FIND PERSON BY USER
+app.get("/people/findByUser/:appId", async (req, res) => {
+  console.log("🔍 Vérification doublons...");
+  try {
+    const { appId } = req.params;
+    const { allData } = req.query;
+    const strapiUrl =
+      `${process.env.STRAPI_API_URL}/api/people/findByUser/${encodeURIComponent(appId)}`
+      + `?allData=${allData ?? 'false'}`;
+
+    const response = await fetch(strapiUrl, {
+      //  method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${process.env.APP_TOKEN}`,
+        "Content-Type": "application/json",
+        // "X-Telegram-Data": tg.initData || "",
+      },
+    });
+    const result = await response.json();
+
+    if (!response.ok) {
+      return res.status(response.status).json(result);
+    }
+
+    res.json(result);
+  } catch (e) {
+    console.error("Erreur :", e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// CLASS OPENED BB
+app.get("/api/custom/classes/openedBB", async (req, res) => {
+  console.log("🔍 Vérification doublons...");
+  try {
+    const strapiUrl =
+      `${process.env.STRAPI_API_URL}/api/custom/classes/openedBB`;
+
+    const response = await fetch(strapiUrl, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${process.env.APP_TOKEN}`,
+        "Content-Type": "application/json",
+        // "X-Telegram-Data": tg.initData || "",
+      },
+    });
+    const result = await response.json();
+
+    if (!response.ok) {
+      return res.status(response.status).json(result);
+    }
+
+    res.json(result);
+  } catch (e) {
+    console.error("Erreur :", e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// CHECK TELEGRAM ID IN DB
+
 
 // --- BOT TELEGRAM ---
 if (BOT_TOKEN) {
