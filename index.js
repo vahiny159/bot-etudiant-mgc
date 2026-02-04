@@ -1,4 +1,4 @@
-const checkIdTelegram = require('./services/user.service.js');
+const checkIdTelegram = require("./services/user.service.js");
 require("dotenv").config();
 
 const express = require("express");
@@ -12,7 +12,7 @@ const PORT = process.env.PORT;
 const BOT_TOKEN = process.env.BOT_TOKEN;
 const WEB_APP_URL = process.env.WEB_APP_URL || process.env.RENDER_EXTERNAL_URL;
 
-// --- 3. VÉRIFICATION DE SÉCURITÉ ---
+// VÉRIFICATION DE SÉCURITÉ
 if (!BOT_TOKEN) {
   console.error(
     "❌ ERREUR FATALE : La variable 'BOT_TOKEN' manque dans le fichier .env",
@@ -79,7 +79,7 @@ const verifyTelegramData = (initData) => {
  * LIST OF API CALL
  */
 // --- CRÉATION STUDENTS---
-app.post('/auth/telegram', async (req, res) => {
+app.post("/auth/telegram", async (req, res) => {
   const { initData } = req.body;
 
   if (!initData) {
@@ -92,7 +92,7 @@ app.post('/auth/telegram', async (req, res) => {
   }
 
   const params = new URLSearchParams(initData);
-  const user = JSON.parse(params.get('user'));
+  const user = JSON.parse(params.get("user"));
   const telegramId = user.id;
 
   const exists = await checkIdTelegram(telegramId);
@@ -100,7 +100,7 @@ app.post('/auth/telegram', async (req, res) => {
     return res.status(403).json({ ok: false });
   }
 
-  // ✅ utilisateur validé
+  // utilisateur validé
   req.session.authorized = true;
   req.session.telegramId = telegramId;
 
@@ -109,33 +109,35 @@ app.post('/auth/telegram', async (req, res) => {
 
 app.post("/api/classes/:class/people", async (req, res) => {
   try {
-    const { classe } = req.params;
+    const { class: classId } = req.params;
 
-    const telegramProof = req.header("X-Telegram-Data");
-    let user = { id: 99999, first_name: "WebUser" };
+    let payload = req.body;
 
-    const isValid = verifyTelegramData(telegramProof);
+    let strapiUrl;
 
-    if (isValid) {
-      const userData = new URLSearchParams(telegramProof).get("user");
-      user = JSON.parse(userData);
-      console.log(`✅ Authentifié via Telegram : ${user.first_name}`);
+    if (process.env.USE_STANDARD_ROUTES === "true") {
+      strapiUrl = `${process.env.STRAPI_API_URL}/api/people`;
+
+      if (payload.data) {
+        payload.data.class = classId;
+      }
     } else {
-      console.log("⚠️ Accès hors Telegram ou signature invalide (Mode Test)");
+      strapiUrl = `${process.env.STRAPI_API_URL}/api/classes/${classId}/people`;
     }
 
-    const response = await fetch(`${process.env.STRAPI_API_URL}/api/classes/${classe}/people`, {
-      // method: 'POST',
+    const response = await fetch(strapiUrl, {
+      method: "POST",
       headers: {
-        'Authorization': `Bearer ${process.env.APP_TOKEN}`,
+        Authorization: `Bearer ${process.env.APP_TOKEN}`,
         "Content-Type": "application/json",
-        // "X-Telegram-Data": tg.initData || "",
       },
+      body: JSON.stringify(payload),
     });
 
     const result = await response.json();
 
     if (!response.ok) {
+      console.error("Erreur Strapi Create:", result);
       return res.status(response.status).json(result);
     }
 
@@ -150,28 +152,39 @@ app.post("/api/classes/:class/people", async (req, res) => {
 app.put("/api/people/:id", async (req, res) => {
   const idToUpdate = req.params.id;
   console.log(`🔄 Update demandé pour ID : ${idToUpdate}`);
+
   try {
-    const response = await fetch(`${process.env.STRAPI_API_URL}/api/people/${idToUpdate}`, {
-      method: 'PUT',
+    const payload = req.body;
+
+    let strapiUrl;
+
+    if (process.env.USE_STANDARD_ROUTES === "true") {
+      strapiUrl = `${process.env.STRAPI_API_URL}/api/people/${idToUpdate}`;
+    } else {
+      strapiUrl = `${process.env.STRAPI_API_URL}/api/people/${idToUpdate}`;
+    }
+
+    const response = await fetch(strapiUrl, {
+      method: "PUT",
       headers: {
-        'Authorization': `Bearer ${process.env.APP_TOKEN}`,
+        Authorization: `Bearer ${process.env.APP_TOKEN}`,
         "Content-Type": "application/json",
-        // "X-Telegram-Data": tg.initData || "",
       },
+      body: JSON.stringify(payload),
     });
+
     const result = await response.json();
 
     if (!response.ok) {
+      console.error("Erreur Strapi Update:", result);
       return res.status(response.status).json(result);
     }
 
     res.json(result);
-  }
-  catch (e) {
-    console.error("Erreur doublons:", e);
+  } catch (e) {
+    console.error("Erreur Update:", e);
     res.status(500).json({ error: e.message });
   }
-
 });
 
 // --- CHECK DOUBLONS ---
@@ -179,13 +192,19 @@ app.get("/api/students/findByName/:names", async (req, res) => {
   console.log("🔍 Vérification doublons...");
   try {
     const { names } = req.params;
+    let strapiUrl;
 
-    const response = await fetch(`${process.env.STRAPI_API_URL}/api/students/findByName/${names}`, {
-      // method: 'GET',
+    if (process.env.USE_STANDARD_ROUTES === "true") {
+      const cleanName = names.replace(/,/g, " ").trim();
+      strapiUrl = `${process.env.STRAPI_API_URL}/api/people?filters[name][$contains]=${encodeURIComponent(cleanName)}`;
+    } else {
+      strapiUrl = `${process.env.STRAPI_API_URL}/api/students/findByName/${names}`;
+    }
+
+    const response = await fetch(strapiUrl, {
       headers: {
-        'Authorization': `Bearer ${process.env.APP_TOKEN}`,
+        Authorization: `Bearer ${process.env.APP_TOKEN}`,
         "Content-Type": "application/json",
-        // "X-Telegram-Data": tg.initData || "",
       },
     });
     const result = await response.json();
@@ -194,7 +213,15 @@ app.get("/api/students/findByName/:names", async (req, res) => {
       return res.status(response.status).json(result);
     }
 
-    res.json(result);
+    let finalData = result;
+    if (result.data && Array.isArray(result.data)) {
+      finalData = result.data.map((item) => ({
+        id: item.id,
+        ...item.attributes,
+      }));
+    }
+
+    res.json(finalData);
   } catch (e) {
     console.error("Erreur doublons:", e);
     res.status(500).json({ error: e.message });
@@ -207,14 +234,17 @@ app.get("/api/people/:id", async (req, res) => {
   try {
     const { id } = req.params;
 
-    const response = await fetch(`${process.env.STRAPI_API_URL}/api/people/${id}`, {
-      //   method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${process.env.APP_TOKEN}`,
-        "Content-Type": "application/json",
-        // "X-Telegram-Data": tg.initData || "",
+    const response = await fetch(
+      `${process.env.STRAPI_API_URL}/api/people/${id}`,
+      {
+        //   method: 'GET',
+        headers: {
+          Authorization: `Bearer ${process.env.APP_TOKEN}`,
+          "Content-Type": "application/json",
+          // "X-Telegram-Data": tg.initData || "",
+        },
       },
-    });
+    );
     const result = await response.json();
 
     if (!response.ok) {
@@ -235,13 +265,13 @@ app.get("/people/findByUser/:appId", async (req, res) => {
     const { appId } = req.params;
     const { allData } = req.query;
     const strapiUrl =
-      `${process.env.STRAPI_API_URL}/api/people/findByUser/${encodeURIComponent(appId)}`
-      + `?allData=${allData ?? 'false'}`;
+      `${process.env.STRAPI_API_URL}/api/people/findByUser/${encodeURIComponent(appId)}` +
+      `?allData=${allData ?? "false"}`;
 
     const response = await fetch(strapiUrl, {
       //  method: 'GET',
       headers: {
-        'Authorization': `Bearer ${process.env.APP_TOKEN}`,
+        Authorization: `Bearer ${process.env.APP_TOKEN}`,
         "Content-Type": "application/json",
         // "X-Telegram-Data": tg.initData || "",
       },
@@ -261,17 +291,21 @@ app.get("/people/findByUser/:appId", async (req, res) => {
 
 // CLASS OPENED BB
 app.get("/api/custom/classes/openedBB", async (req, res) => {
-  console.log("🔍 Vérification doublons...");
+  console.log("🔍 Récupération des classes...");
   try {
-    const strapiUrl =
-      `${process.env.STRAPI_API_URL}/api/custom/classes/openedBB`;
+    let strapiUrl;
+
+    if (process.env.USE_STANDARD_ROUTES === "true") {
+      strapiUrl = `${process.env.STRAPI_API_URL}/api/classes?filters[status][$eq]=Open`;
+    } else {
+      strapiUrl = `${process.env.STRAPI_API_URL}/api/custom/classes/openedBB`;
+    }
 
     const response = await fetch(strapiUrl, {
-      method: 'GET',
+      method: "GET",
       headers: {
-        'Authorization': `Bearer ${process.env.APP_TOKEN}`,
+        Authorization: `Bearer ${process.env.APP_TOKEN}`,
         "Content-Type": "application/json",
-        // "X-Telegram-Data": tg.initData || "",
       },
     });
     const result = await response.json();
@@ -288,7 +322,6 @@ app.get("/api/custom/classes/openedBB", async (req, res) => {
 });
 
 // CHECK TELEGRAM ID IN DB
-
 
 // --- BOT TELEGRAM ---
 if (BOT_TOKEN) {
