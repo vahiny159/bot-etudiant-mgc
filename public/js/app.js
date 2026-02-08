@@ -2,27 +2,11 @@ let dataTree = {};
 let selectedClass;
 
 // --- DÉTECTION TELEGRAM OU NAVIGATEUR ---
-let tg;
-if (window.Telegram && window.Telegram.WebApp) {
-  // ✅ Mode Telegram réel
-  tg = window.Telegram.WebApp;
-  tg.expand();
-  tg.ready();
-  tg.setHeaderColor("#F9FAFB");
-} else {
-  // 🧪 Mode navigateur (DEV)
-  console.warn("⚠️ Telegram WebApp non détecté → mode navigateur");
+let tg = window.Telegram.WebApp;
+tg.expand();
+tg.ready();
+tg.setHeaderColor("#F9FAFB");
 
-  tg = {
-    initData: "", // simulé
-    HapticFeedback: null,
-    showAlert: (msg) => alert(msg),
-    close: () => console.log("tg.close()"),
-    expand: () => {},
-    ready: () => {},
-    setHeaderColor: () => {},
-  };
-}
 
 // --- GESTION CLAVIER MOBILE (UX) ---
 const inputs = document.querySelectorAll("input, select");
@@ -45,15 +29,49 @@ document.getElementById("classeSelect").addEventListener("change", function () {
   selectedClass = this.value;
 });
 
+// Error page to display
+function showErrorPage(status, message) {
+  document.body.innerHTML = `
+    <style>
+      body {
+        margin: 0;
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #0f172a;
+        color: #e5e7eb;
+        font-family: Arial, sans-serif;
+      }
+      .error-box {
+        text-align: center;
+        padding: 40px;
+        border-radius: 12px;
+        background: #020617;
+        box-shadow: 0 20px 40px rgba(0,0,0,.4);
+      }
+      .error-code {
+        font-size: 72px;
+        font-weight: bold;
+        color: #ef4444;
+      }
+      .error-msg {
+        font-size: 18px;
+        margin-top: 10px;
+        opacity: .9;
+      }
+    </style>
+
+    <div class="error-box">
+      <div class="error-code">${status}</div>
+      <div class="error-msg">${message}</div>
+    </div>
+  `;
+}
+
 // Check telegram User
 async function checkUserTelegram() {
   let initData = tg.initData;
-  // Si pas d'initData (local), on évite de bloquer
-  if (!initData) {
-    // On charge quand même la liste des classes pour que le form marche
-    getListClass();
-    return;
-  }
 
   try {
     const res = await fetch("/api/auth/telegram", {
@@ -62,6 +80,21 @@ async function checkUserTelegram() {
       body: JSON.stringify({ initData }),
     });
 
+    if (res.status === 403) {
+      showErrorPage(403, "Unauthorized access");
+      return;
+    }
+
+    if (res.status === 404) {
+      showErrorPage(404, "User not found");
+      return;
+    }
+
+    if (res.status === 401) {
+      showErrorPage(401, "Invalid Telegram authentication");
+      return;
+    }
+
     const data = await res.json();
 
     if (data.ok) {
@@ -69,8 +102,7 @@ async function checkUserTelegram() {
     }
   } catch (e) {
     console.error(e);
-    // En cas d'erreur, on essaie quand même de charger les classes
-    getListClass();
+    showErrorPage(500, "Internal Server error ");
   }
 }
 

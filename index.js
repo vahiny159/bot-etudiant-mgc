@@ -7,6 +7,7 @@ const cors = require("cors");
 const { Telegraf, Markup } = require("telegraf");
 const path = require("path");
 const crypto = require("crypto");
+const { message } = require("telegraf/filters");
 
 const PORT = process.env.PORT;
 const BOT_TOKEN = process.env.BOT_TOKEN;
@@ -79,25 +80,42 @@ const verifyTelegramData = (initData) => {
  * LIST OF API CALL
  */
 // --- CRÉATION STUDENTS---
-app.post("/auth/telegram", async (req, res) => {
+app.post("/api/auth/telegram", async (req, res) => {
   const { initData } = req.body;
 
   if (!initData) {
-    return res.status(400).json({ ok: false });
+    return res.status(400).json({ 
+      ok: false ,
+      message:'Invalid telegram init data',
+    });
   }
 
   const isValid = verifyTelegramData(initData);
   if (!isValid) {
-    return res.status(401).json({ ok: false });
+    return res.status(401).json({ 
+      ok: false ,
+      message:'Invalid Telegram signature'
+    });
   }
 
   const params = new URLSearchParams(initData);
   const user = JSON.parse(params.get("user"));
-  const telegramId = user.id;
+  const telegramId = user?.id;
+
+    if (!telegramId) {
+    return res.status(404).json({ 
+      ok: false ,
+      message:'Telegram user not found'
+    });
+  }
+
 
   const exists = await checkIdTelegram(telegramId);
   if (!exists) {
-    return res.status(403).json({ ok: false });
+    return res.status(403).json({ 
+      ok: false,
+      message: 'Unauthorized telegram user'
+    });
   }
 
   // utilisateur validé
