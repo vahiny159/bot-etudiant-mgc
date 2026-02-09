@@ -1,7 +1,7 @@
 let dataTree = {};
 let selectedClass;
 
-// --- DÉTECTION TELEGRAM OU NAVIGATEUR ---
+// --- ALWAYS USE TELEGRAM ---
 let tg = window.Telegram.WebApp;
 tg.expand();
 tg.ready();
@@ -18,11 +18,13 @@ inputs.forEach((input) => {
   });
 });
 
+async function init() {
+  await checkUserTelegram();
+  document.body.style.display = "block"; // afficher la page
+}
+
 // ON PAGE LOAD
-document.addEventListener("DOMContentLoaded", () => {
-  // On lance checkUserTelegram (optionnel en local)
-  checkUserTelegram();
-});
+document.addEventListener("DOMContentLoaded", init);
 
 // Changement de classe
 document.getElementById("classeSelect").addEventListener("change", function () {
@@ -56,9 +58,10 @@ function showErrorPage(status, message) {
         color: #ef4444;
       }
       .error-msg {
-        font-size: 18px;
+        font-size: 20px;
         margin-top: 10px;
         opacity: .9;
+        color: #fcf8f8f6;
       }
     </style>
 

@@ -1,17 +1,26 @@
-const checkIdTelegram = require("./services/user.service.js");
-require("dotenv").config();
 
-const express = require("express");
-const bodyParser = require("body-parser");
-const cors = require("cors");
-const { Telegraf, Markup } = require("telegraf");
-const path = require("path");
-const crypto = require("crypto");
-const { message } = require("telegraf/filters");
+import './config.js';
+
+import express from "express";
+import bodyParser from "body-parser";
+import cors from "cors";
+import { Telegraf, Markup } from "telegraf";
+import path from "path";
+import crypto from "crypto";
+import { message } from "telegraf/filters";
+
+import { db } from "./services/db.js";
+import { checkIdTelegram } from "./services/user.service.js";
+
+import { fileURLToPath } from "url";
+import { dirname } from "path";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const PORT = process.env.PORT;
 const BOT_TOKEN = process.env.BOT_TOKEN;
-const WEB_APP_URL = process.env.WEB_APP_URL || process.env.RENDER_EXTERNAL_URL;
+const WEB_APP_URL = process.env.WEB_API_URL || process.env.RENDER_EXTERNAL_URL;
 
 // VÉRIFICATION DE SÉCURITÉ
 if (!BOT_TOKEN) {
@@ -84,17 +93,17 @@ app.post("/api/auth/telegram", async (req, res) => {
   const { initData } = req.body;
 
   if (!initData) {
-    return res.status(400).json({ 
-      ok: false ,
-      message:'Invalid telegram init data',
+    return res.status(400).json({
+      ok: false,
+      message: 'Invalid telegram init data',
     });
   }
 
   const isValid = verifyTelegramData(initData);
   if (!isValid) {
-    return res.status(401).json({ 
-      ok: false ,
-      message:'Invalid Telegram signature'
+    return res.status(401).json({
+      ok: false,
+      message: 'Invalid Telegram signature'
     });
   }
 
@@ -102,27 +111,26 @@ app.post("/api/auth/telegram", async (req, res) => {
   const user = JSON.parse(params.get("user"));
   const telegramId = user?.id;
 
-    if (!telegramId) {
-    return res.status(404).json({ 
-      ok: false ,
-      message:'Telegram user not found'
+  if (!telegramId) {
+    return res.status(404).json({
+      ok: false,
+      message: 'Telegram user not found'
     });
   }
 
 
   const exists = await checkIdTelegram(telegramId);
   if (!exists) {
-    return res.status(403).json({ 
+    return res.status(403).json({
       ok: false,
       message: 'Unauthorized telegram user'
     });
   }
 
-  // utilisateur validé
-  req.session.authorized = true;
-  req.session.telegramId = telegramId;
-
-  res.json({ ok: true });
+  else {
+    console.log("id exist");
+    return res.json({ ok: true });
+  }
 });
 
 app.post("/api/classes/:class/people", async (req, res) => {
@@ -134,13 +142,13 @@ app.post("/api/classes/:class/people", async (req, res) => {
     let strapiUrl;
 
     if (process.env.USE_STANDARD_ROUTES === "true") {
-      strapiUrl = `${process.env.STRAPI_API_URL}/api/people`;
+      strapiUrl = `${process.env.WEB_API_URL}/api/people`;
 
       if (payload.data) {
         payload.data.class = classId;
       }
     } else {
-      strapiUrl = `${process.env.STRAPI_API_URL}/api/classes/${classId}/people`;
+      strapiUrl = `${process.env.WEB_API_URL}/api/classes/${classId}/people`;
     }
 
     const response = await fetch(strapiUrl, {
@@ -177,9 +185,9 @@ app.put("/api/people/:id", async (req, res) => {
     let strapiUrl;
 
     if (process.env.USE_STANDARD_ROUTES === "true") {
-      strapiUrl = `${process.env.STRAPI_API_URL}/api/people/${idToUpdate}`;
+      strapiUrl = `${process.env.WEB_API_URL}/api/people/${idToUpdate}`;
     } else {
-      strapiUrl = `${process.env.STRAPI_API_URL}/api/people/${idToUpdate}`;
+      strapiUrl = `${process.env.WEB_API_URL}/api/people/${idToUpdate}`;
     }
 
     const response = await fetch(strapiUrl, {
@@ -214,9 +222,9 @@ app.get("/api/students/findByName/:names", async (req, res) => {
 
     if (process.env.USE_STANDARD_ROUTES === "true") {
       const cleanName = names.replace(/,/g, " ").trim();
-      strapiUrl = `${process.env.STRAPI_API_URL}/api/people?filters[name][$contains]=${encodeURIComponent(cleanName)}`;
+      strapiUrl = `${process.env.WEB_API_URL}/api/people?filters[name][$contains]=${encodeURIComponent(cleanName)}`;
     } else {
-      strapiUrl = `${process.env.STRAPI_API_URL}/api/students/findByName/${names}`;
+      strapiUrl = `${process.env.WEB_API_URL}/api/students/findByName/${names}`;
     }
 
     const response = await fetch(strapiUrl, {
@@ -253,7 +261,7 @@ app.get("/api/people/:id", async (req, res) => {
     const { id } = req.params;
 
     const response = await fetch(
-      `${process.env.STRAPI_API_URL}/api/people/${id}`,
+      `${process.env.WEB_API_URL}/api/people/${id}`,
       {
         //   method: 'GET',
         headers: {
@@ -283,7 +291,7 @@ app.get("/people/findByUser/:appId", async (req, res) => {
     const { appId } = req.params;
     const { allData } = req.query;
     const strapiUrl =
-      `${process.env.STRAPI_API_URL}/api/people/findByUser/${encodeURIComponent(appId)}` +
+      `${process.env.WEB_API_URL}/api/people/findByUser/${encodeURIComponent(appId)}` +
       `?allData=${allData ?? "false"}`;
 
     const response = await fetch(strapiUrl, {
@@ -314,9 +322,9 @@ app.get("/api/custom/classes/openedBB", async (req, res) => {
     let strapiUrl;
 
     if (process.env.USE_STANDARD_ROUTES === "true") {
-      strapiUrl = `${process.env.STRAPI_API_URL}/api/classes?filters[status][$eq]=Open`;
+      strapiUrl = `${process.env.WEB_API_URL}/api/classes?filters[status][$eq]=Open`;
     } else {
-      strapiUrl = `${process.env.STRAPI_API_URL}/api/custom/classes/openedBB`;
+      strapiUrl = `${process.env.WEB_API_URL}/api/custom/classes/openedBB`;
     }
 
     const response = await fetch(strapiUrl, {
