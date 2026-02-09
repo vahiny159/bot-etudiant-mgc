@@ -20,7 +20,7 @@ const __dirname = dirname(__filename);
 
 const PORT = process.env.PORT;
 const BOT_TOKEN = process.env.BOT_TOKEN;
-const WEB_APP_URL = process.env.WEB_API_URL || process.env.RENDER_EXTERNAL_URL;
+const WEB_APP_URL = process.env.WEB_APP_URL || process.env.RENDER_EXTERNAL_URL;
 
 // VÉRIFICATION DE SÉCURITÉ
 if (!BOT_TOKEN) {
@@ -142,13 +142,13 @@ app.post("/api/classes/:class/people", async (req, res) => {
     let strapiUrl;
 
     if (process.env.USE_STANDARD_ROUTES === "true") {
-      strapiUrl = `${process.env.WEB_API_URL}/api/people`;
+      strapiUrl = `${process.env.STRAPI_API_URL}/api/people`;
 
       if (payload.data) {
         payload.data.class = classId;
       }
     } else {
-      strapiUrl = `${process.env.WEB_API_URL}/api/classes/${classId}/people`;
+      strapiUrl = `${process.env.STRAPI_API_URL}/api/classes/${classId}/people`;
     }
 
     const response = await fetch(strapiUrl, {
@@ -185,9 +185,9 @@ app.put("/api/people/:id", async (req, res) => {
     let strapiUrl;
 
     if (process.env.USE_STANDARD_ROUTES === "true") {
-      strapiUrl = `${process.env.WEB_API_URL}/api/people/${idToUpdate}`;
+      strapiUrl = `${process.env.STRAPI_API_URL}/api/people/${idToUpdate}`;
     } else {
-      strapiUrl = `${process.env.WEB_API_URL}/api/people/${idToUpdate}`;
+      strapiUrl = `${process.env.STRAPI_API_URL}/api/people/${idToUpdate}`;
     }
 
     const response = await fetch(strapiUrl, {
@@ -222,9 +222,9 @@ app.get("/api/students/findByName/:names", async (req, res) => {
 
     if (process.env.USE_STANDARD_ROUTES === "true") {
       const cleanName = names.replace(/,/g, " ").trim();
-      strapiUrl = `${process.env.WEB_API_URL}/api/people?filters[name][$contains]=${encodeURIComponent(cleanName)}`;
+      strapiUrl = `${process.env.STRAPI_API_URL}/api/people?filters[name][$contains]=${encodeURIComponent(cleanName)}`;
     } else {
-      strapiUrl = `${process.env.WEB_API_URL}/api/students/findByName/${names}`;
+      strapiUrl = `${process.env.STRAPI_API_URL}/api/students/findByName/${names}`;
     }
 
     const response = await fetch(strapiUrl, {
@@ -261,7 +261,7 @@ app.get("/api/people/:id", async (req, res) => {
     const { id } = req.params;
 
     const response = await fetch(
-      `${process.env.WEB_API_URL}/api/people/${id}`,
+      `${process.env.STRAPI_API_URL}/api/people/${id}`,
       {
         //   method: 'GET',
         headers: {
@@ -291,7 +291,7 @@ app.get("/people/findByUser/:appId", async (req, res) => {
     const { appId } = req.params;
     const { allData } = req.query;
     const strapiUrl =
-      `${process.env.WEB_API_URL}/api/people/findByUser/${encodeURIComponent(appId)}` +
+      `${process.env.STRAPI_API_URL}/api/people/findByUser/${encodeURIComponent(appId)}` +
       `?allData=${allData ?? "false"}`;
 
     const response = await fetch(strapiUrl, {
@@ -322,9 +322,9 @@ app.get("/api/custom/classes/openedBB", async (req, res) => {
     let strapiUrl;
 
     if (process.env.USE_STANDARD_ROUTES === "true") {
-      strapiUrl = `${process.env.WEB_API_URL}/api/classes?filters[status][$eq]=Open`;
+      strapiUrl = `${process.env.STRAPI_API_URL}/api/classes?filters[status][$eq]=Open`;
     } else {
-      strapiUrl = `${process.env.WEB_API_URL}/api/custom/classes/openedBB`;
+      strapiUrl = `${process.env.STRAPI_API_URL}/api/custom/classes/openedBB`;
     }
 
     const response = await fetch(strapiUrl, {
