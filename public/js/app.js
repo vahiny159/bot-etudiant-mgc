@@ -18,9 +18,15 @@ inputs.forEach((input) => {
 });
 
 async function init() {
-  // assurer que body est caché/ne pas voir le formulaire
   document.body.style.display = "none";
-  await checkUserTelegram();
+
+  tg.expand();
+  tg.ready();
+
+  // attendre un peut pour permettre à telegram de se reveiller
+  setTimeout(async () => {
+    await checkUserTelegram();
+  }, 100);
 }
 
 // ON PAGE LOAD
