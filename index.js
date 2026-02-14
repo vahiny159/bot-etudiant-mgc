@@ -1,5 +1,4 @@
-
-import './config.js';
+import "./config.js";
 
 import express from "express";
 import bodyParser from "body-parser";
@@ -95,7 +94,7 @@ app.post("/api/auth/telegram", async (req, res) => {
   if (!initData) {
     return res.status(400).json({
       ok: false,
-      message: 'Invalid telegram init data',
+      message: "Invalid telegram init data",
     });
   }
 
@@ -103,7 +102,7 @@ app.post("/api/auth/telegram", async (req, res) => {
   if (!isValid) {
     return res.status(401).json({
       ok: false,
-      message: 'Invalid Telegram signature'
+      message: "Invalid Telegram signature",
     });
   }
 
@@ -114,20 +113,17 @@ app.post("/api/auth/telegram", async (req, res) => {
   if (!telegramId) {
     return res.status(404).json({
       ok: false,
-      message: 'Telegram user not found'
+      message: "Telegram user not found",
     });
   }
-
 
   const exists = await checkIdTelegram(telegramId);
   if (!exists) {
     return res.status(403).json({
       ok: false,
-      message: 'Unauthorized telegram user'
+      message: "Unauthorized telegram user",
     });
-  }
-
-  else {
+  } else {
     console.log("id exist");
     return res.json({ ok: true });
   }
@@ -285,7 +281,7 @@ app.get("/api/people/:id", async (req, res) => {
 });
 
 // FIND PERSON BY USER
-app.get("/people/findByUser/:appId", async (req, res) => {
+app.get("/api/people/findByUser/:appId", async (req, res) => {
   console.log("🔍 Vérification doublons...");
   try {
     const { appId } = req.params;

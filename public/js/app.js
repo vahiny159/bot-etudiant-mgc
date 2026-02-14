@@ -7,7 +7,6 @@ tg.expand();
 tg.ready();
 tg.setHeaderColor("#F9FAFB");
 
-
 // --- GESTION CLAVIER MOBILE (UX) ---
 const inputs = document.querySelectorAll("input, select");
 inputs.forEach((input) => {
@@ -19,8 +18,9 @@ inputs.forEach((input) => {
 });
 
 async function init() {
+  // assurer que body est caché/ne pas voir le formulaire
+  document.body.style.display = "none";
   await checkUserTelegram();
-  document.body.style.display = "block"; // afficher la page
 }
 
 // ON PAGE LOAD
@@ -76,6 +76,13 @@ function showErrorPage(status, message) {
 async function checkUserTelegram() {
   let initData = tg.initData;
 
+  // blocage si visiteur n'est pas sur Telegram
+  if (!initData) {
+    showErrorPage(403, "Veuillez ouvrir cette application depuis Telegram.");
+    document.body.style.display = "block";
+    return;
+  }
+
   try {
     const res = await fetch("/api/auth/telegram", {
       method: "POST",
@@ -83,29 +90,34 @@ async function checkUserTelegram() {
       body: JSON.stringify({ initData }),
     });
 
-    if (res.status === 403) {
-      showErrorPage(403, "Unauthorized access");
-      return;
-    }
+    // GESTION ERREURS SERVEUR
+    if (!res.ok) {
+      if (res.status === 403)
+        showErrorPage(403, "Vous n'êtes pas autorisé à créer des dossiers.");
+      else if (res.status === 404)
+        showErrorPage(404, "Utilisateur introuvable dans la base.");
+      else if (res.status === 401)
+        showErrorPage(401, "Signature Telegram invalide.");
+      else showErrorPage(res.status, "Erreur de vérification.");
 
-    if (res.status === 404) {
-      showErrorPage(404, "User not found");
-      return;
-    }
-
-    if (res.status === 401) {
-      showErrorPage(401, "Invalid Telegram authentication");
+      document.body.style.display = "block";
       return;
     }
 
     const data = await res.json();
 
+    // tout est bon
     if (data.ok) {
       getListClass();
+      document.body.style.display = "block"; // affiche le vrai formulaire
+    } else {
+      showErrorPage(403, "Accès refusé.");
+      document.body.style.display = "block";
     }
   } catch (e) {
     console.error(e);
-    showErrorPage(500, "Internal Server error ");
+    showErrorPage(500, "Erreur de connexion au serveur.");
+    document.body.style.display = "block";
   }
 }
 
