@@ -74,14 +74,21 @@ function showErrorPage(status, message) {
 
 // Check telegram User
 async function checkUserTelegram() {
+  tg.showAlert("InitData = " + (tg.initData ? "Existe" : "VIDE !"));
   let initData = tg.initData;
 
-  // blocage si visiteur n'est pas sur Telegram
+  // si vide on bloque
   if (!initData) {
     showErrorPage(403, "Veuillez ouvrir cette application depuis Telegram.");
     document.body.style.display = "block";
     return;
   }
+
+  // RÉCUPÉRATION DU NOM TELEGRAM :
+  const tgUser = tg.initDataUnsafe?.user;
+  const userName = tgUser?.username
+    ? `@${tgUser.username}`
+    : tgUser?.first_name || "Utilisateur";
 
   try {
     const res = await fetch("/api/auth/telegram", {
@@ -90,15 +97,23 @@ async function checkUserTelegram() {
       body: JSON.stringify({ initData }),
     });
 
-    // GESTION ERREURS SERVEUR
+    // GESTION DES ERREURS SERVEUR (ajoute userName dans messages)
     if (!res.ok) {
-      if (res.status === 403)
-        showErrorPage(403, "Vous n'êtes pas autorisé à créer des dossiers.");
-      else if (res.status === 404)
-        showErrorPage(404, "Utilisateur introuvable dans la base.");
-      else if (res.status === 401)
+      if (res.status === 403) {
+        showErrorPage(
+          403,
+          `Accès refusé pour <b>${userName}</b>.<br><br>Vous n'êtes pas autorisé à créer des dossiers.`,
+        );
+      } else if (res.status === 404) {
+        showErrorPage(
+          404,
+          `<b>${userName}</b> est introuvable dans la base de données.`,
+        );
+      } else if (res.status === 401) {
         showErrorPage(401, "Signature Telegram invalide.");
-      else showErrorPage(res.status, "Erreur de vérification.");
+      } else {
+        showErrorPage(res.status, "Erreur de vérification.");
+      }
 
       document.body.style.display = "block";
       return;
@@ -106,12 +121,20 @@ async function checkUserTelegram() {
 
     const data = await res.json();
 
-    // tout est bon
     if (data.ok) {
       getListClass();
-      document.body.style.display = "block"; // affiche le vrai formulaire
+
+      // On injecte le nom dans le formulaire
+      const userDisplayElement = document.getElementById(
+        "telegram-user-display",
+      );
+      if (userDisplayElement) {
+        userDisplayElement.innerText = userName;
+      }
+
+      document.body.style.display = "block";
     } else {
-      showErrorPage(403, "Accès refusé.");
+      showErrorPage(403, `Accès refusé pour <b>${userName}</b>.`);
       document.body.style.display = "block";
     }
   } catch (e) {
