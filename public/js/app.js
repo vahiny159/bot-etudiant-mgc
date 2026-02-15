@@ -19,14 +19,7 @@ inputs.forEach((input) => {
 
 async function init() {
   document.body.style.display = "none";
-
-  tg.expand();
-  tg.ready();
-
-  // attendre un peut pour permettre à telegram de se reveiller
-  setTimeout(async () => {
-    await checkUserTelegram();
-  }, 100);
+  await checkUserTelegram();
 }
 
 // ON PAGE LOAD
