@@ -408,29 +408,6 @@ function closeSuccessModal() {
   }, 300);
 }
 
-// --- AFFICHAGE MODALE ERREUR ---
-function showErrorModal() {
-  const modal = document.getElementById("error-modal");
-  modal.classList.remove("hidden");
-  
-  setTimeout(() => {
-    modal.classList.remove("opacity-0");
-    modal.children[0].classList.remove("scale-95");
-    modal.children[0].classList.add("scale-100");
-  }, 10);
-}
-
-function closeErrorModal() {
-  const modal = document.getElementById("error-modal");
-  modal.classList.add("opacity-0");
-  modal.children[0].classList.remove("scale-100");
-  modal.children[0].classList.add("scale-95");
-  
-  setTimeout(() => {
-    modal.classList.add("hidden");
-  }, 300); 
-}
-
 function setSexe(valeur) {
   document.getElementById("sexeInput").value = valeur;
   if (tg.HapticFeedback) tg.HapticFeedback.selectionChanged();
@@ -624,10 +601,8 @@ async function submitForm() {
     btn.disabled = false;
     spinner.classList.add("hidden");
     btnText.innerText = "Réessayer";
-    
-    showErrorModal();
+    tg.showAlert("Erreur : " + error.message);
   }
-}
 }
 
 // Get the list of bb class from the DB
