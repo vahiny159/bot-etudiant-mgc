@@ -353,9 +353,9 @@ if (BOT_TOKEN) {
     console.log("🤖 Commande /start reçue");
     ctx.reply(
       "👋 **Bienvenue !**\nCliquez ci-dessous pour remplir une fiche.",
-      Markup.keyboard([
+      Markup.inlineKeyboard([
         [Markup.button.webApp("📝 Remplir le Formulaire", WEB_APP_URL)],
-      ]).resize(),
+      ]),
     );
   });
 
