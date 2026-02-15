@@ -587,8 +587,10 @@ async function submitForm() {
         // Si c'est un update
         showSuccessModal(existingId);
       } else {
-        // Si c'est un nouveau
-        showSuccessModal(result.data?.id || "OK");
+        // Si c'est un nouveau : On cible le "username" généré par Strapi
+        const matricule =
+          result.data?.attributes?.user?.username || result.data?.id || "OK";
+        showSuccessModal(matricule);
       }
     } else {
       throw new Error(
