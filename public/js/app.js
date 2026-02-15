@@ -560,6 +560,8 @@ async function submitForm() {
 
     const result = await response.json();
 
+    console.log("🟢 RETOUR STRAPI :", result);
+
     if (response.ok && result) {
       if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("success");
 
