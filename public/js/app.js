@@ -73,17 +73,15 @@ function showErrorPage(status, message) {
 
 // Check telegram User
 async function checkUserTelegram() {
-  tg.showAlert("InitData = " + (tg.initData ? "Existe" : "VIDE !"));
   let initData = tg.initData;
 
-  // si vide on bloque
   if (!initData) {
     showErrorPage(403, "Veuillez ouvrir cette application depuis Telegram.");
     document.body.style.display = "block";
     return;
   }
 
-  // RÉCUPÉRATION DU NOM TELEGRAM :
+  // RÉCUPÉRATION DU NOM TELEGRAM
   const tgUser = tg.initDataUnsafe?.user;
   const userName = tgUser?.username
     ? `@${tgUser.username}`
@@ -96,7 +94,7 @@ async function checkUserTelegram() {
       body: JSON.stringify({ initData }),
     });
 
-    // GESTION DES ERREURS SERVEUR (ajoute userName dans messages)
+    // GESTION ERREURS SERVEUR
     if (!res.ok) {
       if (res.status === 403) {
         showErrorPage(
@@ -123,7 +121,6 @@ async function checkUserTelegram() {
     if (data.ok) {
       getListClass();
 
-      // On injecte le nom dans le formulaire
       const userDisplayElement = document.getElementById(
         "telegram-user-display",
       );
