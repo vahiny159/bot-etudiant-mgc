@@ -392,15 +392,29 @@
                   />
                 </div>
                 <div>
-                  <label class="block text-xs font-bold text-gray-500 mb-1 ml-1"
-                    >LIAISON</label
+                  <label
+                    class="block text-xs font-bold text-gray-500 mb-1 ml-1"
                   >
-                  <input
-                    type="text"
+                    LIAISON
+                  </label>
+                  <select
                     id="liaison"
-                    placeholder="Namana,..."
-                    class="input-fast w-full border border-gray-200 rounded-xl px-4 py-3.5 font-medium text-gray-900"
-                  />
+                    class="input-fast w-full border border-gray-200 rounded-xl px-4 py-3.5 font-medium text-gray-900 bg-white"
+                  >
+                    <option value="" disabled selected>
+                      Sélectionnez une liaison...
+                    </option>
+                    <option value="Parent">Parent (RAD)</option>
+                    <option value="Child">Child (Zanaka)</option>
+                    <option value="Spouse">Spouse (Vady)</option>
+                    <option value="Sibling">Sibling (Iray tampo)</option>
+                    <option value="Family">Family (Fianakaviana)</option>
+                    <option value="Friend">Friend (Namana)</option>
+                    <option value="Acquaintance">
+                      Acquaintance (Olom-pantatra)
+                    </option>
+                    <option value="NB">NB</option>
+                  </select>
                 </div>
               </div>
               <div>
