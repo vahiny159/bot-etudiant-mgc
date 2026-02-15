@@ -452,14 +452,15 @@ function fillDataTree() {
   let dptInput = document.getElementById("departement");
   let nameInput = document.getElementById("nomTree");
   let phoneInput = document.getElementById("telTree");
+
   // fill data
   dptInput.value = dataTree.cell?.team?.department?.name || "";
   nameInput.value = dataTree.name || "";
   phoneInput.value = dataTree.phone || "";
-  // disable name, and DPT, phone
+
   dptInput.disabled = true;
   nameInput.disabled = true;
-  phoneInput.disabled = true;
+  // phoneInput.disabled = true;
 }
 
 function emptyData() {
@@ -468,11 +469,13 @@ function emptyData() {
   let dptInput = document.getElementById("departement");
   let nameInput = document.getElementById("nomTree");
   let phoneInput = document.getElementById("telTree");
+
   // empty data
   IdInput.value = "";
   dptInput.value = "";
   nameInput.value = "";
   phoneInput.value = "";
+
   // enable
   dptInput.disabled = false;
   nameInput.disabled = false;
