@@ -1,6 +1,5 @@
 let dataTree = {};
 let selectedClass;
-let loadedUsername = "";
 
 // --- ALWAYS USE TELEGRAM ---
 let tg = window.Telegram.WebApp;
@@ -296,13 +295,20 @@ async function loadExistingStudent(id) {
     setVal("nomComplet", student.name || student.nomComplet);
     setVal("telephone", student.phone || student.telephone);
     setVal("dateNaissance", student.birthday || student.dateNaissance);
-    setVal("facebookId", student.facebookId);
+    setVal("adresse", student.adress || student.adresse);
+    setVal("eglise", student.formerChurch || student.eglise);
+    setVal("profession", student.profession);
     setVal("nomTree", student.nomTree);
 
     if (student.birthday) {
       document
         .getElementById("dateNaissance")
         .dispatchEvent(new Event("change"));
+    }
+
+    if (student.classType) {
+      const index = student.classType === "weekend" ? 1 : 0;
+      selectOption(student.classType, index);
     }
 
     if (student.gender) {
@@ -313,9 +319,6 @@ async function loadExistingStudent(id) {
       }
     }
 
-    // Sauvegarder le username pour l'afficher au moment du update
-    loadedUsername = student.user?.username || "";
-
     if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("success");
     tg.showAlert(`📂 Profil chargé : ${student.name}`);
 
@@ -324,7 +327,22 @@ async function loadExistingStudent(id) {
   }
 }
 
-// selectOption() supprimée — champ Option retiré du formulaire
+function selectOption(value, index) {
+  if (tg.HapticFeedback) tg.HapticFeedback.selectionChanged();
+  document.getElementById("optionSelected").value = value;
+  document.getElementById("capsule-bg").style.transform =
+    `translateX(${index * 100}%)`;
+
+  const btn0 = document.getElementById("btn-0");
+  const btn1 = document.getElementById("btn-1");
+
+  btn0.className =
+    "flex-1 py-3 text-sm font-bold z-10 transition-colors " +
+    (index === 0 ? "text-yellow-900" : "text-gray-500");
+  btn1.className =
+    "flex-1 py-3 text-sm font-bold z-10 transition-colors " +
+    (index === 1 ? "text-yellow-900" : "text-gray-500");
+}
 
 // Squelette liste déroulante classe
 function updateClassesList(data) {
@@ -479,53 +497,24 @@ async function submitForm() {
   const nom = nomInput.value;
   const sexe = sexeInput.value;
 
-  const telephoneInput = document.getElementById("telephone");
-  const dateNaissanceInput = document.getElementById("dateNaissance");
-  const facebookIdInput = document.getElementById("facebookId");
-
-  // Validations — tous les champs sont obligatoires
+  // Validations
+  if (!sexe) {
+    tg.showAlert("Veuillez sélectionner le sexe (Homme/Femme).");
+    return;
+  }
   if (!nom) {
     if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("error");
     nomInput.classList.remove("border-gray-200");
     nomInput.classList.add("border-red-500", "bg-red-50");
     nomInput.focus();
-    tg.showAlert("Veuillez remplir le nom complet.");
     return;
   }
-  if (!sexe) {
-    tg.showAlert("Veuillez sélectionner le sexe (Homme/Femme).");
-    return;
-  }
-  if (!telephoneInput.value.trim()) {
-    if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("error");
-    telephoneInput.classList.remove("border-gray-200");
-    telephoneInput.classList.add("border-red-500", "bg-red-50");
-    telephoneInput.focus();
-    tg.showAlert("Veuillez remplir le téléphone.");
-    return;
-  }
-  if (!dateNaissanceInput.value) {
-    if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("error");
-    dateNaissanceInput.classList.remove("border-gray-200");
-    dateNaissanceInput.classList.add("border-red-500", "bg-red-50");
-    dateNaissanceInput.focus();
-    tg.showAlert("Veuillez remplir la date de naissance.");
-    return;
-  }
-  if (!facebookIdInput.value.trim()) {
-    if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("error");
-    facebookIdInput.classList.remove("border-gray-200");
-    facebookIdInput.classList.add("border-red-500", "bg-red-50");
-    facebookIdInput.focus();
-    tg.showAlert("Veuillez remplir le Facebook ID.");
-    return;
-  }
+
   if (!selectedClass) {
     if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("error");
     classInput.classList.remove("border-gray-200");
     classInput.classList.add("border-red-500", "bg-red-50");
     classInput.focus();
-    tg.showAlert("Veuillez sélectionner une classe.");
     return;
   }
 
@@ -536,10 +525,12 @@ async function submitForm() {
   // Collecte des données
   const data = {
     name: nom,
-    phone: telephoneInput.value,
-    birthday: dateNaissanceInput.value,
-    facebookId: facebookIdInput.value,
-    classType: "weekday", // Valeur par défaut — requis par Strapi pour la création de l'utilisateur
+    phone: document.getElementById("telephone").value,
+    birthday: document.getElementById("dateNaissance").value,
+    adress: document.getElementById("adresse").value,
+    formerChurch: document.getElementById("eglise").value,
+    profession: document.getElementById("profession").value,
+    classType: document.getElementById("optionSelected").value,
     relationWithTree: document.getElementById("liaison").value,
     gender: sexe,
     nomTree: document.getElementById("nomTree").value,
@@ -561,8 +552,6 @@ async function submitForm() {
     method = "PUT";
   }
 
-  console.log("📤 DATA ENVOYÉE :", JSON.stringify({ data: data }, null, 2));
-
   try {
     const response = await fetch(url, {
       method: method,
@@ -574,7 +563,7 @@ async function submitForm() {
 
     const result = await response.json();
 
-    console.log("🟢 RETOUR STRAPI :", result);
+    // console.log("🟢 RETOUR STRAPI :", result);
 
     if (response.ok && result) {
       if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("success");
@@ -597,21 +586,21 @@ async function submitForm() {
         .forEach((r) => (r.checked = false));
       document.getElementById("ageCalc").innerText = "";
 
-      // On cible le "username" généré par Strapi (create ou update)
-      const matricule =
-        result.data?.attributes?.user?.username || loadedUsername || result.data?.id || "OK";
-      loadedUsername = "";
-      showSuccessModal(matricule);
+      if (existingId) {
+        // Si c'est un update
+        showSuccessModal(existingId);
+      } else {
+        // Si c'est un nouveau : On cible le "username" généré par Strapi
+        const matricule =
+          result.data?.attributes?.user?.username || result.data?.id || "OK";
+        showSuccessModal(matricule);
+      }
     } else {
-      console.error("❌ ERREUR STRAPI :", JSON.stringify(result, null, 2));
-      const detail = result.error?.details || result.data?.errors || "";
       throw new Error(
-        (result.message || result.error?.message || "Erreur inconnue") +
-        (detail ? " | Détails: " + JSON.stringify(detail) : ""),
+        result.message || result.error?.message || "Erreur inconnue",
       );
     }
   } catch (error) {
-    console.error("❌ Erreur complète :", error);
     btn.disabled = false;
     spinner.classList.add("hidden");
     btnText.innerText = "Réessayer";
