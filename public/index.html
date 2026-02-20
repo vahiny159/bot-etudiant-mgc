@@ -147,7 +147,6 @@
 
             <div class="space-y-5">
               <input type="hidden" id="studentId" value="" />
-
               <div id="grp-nom">
                 <label class="block text-xs font-bold text-gray-500 mb-1 ml-1"
                   >NOM COMPLET *</label
@@ -163,9 +162,11 @@
 
               <div>
                 <label class="block text-xs font-bold text-gray-500 mb-2 ml-1"
-                  >SEXE *</label
+                  >SEXE</label
                 >
+
                 <input type="hidden" id="sexeInput" value="" />
+
                 <div class="flex items-center space-x-6 pl-2">
                   <label class="flex items-center cursor-pointer group">
                     <input
@@ -200,7 +201,7 @@
               <div class="grid grid-cols-2 gap-4">
                 <div>
                   <label class="block text-xs font-bold text-gray-500 mb-1 ml-1"
-                    >TÉLÉPHONE *</label
+                    >TÉLÉPHONE</label
                   >
                   <input
                     type="tel"
@@ -213,12 +214,13 @@
                   <label
                     class="flex justify-between items-center text-xs font-bold text-gray-500 mb-1 ml-1"
                   >
-                    <span>NAISSANCE *</span>
+                    <span>NAISSANCE</span>
                     <span
                       id="ageCalc"
                       class="text-sm text-yellow-600 font-normal"
                     ></span>
                   </label>
+
                   <input
                     type="date"
                     id="dateNaissance"
@@ -229,29 +231,80 @@
 
               <div>
                 <label class="block text-xs font-bold text-gray-500 mb-1 ml-1"
-                  >FACEBOOK ID *</label
+                  >ADRESSE / VILLE</label
                 >
                 <input
                   type="text"
-                  id="facebookId"
-                  placeholder="Lien ou ID..."
-                  class="input-fast w-full border border-gray-200 rounded-xl px-4 py-3.5 font-medium text-gray-900 normal-case"
+                  id="adresse"
+                  placeholder="Analakely..."
+                  class="input-fast w-full border border-gray-200 rounded-xl px-4 py-3.5 font-medium text-gray-900"
                 />
               </div>
 
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-xs font-bold text-gray-500 mb-1 ml-1"
+                    >ÉGLISE</label
+                  >
+                  <input
+                    type="text"
+                    id="eglise"
+                    class="input-fast w-full border border-gray-200 rounded-xl px-4 py-3.5 font-medium text-gray-900"
+                  />
+                </div>
+                <div>
+                  <label class="block text-xs font-bold text-gray-500 mb-1 ml-1"
+                    >PROFESSION</label
+                  >
+                  <input
+                    type="text"
+                    id="profession"
+                    class="input-fast w-full border border-gray-200 rounded-xl px-4 py-3.5 font-medium text-gray-900"
+                  />
+                </div>
+              </div>
               <div>
-                <label class="block text-xs font-bold text-gray-500 mb-1 ml-1"
-                  >CLASSE *</label
+                <label class="block text-xs font-bold text-gray-500 mb-2 ml-1"
+                  >OPTION</label
                 >
+                <div
+                  class="bg-yellow-50 p-1.5 rounded-full flex relative border border-yellow-100"
+                >
+                  <div
+                    id="capsule-bg"
+                    class="absolute left-1.5 top-1.5 bottom-1.5 w-[calc(50%-6px)] bg-white rounded-full shadow-md transition-all duration-300 ease-out z-0"
+                  ></div>
+                  <button
+                    onclick="selectOption('weekday', 0)"
+                    id="btn-0"
+                    class="flex-1 py-3 text-sm font-bold z-10 text-yellow-900 transition-colors"
+                  >
+                    Journalier
+                  </button>
+                  <button
+                    onclick="selectOption('weekend', 1)"
+                    id="btn-1"
+                    class="flex-1 py-3 text-sm font-bold z-10 text-gray-500 transition-colors"
+                  >
+                    Weekend
+                  </button>
+                </div>
+                <input type="hidden" id="optionSelected" value="weekday" />
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-gray-500 mb-1 ml-1">
+                  CLASSE
+                </label>
                 <div class="relative">
                   <select
                     id="classeSelect"
                     class="input-fast w-full border border-gray-200 rounded-xl px-4 py-3.5 font-medium text-gray-900 appearance-none bg-white transition-colors cursor-pointer"
                   >
                     <option value="" disabled selected>
-                      Sélectionner une classe
+                      Sélectonner une classe
                     </option>
                   </select>
+
                   <div
                     class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-500"
                   >
@@ -267,7 +320,6 @@
                   </div>
                 </div>
               </div>
-
               <button
                 type="button"
                 onclick="checkDuplicates()"
@@ -279,6 +331,7 @@
                   alt="Icone Duplicate"
                   class="w-5 h-5 object-contain"
                 />
+
                 <span id="check-text">Check doublons</span>
               </button>
             </div>
