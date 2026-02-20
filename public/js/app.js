@@ -295,20 +295,13 @@ async function loadExistingStudent(id) {
     setVal("nomComplet", student.name || student.nomComplet);
     setVal("telephone", student.phone || student.telephone);
     setVal("dateNaissance", student.birthday || student.dateNaissance);
-    setVal("adresse", student.adress || student.adresse);
-    setVal("eglise", student.formerChurch || student.eglise);
-    setVal("profession", student.profession);
+    setVal("facebookId", student.facebookId);
     setVal("nomTree", student.nomTree);
 
     if (student.birthday) {
       document
         .getElementById("dateNaissance")
         .dispatchEvent(new Event("change"));
-    }
-
-    if (student.classType) {
-      const index = student.classType === "weekend" ? 1 : 0;
-      selectOption(student.classType, index);
     }
 
     if (student.gender) {
@@ -327,22 +320,7 @@ async function loadExistingStudent(id) {
   }
 }
 
-function selectOption(value, index) {
-  if (tg.HapticFeedback) tg.HapticFeedback.selectionChanged();
-  document.getElementById("optionSelected").value = value;
-  document.getElementById("capsule-bg").style.transform =
-    `translateX(${index * 100}%)`;
-
-  const btn0 = document.getElementById("btn-0");
-  const btn1 = document.getElementById("btn-1");
-
-  btn0.className =
-    "flex-1 py-3 text-sm font-bold z-10 transition-colors " +
-    (index === 0 ? "text-yellow-900" : "text-gray-500");
-  btn1.className =
-    "flex-1 py-3 text-sm font-bold z-10 transition-colors " +
-    (index === 1 ? "text-yellow-900" : "text-gray-500");
-}
+// selectOption() supprimée — champ Option retiré du formulaire
 
 // Squelette liste déroulante classe
 function updateClassesList(data) {
@@ -497,24 +475,53 @@ async function submitForm() {
   const nom = nomInput.value;
   const sexe = sexeInput.value;
 
-  // Validations
-  if (!sexe) {
-    tg.showAlert("Veuillez sélectionner le sexe (Homme/Femme).");
-    return;
-  }
+  const telephoneInput = document.getElementById("telephone");
+  const dateNaissanceInput = document.getElementById("dateNaissance");
+  const facebookIdInput = document.getElementById("facebookId");
+
+  // Validations — tous les champs sont obligatoires
   if (!nom) {
     if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("error");
     nomInput.classList.remove("border-gray-200");
     nomInput.classList.add("border-red-500", "bg-red-50");
     nomInput.focus();
+    tg.showAlert("Veuillez remplir le nom complet.");
     return;
   }
-
+  if (!sexe) {
+    tg.showAlert("Veuillez sélectionner le sexe (Homme/Femme).");
+    return;
+  }
+  if (!telephoneInput.value.trim()) {
+    if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("error");
+    telephoneInput.classList.remove("border-gray-200");
+    telephoneInput.classList.add("border-red-500", "bg-red-50");
+    telephoneInput.focus();
+    tg.showAlert("Veuillez remplir le téléphone.");
+    return;
+  }
+  if (!dateNaissanceInput.value) {
+    if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("error");
+    dateNaissanceInput.classList.remove("border-gray-200");
+    dateNaissanceInput.classList.add("border-red-500", "bg-red-50");
+    dateNaissanceInput.focus();
+    tg.showAlert("Veuillez remplir la date de naissance.");
+    return;
+  }
+  if (!facebookIdInput.value.trim()) {
+    if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("error");
+    facebookIdInput.classList.remove("border-gray-200");
+    facebookIdInput.classList.add("border-red-500", "bg-red-50");
+    facebookIdInput.focus();
+    tg.showAlert("Veuillez remplir le Facebook ID.");
+    return;
+  }
   if (!selectedClass) {
     if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("error");
     classInput.classList.remove("border-gray-200");
     classInput.classList.add("border-red-500", "bg-red-50");
     classInput.focus();
+    tg.showAlert("Veuillez sélectionner une classe.");
     return;
   }
 
@@ -525,12 +532,9 @@ async function submitForm() {
   // Collecte des données
   const data = {
     name: nom,
-    phone: document.getElementById("telephone").value,
-    birthday: document.getElementById("dateNaissance").value,
-    adress: document.getElementById("adresse").value,
-    formerChurch: document.getElementById("eglise").value,
-    profession: document.getElementById("profession").value,
-    classType: document.getElementById("optionSelected").value,
+    phone: telephoneInput.value,
+    birthday: dateNaissanceInput.value,
+    facebookId: facebookIdInput.value,
     relationWithTree: document.getElementById("liaison").value,
     gender: sexe,
     nomTree: document.getElementById("nomTree").value,
