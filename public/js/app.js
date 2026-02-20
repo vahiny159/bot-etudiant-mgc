@@ -1,5 +1,6 @@
 let dataTree = {};
 let selectedClass;
+let loadedUsername = "";
 
 // --- ALWAYS USE TELEGRAM ---
 let tg = window.Telegram.WebApp;
@@ -312,6 +313,9 @@ async function loadExistingStudent(id) {
       }
     }
 
+    // Sauvegarder le username pour l'afficher au moment du update
+    loadedUsername = student.user?.username || "";
+
     if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("success");
     tg.showAlert(`📂 Profil chargé : ${student.name}`);
 
@@ -567,7 +571,7 @@ async function submitForm() {
 
     const result = await response.json();
 
-    // console.log("🟢 RETOUR STRAPI :", result);
+    console.log("🟢 RETOUR STRAPI :", result);
 
     if (response.ok && result) {
       if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("success");
@@ -592,7 +596,8 @@ async function submitForm() {
 
       // On cible le "username" généré par Strapi (create ou update)
       const matricule =
-        result.data?.attributes?.user?.username || result.data?.id || "OK";
+        result.data?.attributes?.user?.username || loadedUsername || result.data?.id || "OK";
+      loadedUsername = "";
       showSuccessModal(matricule);
     } else {
       throw new Error(
