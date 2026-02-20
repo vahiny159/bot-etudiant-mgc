@@ -1,13 +1,12 @@
 let dataTree = {};
 let selectedClass;
 
-// --- ALWAYS USE TELEGRAM ---
 let tg = window.Telegram.WebApp;
 tg.expand();
 tg.ready();
 tg.setHeaderColor("#F9FAFB");
 
-// --- GESTION CLAVIER MOBILE (UX) ---
+// --- GESTION CLAVIER (defilement) ---
 const inputs = document.querySelectorAll("input, select");
 inputs.forEach((input) => {
   input.addEventListener("focus", function () {
@@ -63,7 +62,6 @@ function showErrorPage(status, message) {
         color: #fcf8f8f6;
       }
     </style>
-
     <div class="error-box">
       <div class="error-code">${status}</div>
       <div class="error-msg">${message}</div>
@@ -111,7 +109,6 @@ async function checkUserTelegram() {
       } else {
         showErrorPage(res.status, "Erreur de vérification.");
       }
-
       document.body.style.display = "block";
       return;
     }
@@ -120,14 +117,12 @@ async function checkUserTelegram() {
 
     if (data.ok) {
       getListClass();
-
       const userDisplayElement = document.getElementById(
         "telegram-user-display",
       );
       if (userDisplayElement) {
         userDisplayElement.innerText = userName;
       }
-
       document.body.style.display = "block";
     } else {
       showErrorPage(403, `Accès refusé pour <b>${userName}</b>.`);
@@ -167,8 +162,6 @@ async function checkDuplicates() {
     const timeoutId = setTimeout(() => controller.abort(), 10000);
 
     const nomSplit = nom.replace(/ /g, ",");
-
-    // ✅ CORRECTION : URL relative, suppression de Authorization
     const response = await fetch(`/api/students/findByName/${nomSplit}`, {
       method: "GET",
       headers: { "Content-Type": "application/json" },
@@ -181,38 +174,33 @@ async function checkDuplicates() {
     if (!response.ok) throw new Error(`Erreur Server ${response.status}`);
 
     if (result && Array.isArray(result) && result.length > 0) {
-      // Doublon trouvé
       if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("warning");
       resetBtn(btn, btnText, btnIcon, originalClass, originalText);
       showDuplicateModal(result);
     } else {
-      // Pas de doublon
       if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("success");
       btn.className =
         "w-full flex justify-center items-center gap-2 py-3.5 rounded-xl font-bold text-sm transition-all bg-green-100 text-green-700 border border-green-300";
       btnText.innerText = "✅ C'est tout bon !";
       if (btnIcon) btnIcon.innerText = "";
-
-      setTimeout(() => {
-        resetBtn(btn, btnText, btnIcon, originalClass, originalText);
-      }, 2500);
+      setTimeout(
+        () => resetBtn(btn, btnText, btnIcon, originalClass, originalText),
+        2500,
+      );
     }
   } catch (error) {
     console.error("Erreur Check:", error);
     if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("error");
-
     btn.className =
       "w-full flex justify-center items-center gap-2 py-3.5 rounded-xl font-bold text-sm transition-all bg-red-100 text-red-700 border border-red-300";
-
-    if (error.name === "AbortError") {
-      btnText.innerText = "⏳ Trop long (Timeout)";
-    } else {
-      btnText.innerText = "❌ Erreur Serveur";
-    }
-
-    setTimeout(() => {
-      resetBtn(btn, btnText, btnIcon, originalClass, originalText);
-    }, 3000);
+    btnText.innerText =
+      error.name === "AbortError"
+        ? "⏳ Trop long (Timeout)"
+        : "❌ Erreur Serveur";
+    setTimeout(
+      () => resetBtn(btn, btnText, btnIcon, originalClass, originalText),
+      3000,
+    );
   } finally {
     btn.disabled = false;
   }
@@ -237,16 +225,13 @@ function showDuplicateModal(candidates) {
     btn.className =
       "w-full relative flex items-center justify-between p-4 rounded-2xl bg-yellow-50 border border-yellow-200 hover:bg-yellow-100 transition-all active:scale-[0.98] group text-left shadow-sm mb-2";
     btn.onclick = () => loadExistingStudent(s.id);
-
-    // Adaptation nomComplet ou name selon Strapi
     const displayName = s.name || s.nomComplet || "Nom inconnu";
-
     btn.innerHTML = `
-              <div>
-                <div class="font-bold text-gray-900 text-base group-hover:text-yellow-800 transition-colors">${displayName}</div>
-             </div>
-             <div class="h-8 w-8 rounded-full bg-white text-yellow-500 flex items-center justify-center shadow-sm border border-yellow-100 group-hover:scale-110 transition-transform">✏️</div>
-          `;
+      <div>
+        <div class="font-bold text-gray-900 text-base group-hover:text-yellow-800 transition-colors">${displayName}</div>
+      </div>
+      <div class="h-8 w-8 rounded-full bg-white text-yellow-500 flex items-center justify-center shadow-sm border border-yellow-100 group-hover:scale-110 transition-transform">✏️</div>
+    `;
     list.appendChild(btn);
   });
 
@@ -280,7 +265,6 @@ async function loadExistingStudent(id) {
       document.getElementById(id).value = val || "";
   };
 
-  // ✅ CORRECTION : URL relative, suppression Authorization
   const response = await fetch(`/api/people/${id}`, {
     method: "GET",
     headers: { "Content-Type": "application/json" },
@@ -289,26 +273,18 @@ async function loadExistingStudent(id) {
   const result = text ? JSON.parse(text) : null;
 
   if (response.ok && result) {
-    // Adaptation selon format Strapi
-    const student = result.data?.attributes || result; // ou result tout court si le back renvoie déjà les attributs
+    const student = result.data?.attributes || result;
 
     setVal("nomComplet", student.name || student.nomComplet);
     setVal("telephone", student.phone || student.telephone);
     setVal("dateNaissance", student.birthday || student.dateNaissance);
-    setVal("adresse", student.adress || student.adresse);
-    setVal("eglise", student.formerChurch || student.eglise);
-    setVal("profession", student.profession);
+    setVal("facebookId", student.facebookId || student.facebook); // NOUVEAU CHAMP
     setVal("nomTree", student.nomTree);
 
     if (student.birthday) {
       document
         .getElementById("dateNaissance")
         .dispatchEvent(new Event("change"));
-    }
-
-    if (student.classType) {
-      const index = student.classType === "weekend" ? 1 : 0;
-      selectOption(student.classType, index);
     }
 
     if (student.gender) {
@@ -324,40 +300,6 @@ async function loadExistingStudent(id) {
 
     const btnText = document.getElementById("btn-text");
     if (btnText) btnText.innerText = "Mettre à jour le dossier";
-  }
-}
-
-function selectOption(value, index) {
-  if (tg.HapticFeedback) tg.HapticFeedback.selectionChanged();
-  document.getElementById("optionSelected").value = value;
-  document.getElementById("capsule-bg").style.transform =
-    `translateX(${index * 100}%)`;
-
-  const btn0 = document.getElementById("btn-0");
-  const btn1 = document.getElementById("btn-1");
-
-  btn0.className =
-    "flex-1 py-3 text-sm font-bold z-10 transition-colors " +
-    (index === 0 ? "text-yellow-900" : "text-gray-500");
-  btn1.className =
-    "flex-1 py-3 text-sm font-bold z-10 transition-colors " +
-    (index === 1 ? "text-yellow-900" : "text-gray-500");
-}
-
-// Squelette liste déroulante classe
-function updateClassesList(data) {
-  const select = document.getElementById("classeSelect");
-  if (!select) return;
-  select.innerHTML =
-    '<option value="" disabled selected>Sélectionner une classe</option>';
-  if (data && Array.isArray(data)) {
-    data.forEach((item) => {
-      const option = document.createElement("option");
-      option.value = item.id;
-      // Adaptation nom
-      option.innerText = item.name || item.attributes?.name;
-      select.appendChild(option);
-    });
   }
 }
 
@@ -402,10 +344,7 @@ function showSuccessModal(id) {
 function closeSuccessModal() {
   const modal = document.getElementById("success-modal");
   modal.classList.add("opacity-0");
-  setTimeout(() => {
-    modal.classList.add("hidden");
-    // tg.close(); // En local on ne ferme pas
-  }, 300);
+  setTimeout(() => modal.classList.add("hidden"), 300);
 }
 
 function setSexe(valeur) {
@@ -422,7 +361,6 @@ async function getDataTree() {
   spinner.classList.remove("hidden");
 
   try {
-    // ✅ CORRECTION : URL relative, suppression Authorization
     const response = await fetch(
       `/api/people/findByUser/${appId}?allData=false`,
       {
@@ -437,14 +375,12 @@ async function getDataTree() {
       dataTree = result;
       fillDataTree(dataTree);
     } else {
-      // showSuccessModal("No user found"); // Peut être confusant
       emptyData();
     }
     spinner.classList.add("hidden");
   } catch (error) {
     spinner.classList.add("hidden");
     console.error(error);
-    // tg.showAlert("Erreur : " + error.message);
   }
 }
 
@@ -453,14 +389,12 @@ function fillDataTree() {
   let nameInput = document.getElementById("nomTree");
   let phoneInput = document.getElementById("telTree");
 
-  // fill data
   dptInput.value = dataTree.cell?.team?.department?.name || "";
   nameInput.value = dataTree.name || "";
   phoneInput.value = dataTree.phone || "";
 
-  dptInput.disabled = true;
-  nameInput.disabled = true;
-  // phoneInput.disabled = true;
+  if (dptInput) dptInput.disabled = true;
+  if (nameInput) nameInput.disabled = true;
 }
 
 function emptyData() {
@@ -470,16 +404,19 @@ function emptyData() {
   let nameInput = document.getElementById("nomTree");
   let phoneInput = document.getElementById("telTree");
 
-  // empty data
-  IdInput.value = "";
-  dptInput.value = "";
-  nameInput.value = "";
-  phoneInput.value = "";
-
-  // enable
-  dptInput.disabled = false;
-  nameInput.disabled = false;
-  phoneInput.disabled = false;
+  if (IdInput) IdInput.value = "";
+  if (dptInput) {
+    dptInput.value = "";
+    dptInput.disabled = false;
+  }
+  if (nameInput) {
+    nameInput.value = "";
+    nameInput.disabled = false;
+  }
+  if (phoneInput) {
+    phoneInput.value = "";
+    phoneInput.disabled = false;
+  }
 }
 
 // --- SOUMISSION ---
@@ -489,32 +426,36 @@ async function submitForm() {
   const btn = document.getElementById("main-btn");
   const spinner = document.getElementById("spinner");
   const btnText = document.getElementById("btn-text");
+
+  // Récupération des valeurs
   const nomInput = document.getElementById("nomComplet");
   const sexeInput = document.getElementById("sexeInput");
   const classInput = document.getElementById("classeSelect");
+  const telInput = document.getElementById("telephone");
+  const dateInput = document.getElementById("dateNaissance");
+  const fbInput = document.getElementById("facebookId");
   const idHiddenInput = document.getElementById("studentId");
 
-  const nom = nomInput.value;
+  // Variables nettoyées
+  const nom = nomInput.value.trim();
   const sexe = sexeInput.value;
+  const tel = telInput.value.trim();
+  const dateNaissance = dateInput.value;
+  const facebookId = fbInput ? fbInput.value.trim() : "";
 
-  // Validations
-  if (!sexe) {
-    tg.showAlert("Veuillez sélectionner le sexe (Homme/Femme).");
-    return;
-  }
-  if (!nom) {
+  // VÉRIFICATION DE TOUS LES CHAMPS OBLIGATOIRES
+  if (
+    !nom ||
+    !sexe ||
+    !tel ||
+    !dateNaissance ||
+    !facebookId ||
+    !selectedClass
+  ) {
     if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("error");
-    nomInput.classList.remove("border-gray-200");
-    nomInput.classList.add("border-red-500", "bg-red-50");
-    nomInput.focus();
-    return;
-  }
-
-  if (!selectedClass) {
-    if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("error");
-    classInput.classList.remove("border-gray-200");
-    classInput.classList.add("border-red-500", "bg-red-50");
-    classInput.focus();
+    tg.showAlert(
+      "⚠️ Veuillez remplir tous les champs obligatoires (avec une étoile *) avant de continuer.",
+    );
     return;
   }
 
@@ -525,17 +466,20 @@ async function submitForm() {
   // Collecte des données
   const data = {
     name: nom,
-    phone: document.getElementById("telephone").value,
-    birthday: document.getElementById("dateNaissance").value,
-    adress: document.getElementById("adresse").value,
-    formerChurch: document.getElementById("eglise").value,
-    profession: document.getElementById("profession").value,
-    classType: document.getElementById("optionSelected").value,
-    relationWithTree: document.getElementById("liaison").value,
+    phone: tel,
+    birthday: dateNaissance,
+    facebookId: facebookId, // NOUVEAU CHAMP
     gender: sexe,
-    nomTree: document.getElementById("nomTree").value,
+    // On conserve les valeurs Tree si elles existent dans le DOM
+    relationWithTree: document.getElementById("liaison")
+      ? document.getElementById("liaison").value
+      : "",
+    nomTree: document.getElementById("nomTree")
+      ? document.getElementById("nomTree").value
+      : "",
   };
-  // Tree
+
+  // Laison Tree
   if (Object.keys(dataTree).length > 0) {
     data.tree = dataTree.id;
   }
@@ -546,7 +490,6 @@ async function submitForm() {
   let method = "POST";
 
   if (existingId) {
-    // modif students
     data.class = selectedClass;
     url = `/api/people/${existingId}`;
     method = "PUT";
@@ -555,15 +498,11 @@ async function submitForm() {
   try {
     const response = await fetch(url, {
       method: method,
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ data: data }),
     });
 
     const result = await response.json();
-
-    // console.log("🟢 RETOUR STRAPI :", result);
 
     if (response.ok && result) {
       if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("success");
@@ -572,25 +511,22 @@ async function submitForm() {
       spinner.classList.add("hidden");
       btnText.innerText = "Enregistrer le dossier";
 
-      // --- GRAND NETTOYAGE ---
       idHiddenInput.value = "";
       document
         .querySelectorAll(
           'input[type="text"], input[type="tel"], input[type="date"]',
         )
         .forEach((el) => (el.value = ""));
-
       document.getElementById("sexeInput").value = "";
       document
         .getElementsByName("sexe_radio")
         .forEach((r) => (r.checked = false));
       document.getElementById("ageCalc").innerText = "";
+      emptyData();
 
       if (existingId) {
-        // Si c'est un update
         showSuccessModal(existingId);
       } else {
-        // Si c'est un nouveau : On cible le "username" généré par Strapi
         const matricule =
           result.data?.attributes?.user?.username || result.data?.id || "OK";
         showSuccessModal(matricule);
@@ -610,7 +546,6 @@ async function submitForm() {
 
 // Get the list of bb class from the DB
 async function getListClass() {
-  // ✅ CORRECTION : URL relative, suppression Authorization
   try {
     const response = await fetch(`/api/custom/classes/openedBB`, {
       method: "GET",
@@ -621,7 +556,6 @@ async function getListClass() {
     const result = text ? JSON.parse(text) : null;
 
     if (response.ok) {
-      // Adaptation format Strapi
       const list = Array.isArray(result) ? result : result.data || [];
       fillListClass(list);
     } else {
