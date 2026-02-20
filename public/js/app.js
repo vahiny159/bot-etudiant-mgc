@@ -600,11 +600,15 @@ async function submitForm() {
       loadedUsername = "";
       showSuccessModal(matricule);
     } else {
+      console.error("❌ ERREUR STRAPI :", JSON.stringify(result, null, 2));
+      const detail = result.error?.details || result.data?.errors || "";
       throw new Error(
-        result.message || result.error?.message || "Erreur inconnue",
+        (result.message || result.error?.message || "Erreur inconnue") +
+        (detail ? " | Détails: " + JSON.stringify(detail) : ""),
       );
     }
   } catch (error) {
+    console.error("❌ Erreur complète :", error);
     btn.disabled = false;
     spinner.classList.add("hidden");
     btnText.innerText = "Réessayer";
