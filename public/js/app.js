@@ -539,6 +539,7 @@ async function submitForm() {
     phone: telephoneInput.value,
     birthday: dateNaissanceInput.value,
     facebookId: facebookIdInput.value,
+    classType: "weekday", // Valeur par défaut — requis par Strapi pour la création de l'utilisateur
     relationWithTree: document.getElementById("liaison").value,
     gender: sexe,
     nomTree: document.getElementById("nomTree").value,
@@ -559,6 +560,8 @@ async function submitForm() {
     url = `/api/people/${existingId}`;
     method = "PUT";
   }
+
+  console.log("📤 DATA ENVOYÉE :", JSON.stringify({ data: data }, null, 2));
 
   try {
     const response = await fetch(url, {
