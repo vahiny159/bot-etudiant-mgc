@@ -280,13 +280,16 @@ async function loadExistingStudent(id) {
       document.getElementById(elId).value = val || "";
   };
 
-  // populate=* pour récupérer la relation classe
+  // populate=* pour récupérer la relation classe + tree
   const response = await fetch(`/api/people/${id}?populate=*`, {
     method: "GET",
     headers: { "Content-Type": "application/json" },
   });
   const text = await response.text();
   const result = text ? JSON.parse(text) : null;
+
+  // Log complet pour debugger les noms de champs
+  console.log("📦 loadExistingStudent result:", JSON.stringify(result, null, 2));
 
   if (response.ok && result) {
     const student = result.data?.attributes || result;
@@ -296,20 +299,15 @@ async function loadExistingStudent(id) {
     setVal("telephone", student.phone);
     setVal("dateNaissance", student.birthday);
 
-    // Facebook : Strapi stocke sous "facebookId" mais on essaie les deux
+    // Facebook : peut être "facebook" ou "facebookId" selon la config Strapi
     setVal("facebook", student.facebook || student.facebookId || "");
-
-    // Tree : Strapi stocke sous "treeName", le champ HTML s'appelle "nomTree"
-    setVal("nomTree", student.treeName || student.nomTree || "");
 
     // Liaison (relationWithTree)
     setVal("liaison", student.relationWithTree || "");
 
     // Calcul âge
     if (student.birthday) {
-      document
-        .getElementById("dateNaissance")
-        .dispatchEvent(new Event("change"));
+      document.getElementById("dateNaissance").dispatchEvent(new Event("change"));
     }
 
     // Sexe
@@ -320,17 +318,38 @@ async function loadExistingStudent(id) {
         .forEach((r) => { if (r.value === student.gender) r.checked = true; });
     }
 
-    // Classe — la relation Strapi peut être dans student.class ou student.classes
+    // Classe — relation Strapi v4 : student.class.data.id
     const classeId =
       student.class?.data?.id ||
       student.classes?.data?.[0]?.id ||
       student.class?.id ||
       null;
+    console.log("🏫 classeId trouvé:", classeId, "| student.class:", student.class);
 
     if (classeId) {
       selectedClass = String(classeId);
       const select = document.getElementById("classeSelect");
       if (select) select.value = selectedClass;
+    }
+
+    // Tree — relation Strapi v4 : student.tree.data.attributes
+    const treeData = student.tree?.data?.attributes || null;
+    console.log("🌳 treeData trouvé:", treeData);
+
+    if (treeData) {
+      // On remplit dataTree global pour que submitForm() puisse l'utiliser
+      dataTree = { id: student.tree.data.id, ...treeData };
+
+      setVal("nomTree", treeData.name || "");
+      setVal("telTree", treeData.phone || "");
+      setVal("departement", treeData.cell?.data?.attributes?.team?.data?.attributes?.department?.data?.attributes?.name || "");
+
+      // Bloquer les champs tree en lecture seule (comme getDataTree le fait)
+      document.getElementById("nomTree").disabled = true;
+      document.getElementById("departement").disabled = true;
+    } else {
+      // Pas de tree lié — on essaie le champ "treeName" direct sur le student
+      setVal("nomTree", student.treeName || "");
     }
 
     if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("success");
