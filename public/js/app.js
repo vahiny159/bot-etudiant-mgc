@@ -540,41 +540,44 @@ async function submitForm() {
 
     // console.log("🟢 RETOUR STRAPI :", result);
 
-    // --- GRAND NETTOYAGE ---
-    idHiddenInput.value = "";
-    document
-      .querySelectorAll(
-        'input[type="text"], input[type="tel"], input[type="date"]',
-      )
-      .forEach((el) => (el.value = ""));
+    if (response.ok && result) {
+      if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("success");
 
-    document.getElementById("sexeInput").value = "";
-    document
-      .getElementsByName("sexe_radio")
-      .forEach((r) => (r.checked = false));
-    document.getElementById("ageCalc").innerText = "";
+      btn.disabled = false;
+      spinner.classList.add("hidden");
+      btnText.innerText = "Enregistrer le dossier";
 
-    // RÉCUPÉRATION DU MATRICULE LONG (POST ou PUT)
-    // On cherche à plusieurs endroits car Strapi change parfois sa structure avec le 'populate'
-    const matricule =
-      result.data?.attributes?.user?.username ||
-      result.data?.attributes?.user?.data?.attributes?.username ||
-      result.data?.username ||
-      result.data?.id ||
-      "OK";
+      // --- GRAND NETTOYAGE ---
+      idHiddenInput.value = "";
+      document
+        .querySelectorAll(
+          'input[type="text"], input[type="tel"], input[type="date"]',
+        )
+        .forEach((el) => (el.value = ""));
 
-    showSuccessModal(matricule);
-  } else {
-    throw new Error(
-      result.message || result.error?.message || "Erreur inconnue",
-    );
+      document.getElementById("sexeInput").value = "";
+      document
+        .getElementsByName("sexe_radio")
+        .forEach((r) => (r.checked = false));
+      document.getElementById("ageCalc").innerText = "";
+
+      // Que ce soit un ajout (POST) ou une modification (PUT),
+      // on cible le "username" (matricule) renvoyé par Strapi.
+      // En cas de secours, on affiche l'ID de Strapi.
+      const matricule = result.data?.attributes?.user?.username || result.data?.attributes?.username || result.data?.id || existingId || "OK";
+
+      showSuccessModal(matricule);
+    } else {
+      throw new Error(
+        result.message || result.error?.message || "Erreur inconnue",
+      );
+    }
+  } catch (error) {
+    btn.disabled = false;
+    spinner.classList.add("hidden");
+    btnText.innerText = "Réessayer";
+    tg.showAlert("Erreur : " + error.message);
   }
-} catch (error) {
-  btn.disabled = false;
-  spinner.classList.add("hidden");
-  btnText.innerText = "Réessayer";
-  tg.showAlert("Erreur : " + error.message);
-}
 }
 
 // Get the list of bb class from the DB
