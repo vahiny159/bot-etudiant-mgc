@@ -560,15 +560,12 @@ async function submitForm() {
         .forEach((r) => (r.checked = false));
       document.getElementById("ageCalc").innerText = "";
 
-      if (existingId) {
-        // Si c'est un update
-        showSuccessModal(existingId);
-      } else {
-        // Si c'est un nouveau : On cible le "username" généré par Strapi
-        const matricule =
-          result.data?.attributes?.user?.username || result.data?.id || "OK";
-        showSuccessModal(matricule);
-      }
+      // Que ce soit un ajout (POST) ou une modification (PUT),
+      // on cible le "username" (matricule) renvoyé par Strapi.
+      // En cas de secours, on affiche l'ID de Strapi.
+      const matricule = result.data?.attributes?.user?.username || result.data?.attributes?.username || result.data?.id || existingId || "OK";
+
+      showSuccessModal(matricule);
     } else {
       throw new Error(
         result.message || result.error?.message || "Erreur inconnue",
