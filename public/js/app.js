@@ -505,6 +505,12 @@ async function submitForm() {
     relationWithTree: document.getElementById("liaison").value,
     gender: sexe,
     nomTree: document.getElementById("nomTree").value,
+
+    // 👉 ON AJOUTE LES CHAMPS MANQUANTS EN VIDE POUR SATISFAIRE STRAPI
+    adress: "",
+    formerChurch: "",
+    profession: "",
+    classType: "weekday", // Valeur par défaut pour éviter l'erreur sur l'option
   };
 
   // Tree
