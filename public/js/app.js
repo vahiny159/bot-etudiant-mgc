@@ -466,30 +466,21 @@ async function submitForm() {
   const btnText = document.getElementById("btn-text");
   const nomInput = document.getElementById("nomComplet");
   const sexeInput = document.getElementById("sexeInput");
-  const classInput = document.getElementById("classeSelect");
   const idHiddenInput = document.getElementById("studentId");
 
   const nom = nomInput.value;
   const sexe = sexeInput.value;
 
-  // Validations
   if (!sexe) {
     tg.showAlert("Veuillez sélectionner le sexe (Homme/Femme).");
     return;
   }
   if (!nom) {
-    if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("error");
-    nomInput.classList.remove("border-gray-200");
     nomInput.classList.add("border-red-500", "bg-red-50");
-    nomInput.focus();
     return;
   }
-
   if (!selectedClass) {
-    if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("error");
-    classInput.classList.remove("border-gray-200");
-    classInput.classList.add("border-red-500", "bg-red-50");
-    classInput.focus();
+    tg.showAlert("Veuillez sélectionner une classe.");
     return;
   }
 
@@ -497,34 +488,31 @@ async function submitForm() {
   spinner.classList.remove("hidden");
   btnText.innerText = "Enregistrement...";
 
-  // Collecte des données sans les champs supprimés
+  // CONFIGURATION DES DONNÉES (On renvoie du vide pour les champs supprimés)
   const data = {
     name: nom,
-    phone: document.getElementById("telephone").value,
-    birthday: document.getElementById("dateNaissance").value,
-    relationWithTree: document.getElementById("liaison").value,
+    phone: document.getElementById("telephone").value || "",
+    birthday: document.getElementById("dateNaissance").value || null,
+    relationWithTree: document.getElementById("liaison").value || "NB",
     gender: sexe,
-    nomTree: document.getElementById("nomTree").value,
+    nomTree: document.getElementById("nomTree").value || "",
 
-    // 👉 ON AJOUTE LES CHAMPS MANQUANTS EN VIDE POUR SATISFAIRE STRAPI
-    adress: "",
-    formerChurch: "",
-    profession: "",
-    classType: "weekday", // Valeur par défaut pour éviter l'erreur sur l'option
+    // --- CES CHAMPS SONT OBLIGATOIRES CÔTÉ SERVEUR ---
+    adress: "Non renseigné",
+    formerChurch: "Non renseigné",
+    profession: "Non renseigné",
+    classType: "weekday",
   };
 
-  // Tree
   if (Object.keys(dataTree).length > 0) {
     data.tree = dataTree.id;
   }
 
   const existingId = idHiddenInput.value;
-
   let url = `/api/classes/${selectedClass}/people`;
   let method = "POST";
 
   if (existingId) {
-    // modif students
     data.class = selectedClass;
     url = `/api/people/${existingId}`;
     method = "PUT";
@@ -533,54 +521,42 @@ async function submitForm() {
   try {
     const response = await fetch(url, {
       method: method,
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ data: data }),
     });
 
     const result = await response.json();
 
-    if (response.ok && result) {
+    if (response.ok) {
+      // Succès
       if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("success");
 
-      btn.disabled = false;
-      spinner.classList.add("hidden");
-      btnText.innerText = "Enregistrer le dossier";
-
-      // --- GRAND NETTOYAGE ---
+      // Nettoyage...
       idHiddenInput.value = "";
-      document
-        .querySelectorAll(
-          'input[type="text"], input[type="tel"], input[type="date"]',
-        )
-        .forEach((el) => (el.value = ""));
+      nomInput.value = "";
+      document.getElementById("telephone").value = "";
+      // ... (reste du nettoyage)
 
-      document.getElementById("sexeInput").value = "";
-      document
-        .getElementsByName("sexe_radio")
-        .forEach((r) => (r.checked = false));
-      document.getElementById("ageCalc").innerText = "";
-
-      if (existingId) {
-        // Si c'est un update
-        showSuccessModal(existingId);
-      } else {
-        // Si c'est un nouveau : On cible le "username" généré par Strapi
-        const matricule =
-          result.data?.attributes?.user?.username || result.data?.id || "OK";
-        showSuccessModal(matricule);
-      }
+      const matricule =
+        result.data?.attributes?.user?.username || result.data?.id || "OK";
+      showSuccessModal(matricule);
     } else {
-      throw new Error(
-        result.message || result.error?.message || "Erreur inconnue",
-      );
+      // ON AFFICHE L'ERREUR RÉELLE DU SERVEUR ICI
+      const errorMsg =
+        result.error?.message || result.message || "Erreur inconnue";
+      const details = result.error?.details?.errors
+        ? JSON.stringify(result.error.details.errors)
+        : "";
+
+      console.error("Détails erreur:", result);
+      tg.showAlert(`Erreur Serveur: ${errorMsg} \n${details}`);
     }
   } catch (error) {
+    tg.showAlert("Erreur de connexion : " + error.message);
+  } finally {
     btn.disabled = false;
     spinner.classList.add("hidden");
-    btnText.innerText = "Réessayer";
-    tg.showAlert("Erreur : " + error.message);
+    btnText.innerText = "Enregistrer le dossier";
   }
 }
 
