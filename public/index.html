@@ -108,6 +108,20 @@
     </div>
 
     <div class="max-w-lg mx-auto space-y-6">
+
+      <!-- Bannière mode modification (cachée par défaut) -->
+      <div id="edit-banner"
+        class="hidden items-center justify-between gap-3 bg-blue-50 border border-blue-200 rounded-2xl px-4 py-3">
+        <div class="flex items-center gap-2">
+          <span class="text-lg">✏️</span>
+          <span class="text-sm font-bold text-blue-800">Mode modification</span>
+        </div>
+        <button onclick="resetForm()"
+          class="flex items-center gap-1.5 bg-white border border-blue-200 text-blue-700 text-xs font-bold px-3 py-2 rounded-xl hover:bg-blue-100 active:scale-95 transition-all">
+          <span>🔄</span> Nouveau dossier
+        </button>
+      </div>
+
       <div class="relative group">
         <div
           class="absolute -inset-0.5 bg-gradient-to-r from-yellow-300 to-yellow-500 rounded-2xl opacity-40 group-hover:opacity-100 transition duration-1000 group-hover:duration-200 blur">

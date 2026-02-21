@@ -336,6 +336,13 @@ async function loadExistingStudent(id) {
     if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("success");
     tg.showAlert(`📂 Profil chargé : ${student.name}`);
 
+    // Afficher la bannière "mode modification"
+    const banner = document.getElementById("edit-banner");
+    if (banner) {
+      banner.classList.remove("hidden");
+      banner.classList.add("flex");
+    }
+
     const btnText = document.getElementById("btn-text");
     if (btnText) btnText.innerText = "Mettre à jour le dossier";
   }
@@ -479,6 +486,47 @@ function emptyData() {
   dptInput.disabled = false;
   nameInput.disabled = false;
   phoneInput.disabled = false;
+}
+
+// --- RESET FORMULAIRE (nouveau dossier) ---
+function resetForm() {
+  if (tg.HapticFeedback) tg.HapticFeedback.selectionChanged();
+
+  // Vider le champ caché ID
+  document.getElementById("studentId").value = "";
+  selectedClass = null;
+
+  // Vider tous les inputs texte/tel/date
+  document
+    .querySelectorAll('input[type="text"], input[type="tel"], input[type="date"]')
+    .forEach((el) => (el.value = ""));
+
+  // Reset sexe
+  document.getElementById("sexeInput").value = "";
+  document.getElementsByName("sexe_radio").forEach((r) => (r.checked = false));
+  document.getElementById("ageCalc").innerText = "";
+
+  // Reset classe
+  const select = document.getElementById("classeSelect");
+  if (select) select.selectedIndex = 0;
+
+  // Reset liaison
+  const liaison = document.getElementById("liaison");
+  if (liaison) liaison.selectedIndex = 0;
+
+  // Reset section Tree
+  emptyData();
+
+  // Cacher la bannière mode modification
+  const banner = document.getElementById("edit-banner");
+  if (banner) {
+    banner.classList.add("hidden");
+    banner.classList.remove("flex");
+  }
+
+  // Remettre le texte du bouton principal
+  const btnText = document.getElementById("btn-text");
+  if (btnText) btnText.innerHTML = `<img src="icons/save.svg" alt="Icone save" class="w-8 h-8 object-contain" /><span>Enregistrer le dossier</span>`;
 }
 
 // --- SOUMISSION ---
