@@ -252,22 +252,23 @@ app.get("/api/students/findByName/:names", async (req, res) => {
 
 // FIND PERSON BY ID
 app.get("/api/people/:id", async (req, res) => {
-  console.log("🔍 Vérification doublons...");
   try {
     const { id } = req.params;
+    // On transmet les query params reçus (ex: ?populate=*) à Strapi
+    const queryString = new URLSearchParams(req.query).toString();
+    const strapiUrl = `${process.env.STRAPI_API_URL}/api/people/${id}${queryString ? "?" + queryString : ""}`;
 
-    const response = await fetch(
-      `${process.env.STRAPI_API_URL}/api/people/${id}`,
-      {
-        //   method: 'GET',
-        headers: {
-          Authorization: `Bearer ${process.env.APP_TOKEN}`,
-          "Content-Type": "application/json",
-          // "X-Telegram-Data": tg.initData || "",
-        },
+    console.log("🔍 GET people/:id →", strapiUrl);
+
+    const response = await fetch(strapiUrl, {
+      headers: {
+        Authorization: `Bearer ${process.env.APP_TOKEN}`,
+        "Content-Type": "application/json",
       },
-    );
+    });
     const result = await response.json();
+
+    console.log("🟢 Strapi people/:id retourne :", JSON.stringify(result).slice(0, 500));
 
     if (!response.ok) {
       return res.status(response.status).json(result);
