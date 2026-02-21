@@ -295,20 +295,13 @@ async function loadExistingStudent(id) {
     setVal("nomComplet", student.name || student.nomComplet);
     setVal("telephone", student.phone || student.telephone);
     setVal("dateNaissance", student.birthday || student.dateNaissance);
-    setVal("adresse", student.adress || student.adresse);
-    setVal("eglise", student.formerChurch || student.eglise);
-    setVal("profession", student.profession);
+    setVal("facebook", student.facebook || "");
     setVal("nomTree", student.nomTree);
 
     if (student.birthday) {
       document
         .getElementById("dateNaissance")
         .dispatchEvent(new Event("change"));
-    }
-
-    if (student.classType) {
-      const index = student.classType === "weekend" ? 1 : 0;
-      selectOption(student.classType, index);
     }
 
     if (student.gender) {
@@ -327,22 +320,7 @@ async function loadExistingStudent(id) {
   }
 }
 
-function selectOption(value, index) {
-  if (tg.HapticFeedback) tg.HapticFeedback.selectionChanged();
-  document.getElementById("optionSelected").value = value;
-  document.getElementById("capsule-bg").style.transform =
-    `translateX(${index * 100}%)`;
 
-  const btn0 = document.getElementById("btn-0");
-  const btn1 = document.getElementById("btn-1");
-
-  btn0.className =
-    "flex-1 py-3 text-sm font-bold z-10 transition-colors " +
-    (index === 0 ? "text-yellow-900" : "text-gray-500");
-  btn1.className =
-    "flex-1 py-3 text-sm font-bold z-10 transition-colors " +
-    (index === 1 ? "text-yellow-900" : "text-gray-500");
-}
 
 // Squelette liste déroulante classe
 function updateClassesList(data) {
@@ -497,24 +475,23 @@ async function submitForm() {
   const nom = nomInput.value;
   const sexe = sexeInput.value;
 
-  // Validations
-  if (!sexe) {
-    tg.showAlert("Veuillez sélectionner le sexe (Homme/Femme).");
-    return;
-  }
-  if (!nom) {
-    if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("error");
-    nomInput.classList.remove("border-gray-200");
-    nomInput.classList.add("border-red-500", "bg-red-50");
-    nomInput.focus();
-    return;
-  }
+  const telephone = document.getElementById("telephone").value.trim();
+  const dateNaissance = document.getElementById("dateNaissance").value;
+  const facebook = document.getElementById("facebook").value.trim();
 
-  if (!selectedClass) {
+  // Validations — tous les champs Fruit sont obligatoires
+  if (!nom || !sexe || !telephone || !dateNaissance || !facebook || !selectedClass) {
     if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("error");
-    classInput.classList.remove("border-gray-200");
-    classInput.classList.add("border-red-500", "bg-red-50");
-    classInput.focus();
+    tg.showAlert("Veuillez remplir tous les champs de la partie Fruit.");
+
+    if (!nom) {
+      nomInput.classList.remove("border-gray-200");
+      nomInput.classList.add("border-red-500", "bg-red-50");
+    }
+    if (!selectedClass) {
+      classInput.classList.remove("border-gray-200");
+      classInput.classList.add("border-red-500", "bg-red-50");
+    }
     return;
   }
 
@@ -525,12 +502,9 @@ async function submitForm() {
   // Collecte des données
   const data = {
     name: nom,
-    phone: document.getElementById("telephone").value,
-    birthday: document.getElementById("dateNaissance").value,
-    adress: document.getElementById("adresse").value,
-    formerChurch: document.getElementById("eglise").value,
-    profession: document.getElementById("profession").value,
-    classType: document.getElementById("optionSelected").value,
+    phone: telephone,
+    birthday: dateNaissance,
+    facebook: facebook,
     relationWithTree: document.getElementById("liaison").value,
     gender: sexe,
     nomTree: document.getElementById("nomTree").value,
