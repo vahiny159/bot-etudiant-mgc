@@ -548,6 +548,7 @@ async function submitForm() {
       btnText.innerText = "Enregistrer le dossier";
 
       // --- GRAND NETTOYAGE ---
+      // --- GRAND NETTOYAGE ---
       idHiddenInput.value = "";
       document
         .querySelectorAll(
@@ -561,10 +562,14 @@ async function submitForm() {
         .forEach((r) => (r.checked = false));
       document.getElementById("ageCalc").innerText = "";
 
-      // Que ce soit un ajout (POST) ou une modification (PUT),
-      // on cible le "username" (matricule) renvoyé par Strapi.
-      // En cas de secours, on affiche l'ID de Strapi.
-      const matricule = result.data?.attributes?.user?.username || result.data?.attributes?.username || result.data?.id || existingId || "OK";
+      // RÉCUPÉRATION DU MATRICULE LONG (POST ou PUT)
+      // On cherche à plusieurs endroits car Strapi change parfois sa structure avec le 'populate'
+      const matricule =
+        result.data?.attributes?.user?.username ||
+        result.data?.attributes?.user?.data?.attributes?.username ||
+        result.data?.username ||
+        result.data?.id ||
+        "OK";
 
       showSuccessModal(matricule);
     } else {
