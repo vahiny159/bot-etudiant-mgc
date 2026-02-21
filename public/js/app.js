@@ -295,20 +295,12 @@ async function loadExistingStudent(id) {
     setVal("nomComplet", student.name || student.nomComplet);
     setVal("telephone", student.phone || student.telephone);
     setVal("dateNaissance", student.birthday || student.dateNaissance);
-    setVal("adresse", student.adress || student.adresse);
-    setVal("eglise", student.formerChurch || student.eglise);
-    setVal("profession", student.profession);
     setVal("nomTree", student.nomTree);
 
     if (student.birthday) {
       document
         .getElementById("dateNaissance")
         .dispatchEvent(new Event("change"));
-    }
-
-    if (student.classType) {
-      const index = student.classType === "weekend" ? 1 : 0;
-      selectOption(student.classType, index);
     }
 
     if (student.gender) {
@@ -325,23 +317,6 @@ async function loadExistingStudent(id) {
     const btnText = document.getElementById("btn-text");
     if (btnText) btnText.innerText = "Mettre à jour le dossier";
   }
-}
-
-function selectOption(value, index) {
-  if (tg.HapticFeedback) tg.HapticFeedback.selectionChanged();
-  document.getElementById("optionSelected").value = value;
-  document.getElementById("capsule-bg").style.transform =
-    `translateX(${index * 100}%)`;
-
-  const btn0 = document.getElementById("btn-0");
-  const btn1 = document.getElementById("btn-1");
-
-  btn0.className =
-    "flex-1 py-3 text-sm font-bold z-10 transition-colors " +
-    (index === 0 ? "text-yellow-900" : "text-gray-500");
-  btn1.className =
-    "flex-1 py-3 text-sm font-bold z-10 transition-colors " +
-    (index === 1 ? "text-yellow-900" : "text-gray-500");
 }
 
 // Squelette liste déroulante classe
@@ -522,19 +497,16 @@ async function submitForm() {
   spinner.classList.remove("hidden");
   btnText.innerText = "Enregistrement...";
 
-  // Collecte des données
+  // Collecte des données sans les champs supprimés
   const data = {
     name: nom,
     phone: document.getElementById("telephone").value,
     birthday: document.getElementById("dateNaissance").value,
-    adress: document.getElementById("adresse").value,
-    formerChurch: document.getElementById("eglise").value,
-    profession: document.getElementById("profession").value,
-    classType: document.getElementById("optionSelected").value,
     relationWithTree: document.getElementById("liaison").value,
     gender: sexe,
     nomTree: document.getElementById("nomTree").value,
   };
+
   // Tree
   if (Object.keys(dataTree).length > 0) {
     data.tree = dataTree.id;
@@ -562,8 +534,6 @@ async function submitForm() {
     });
 
     const result = await response.json();
-
-    // console.log("🟢 RETOUR STRAPI :", result);
 
     if (response.ok && result) {
       if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("success");

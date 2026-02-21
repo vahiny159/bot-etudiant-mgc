@@ -15,24 +15,8 @@
       rel="stylesheet"
     />
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <!-- test si telegram se lance après app.js
-    <script>
-      document.addEventListener("DOMContentLoaded", function () {
-        const tgTest = window.Telegram.WebApp;
-        tgTest.ready();
-
-        alert(
-          "Vérification Telegram : " +
-            (tgTest.initData ? "Données reçues !" : "VIDE"),
-        );
-      });
-    </script> -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    <!-- <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
-    <script>
-      eruda.init();
-    </script> -->
     <script>
       tailwind.config = {
         darkMode: "class",
@@ -155,8 +139,11 @@
                   type="text"
                   id="nomComplet"
                   placeholder="Ex: Rakoto paul"
-                  class="input-fast w-full border border-gray-200 rounded-xl px-4 py-3.5 font-semibold placeholder-gray-400 text-gray-900 normal-case"
-                  oninput="clearError()"
+                  class="input-fast w-full border border-gray-200 rounded-xl px-4 py-3.5 font-semibold placeholder-gray-400 text-gray-900 uppercase"
+                  oninput="
+                    clearError();
+                    this.value = this.value.toUpperCase();
+                  "
                 />
               </div>
 
@@ -229,68 +216,6 @@
                 </div>
               </div>
 
-              <div>
-                <label class="block text-xs font-bold text-gray-500 mb-1 ml-1"
-                  >ADRESSE / VILLE</label
-                >
-                <input
-                  type="text"
-                  id="adresse"
-                  placeholder="Analakely..."
-                  class="input-fast w-full border border-gray-200 rounded-xl px-4 py-3.5 font-medium text-gray-900"
-                />
-              </div>
-
-              <div class="grid grid-cols-2 gap-4">
-                <div>
-                  <label class="block text-xs font-bold text-gray-500 mb-1 ml-1"
-                    >ÉGLISE</label
-                  >
-                  <input
-                    type="text"
-                    id="eglise"
-                    class="input-fast w-full border border-gray-200 rounded-xl px-4 py-3.5 font-medium text-gray-900"
-                  />
-                </div>
-                <div>
-                  <label class="block text-xs font-bold text-gray-500 mb-1 ml-1"
-                    >PROFESSION</label
-                  >
-                  <input
-                    type="text"
-                    id="profession"
-                    class="input-fast w-full border border-gray-200 rounded-xl px-4 py-3.5 font-medium text-gray-900"
-                  />
-                </div>
-              </div>
-              <div>
-                <label class="block text-xs font-bold text-gray-500 mb-2 ml-1"
-                  >OPTION</label
-                >
-                <div
-                  class="bg-yellow-50 p-1.5 rounded-full flex relative border border-yellow-100"
-                >
-                  <div
-                    id="capsule-bg"
-                    class="absolute left-1.5 top-1.5 bottom-1.5 w-[calc(50%-6px)] bg-white rounded-full shadow-md transition-all duration-300 ease-out z-0"
-                  ></div>
-                  <button
-                    onclick="selectOption('weekday', 0)"
-                    id="btn-0"
-                    class="flex-1 py-3 text-sm font-bold z-10 text-yellow-900 transition-colors"
-                  >
-                    Journalier
-                  </button>
-                  <button
-                    onclick="selectOption('weekend', 1)"
-                    id="btn-1"
-                    class="flex-1 py-3 text-sm font-bold z-10 text-gray-500 transition-colors"
-                  >
-                    Weekend
-                  </button>
-                </div>
-                <input type="hidden" id="optionSelected" value="weekday" />
-              </div>
               <div>
                 <label class="block text-xs font-bold text-gray-500 mb-1 ml-1">
                   CLASSE
