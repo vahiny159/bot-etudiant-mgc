@@ -295,12 +295,20 @@ async function loadExistingStudent(id) {
     setVal("nomComplet", student.name || student.nomComplet);
     setVal("telephone", student.phone || student.telephone);
     setVal("dateNaissance", student.birthday || student.dateNaissance);
+    setVal("adresse", student.adress || student.adresse);
+    setVal("eglise", student.formerChurch || student.eglise);
+    setVal("profession", student.profession);
     setVal("nomTree", student.nomTree);
 
     if (student.birthday) {
       document
         .getElementById("dateNaissance")
         .dispatchEvent(new Event("change"));
+    }
+
+    if (student.classType) {
+      const index = student.classType === "weekend" ? 1 : 0;
+      selectOption(student.classType, index);
     }
 
     if (student.gender) {
@@ -317,6 +325,23 @@ async function loadExistingStudent(id) {
     const btnText = document.getElementById("btn-text");
     if (btnText) btnText.innerText = "Mettre à jour le dossier";
   }
+}
+
+function selectOption(value, index) {
+  if (tg.HapticFeedback) tg.HapticFeedback.selectionChanged();
+  document.getElementById("optionSelected").value = value;
+  document.getElementById("capsule-bg").style.transform =
+    `translateX(${index * 100}%)`;
+
+  const btn0 = document.getElementById("btn-0");
+  const btn1 = document.getElementById("btn-1");
+
+  btn0.className =
+    "flex-1 py-3 text-sm font-bold z-10 transition-colors " +
+    (index === 0 ? "text-yellow-900" : "text-gray-500");
+  btn1.className =
+    "flex-1 py-3 text-sm font-bold z-10 transition-colors " +
+    (index === 1 ? "text-yellow-900" : "text-gray-500");
 }
 
 // Squelette liste déroulante classe
@@ -472,17 +497,24 @@ async function submitForm() {
   const nom = nomInput.value;
   const sexe = sexeInput.value;
 
-  // Validations de base
+  // Validations
   if (!sexe) {
     tg.showAlert("Veuillez sélectionner le sexe (Homme/Femme).");
     return;
   }
   if (!nom) {
+    if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("error");
+    nomInput.classList.remove("border-gray-200");
     nomInput.classList.add("border-red-500", "bg-red-50");
+    nomInput.focus();
     return;
   }
+
   if (!selectedClass) {
-    tg.showAlert("Veuillez sélectionner une classe.");
+    if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("error");
+    classInput.classList.remove("border-gray-200");
+    classInput.classList.add("border-red-500", "bg-red-50");
+    classInput.focus();
     return;
   }
 
@@ -490,33 +522,31 @@ async function submitForm() {
   spinner.classList.remove("hidden");
   btnText.innerText = "Enregistrement...";
 
-  // --- CONFIGURATION DES DONNÉES ---
-  // On renvoie des valeurs par défaut pour les champs supprimés
-  // afin de satisfaire les contraintes "Required" de Strapi
+  // Collecte des données
   const data = {
     name: nom,
-    phone: document.getElementById("telephone").value || "0000000000",
-    birthday: document.getElementById("dateNaissance").value || "2000-01-01",
-    relationWithTree: document.getElementById("liaison").value || "NB",
+    phone: document.getElementById("telephone").value,
+    birthday: document.getElementById("dateNaissance").value,
+    adress: document.getElementById("adresse").value,
+    formerChurch: document.getElementById("eglise").value,
+    profession: document.getElementById("profession").value,
+    classType: document.getElementById("optionSelected").value,
+    relationWithTree: document.getElementById("liaison").value,
     gender: sexe,
-    nomTree: document.getElementById("nomTree").value || "N/A",
-
-    // Champs supprimés de l'interface mais envoyés au serveur :
-    adress: "Non renseigné",
-    formerChurch: "Non renseigné",
-    profession: "Non renseigné",
-    classType: "weekday",
+    nomTree: document.getElementById("nomTree").value,
   };
-
+  // Tree
   if (Object.keys(dataTree).length > 0) {
     data.tree = dataTree.id;
   }
 
   const existingId = idHiddenInput.value;
+
   let url = `/api/classes/${selectedClass}/people`;
   let method = "POST";
 
   if (existingId) {
+    // modif students
     data.class = selectedClass;
     url = `/api/people/${existingId}`;
     method = "PUT";
@@ -525,44 +555,56 @@ async function submitForm() {
   try {
     const response = await fetch(url, {
       method: method,
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify({ data: data }),
     });
 
     const result = await response.json();
 
-    if (response.ok) {
+    // console.log("🟢 RETOUR STRAPI :", result);
+
+    if (response.ok && result) {
       if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("success");
 
-      // Nettoyage du formulaire
-      nomInput.value = "";
-      document.getElementById("telephone").value = "";
-      document.getElementById("dateNaissance").value = "";
+      btn.disabled = false;
+      spinner.classList.add("hidden");
+      btnText.innerText = "Enregistrer le dossier";
+
+      // --- GRAND NETTOYAGE ---
+      idHiddenInput.value = "";
+      document
+        .querySelectorAll(
+          'input[type="text"], input[type="tel"], input[type="date"]',
+        )
+        .forEach((el) => (el.value = ""));
+
       document.getElementById("sexeInput").value = "";
       document
         .getElementsByName("sexe_radio")
         .forEach((r) => (r.checked = false));
+      document.getElementById("ageCalc").innerText = "";
 
-      const matricule =
-        result.data?.attributes?.user?.username || result.data?.id || "Succès";
-      showSuccessModal(matricule);
+      if (existingId) {
+        // Si c'est un update
+        showSuccessModal(existingId);
+      } else {
+        // Si c'est un nouveau : On cible le "username" généré par Strapi
+        const matricule =
+          result.data?.attributes?.user?.username || result.data?.id || "OK";
+        showSuccessModal(matricule);
+      }
     } else {
-      // SI CA ECHOUE : On affiche l'erreur exacte dans Telegram
-      const msg = result.error?.message || "Erreur inconnue";
-      const details = result.error?.details?.errors
-        ? result.error.details.errors
-            .map((e) => e.path + ": " + e.message)
-            .join("\n")
-        : "";
-
-      tg.showAlert(`ERREUR SERVEUR :\n${msg}\n\n${details}`);
+      throw new Error(
+        result.message || result.error?.message || "Erreur inconnue",
+      );
     }
   } catch (error) {
-    tg.showAlert("Erreur de connexion : " + error.message);
-  } finally {
     btn.disabled = false;
     spinner.classList.add("hidden");
-    btnText.innerText = "Enregistrer le dossier";
+    btnText.innerText = "Réessayer";
+    tg.showAlert("Erreur : " + error.message);
   }
 }
 
