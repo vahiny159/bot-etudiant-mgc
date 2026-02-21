@@ -562,12 +562,13 @@ async function submitForm() {
         .forEach((r) => (r.checked = false));
       document.getElementById("ageCalc").innerText = "";
 
-      // RÉCUPÉRATION DU MATRICULE LONG (POST ou PUT)
-      // On cherche à plusieurs endroits car Strapi change parfois sa structure avec le 'populate'
+      // RÉCUPÉRATION DU MATRICULE (POST ou PUT)
+      // Strapi v4 : POST → result.data.id, PUT → result.data.attributes.user...
       const matricule =
-        result.data?.attributes?.user?.username ||
         result.data?.attributes?.user?.data?.attributes?.username ||
+        result.data?.attributes?.user?.username ||
         result.data?.username ||
+        (method === "PUT" ? existingId : null) ||
         result.data?.id ||
         "OK";
 
