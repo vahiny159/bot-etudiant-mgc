@@ -563,12 +563,13 @@ async function submitForm() {
       document.getElementById("ageCalc").innerText = "";
 
       // RÉCUPÉRATION DU MATRICULE (POST ou PUT)
-      // Strapi v4 : POST → result.data.id, PUT → result.data.attributes.user...
+      // PUT → result.data.attributes.email = "43010016@mail.com" → on extrait la partie avant "@"
+      const emailAttr = result.data?.attributes?.email || "";
       const matricule =
+        (emailAttr ? emailAttr.split("@")[0] : null) ||
         result.data?.attributes?.user?.data?.attributes?.username ||
         result.data?.attributes?.user?.username ||
         result.data?.username ||
-        (method === "PUT" ? existingId : null) ||
         result.data?.id ||
         "OK";
 
