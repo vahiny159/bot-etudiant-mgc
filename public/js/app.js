@@ -466,11 +466,13 @@ async function submitForm() {
   const btnText = document.getElementById("btn-text");
   const nomInput = document.getElementById("nomComplet");
   const sexeInput = document.getElementById("sexeInput");
+  const classInput = document.getElementById("classeSelect");
   const idHiddenInput = document.getElementById("studentId");
 
   const nom = nomInput.value;
   const sexe = sexeInput.value;
 
+  // Validations de base
   if (!sexe) {
     tg.showAlert("Veuillez sélectionner le sexe (Homme/Femme).");
     return;
@@ -488,16 +490,18 @@ async function submitForm() {
   spinner.classList.remove("hidden");
   btnText.innerText = "Enregistrement...";
 
-  // CONFIGURATION DES DONNÉES (On renvoie du vide pour les champs supprimés)
+  // --- CONFIGURATION DES DONNÉES ---
+  // On renvoie des valeurs par défaut pour les champs supprimés
+  // afin de satisfaire les contraintes "Required" de Strapi
   const data = {
     name: nom,
-    phone: document.getElementById("telephone").value || "",
-    birthday: document.getElementById("dateNaissance").value || null,
+    phone: document.getElementById("telephone").value || "0000000000",
+    birthday: document.getElementById("dateNaissance").value || "2000-01-01",
     relationWithTree: document.getElementById("liaison").value || "NB",
     gender: sexe,
-    nomTree: document.getElementById("nomTree").value || "",
+    nomTree: document.getElementById("nomTree").value || "N/A",
 
-    // --- CES CHAMPS SONT OBLIGATOIRES CÔTÉ SERVEUR ---
+    // Champs supprimés de l'interface mais envoyés au serveur :
     adress: "Non renseigné",
     formerChurch: "Non renseigné",
     profession: "Non renseigné",
@@ -528,28 +532,30 @@ async function submitForm() {
     const result = await response.json();
 
     if (response.ok) {
-      // Succès
       if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("success");
 
-      // Nettoyage...
-      idHiddenInput.value = "";
+      // Nettoyage du formulaire
       nomInput.value = "";
       document.getElementById("telephone").value = "";
-      // ... (reste du nettoyage)
+      document.getElementById("dateNaissance").value = "";
+      document.getElementById("sexeInput").value = "";
+      document
+        .getElementsByName("sexe_radio")
+        .forEach((r) => (r.checked = false));
 
       const matricule =
-        result.data?.attributes?.user?.username || result.data?.id || "OK";
+        result.data?.attributes?.user?.username || result.data?.id || "Succès";
       showSuccessModal(matricule);
     } else {
-      // ON AFFICHE L'ERREUR RÉELLE DU SERVEUR ICI
-      const errorMsg =
-        result.error?.message || result.message || "Erreur inconnue";
+      // SI CA ECHOUE : On affiche l'erreur exacte dans Telegram
+      const msg = result.error?.message || "Erreur inconnue";
       const details = result.error?.details?.errors
-        ? JSON.stringify(result.error.details.errors)
+        ? result.error.details.errors
+            .map((e) => e.path + ": " + e.message)
+            .join("\n")
         : "";
 
-      console.error("Détails erreur:", result);
-      tg.showAlert(`Erreur Serveur: ${errorMsg} \n${details}`);
+      tg.showAlert(`ERREUR SERVEUR :\n${msg}\n\n${details}`);
     }
   } catch (error) {
     tg.showAlert("Erreur de connexion : " + error.message);
