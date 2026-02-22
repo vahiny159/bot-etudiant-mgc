@@ -236,37 +236,27 @@ function showDuplicateModal(candidates) {
 
   list.innerHTML = "";
   candidates.forEach((s) => {
-    // 🔍 ON REGARDE CE QUE L'API NOUS ENVOIE VRAIMENT
-    console.log("🔍 Données du doublon trouvées :", s);
-
-    // On gère le format natif Strapi (s.attributes) ou le format plat (s)
     const data = s.attributes || s;
-
     const displayName = data.name || data.nomComplet || "Nom inconnu";
-
-    // Si la donnée n'existe pas, on affiche "Non fourni par l'API" pour comprendre le bug
-    const displayPhone =
-      data.phone || data.telephone
-        ? `📞 ${data.phone || data.telephone}`
-        : "📞 Non fourni par l'API";
-    const displayDate = data.birthday
-      ? `🎂 ${data.birthday}`
-      : "🎂 Non fourni par l'API";
 
     const btn = document.createElement("button");
     btn.className =
-      "w-full relative flex items-center justify-between p-3.5 rounded-2xl bg-white border border-yellow-200 hover:bg-yellow-50 transition-all active:scale-[0.98] group text-left shadow-sm mb-2.5";
+      "w-full relative flex items-center justify-between p-4 rounded-2xl bg-white border border-yellow-200 hover:bg-yellow-50 hover:border-yellow-300 hover:shadow-md transition-all active:scale-[0.98] group text-left shadow-sm mb-3";
     btn.onclick = () => loadExistingStudent(s.id);
 
     btn.innerHTML = `
-      <div class="flex-1 pr-2">
-        <div class="font-bold text-gray-900 text-sm group-hover:text-yellow-800 transition-colors leading-tight">${displayName}</div>
-        <div class="text-[11px] font-medium text-gray-400 mt-1 flex items-center gap-1">${displayPhone}</div>
-        <div class="text-[11px] font-medium text-gray-400 mt-0.5 flex items-center gap-1">${displayDate}</div>
+      <div class="flex items-center gap-3">
+        <div class="flex-shrink-0 h-10 w-10 rounded-full bg-gradient-to-br from-yellow-100 to-yellow-200 text-yellow-700 flex items-center justify-center font-black text-lg shadow-inner border border-yellow-300">
+          ${displayName.charAt(0).toUpperCase()}
+        </div>
+        <div>
+          <div class="font-bold text-gray-900 text-base group-hover:text-yellow-800 transition-colors">${displayName}</div>
+          <div class="text-[11px] font-bold text-yellow-600/70 uppercase tracking-wide mt-0.5">Dossier existant</div>
+        </div>
       </div>
-      <div class="flex-shrink-0 h-9 w-9 rounded-full bg-yellow-100 text-yellow-600 flex items-center justify-center shadow-inner border border-yellow-200 group-hover:bg-yellow-400 group-hover:text-white transition-all">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
-          <path d="M2.695 14.763l-1.262 3.155a.5.5 0 00.65.65l3.155-1.262a4 4 0 001.343-.885L17.5 5.5a2.121 2.121 0 00-3-3L3.58 13.42a4 4 0 00-.885 1.343z" />
+      <div class="flex-shrink-0 text-yellow-400 group-hover:text-yellow-600 transition-colors group-hover:translate-x-1 duration-300">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+          <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd" />
         </svg>
       </div>
     `;
