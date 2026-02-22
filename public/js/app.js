@@ -140,24 +140,39 @@ async function checkUserTelegram() {
   }
 }
 
-// --- CHECK DOUBLON (Filtre strict côté Frontend) ---
+// --- CHECK DOUBLON ---
 async function checkDuplicates() {
-  let nomBrut = document.getElementById("nomComplet").value;
+  const nomBrut = document.getElementById("nomComplet").value;
+  const telBrut = document.getElementById("telephone").value;
+
   const btn = document.getElementById("btn-check");
   const btnText = document.getElementById("check-text");
   let btnIcon = document.getElementById("check-icon");
 
-  // On nettoie les espaces en trop
+  // Nettoyage : On enlève les espaces superflus du nom
   const nom = nomBrut.trim().replace(/\s+/g, " ");
+  // Nettoyage : On garde uniquement les chiffres du téléphone (ex: "034 00 11" devient "0340011")
+  const tel = telBrut.replace(/\D/g, "");
 
-  if (!nom) {
+  // 1ère sécurité : Si les DEUX sont vides
+  if (nom === "" && tel === "") {
     if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("error");
     const oldText = btnText.innerText;
-    btnText.innerText = "⚠️ Nom manquant !";
-    setTimeout(() => (btnText.innerText = oldText), 2000);
+    btnText.innerText = "⚠️ Entrez un nom ou téléphone !";
+    setTimeout(() => (btnText.innerText = oldText), 2500);
     return;
   }
 
+  // 2ème sécurité : S'il n'y a QUE le téléphone, il doit être assez long
+  if (nom === "" && tel.length < 8) {
+    if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("error");
+    const oldText = btnText.innerText;
+    btnText.innerText = "⚠️ Numéro trop court !";
+    setTimeout(() => (btnText.innerText = oldText), 2500);
+    return;
+  }
+
+  // Si on passe les sécurités, on lance la recherche
   const originalClass = btn.className;
   const originalText = "Check doublons";
 
@@ -170,10 +185,21 @@ async function checkDuplicates() {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000);
 
-    // Retour à ton ancienne route qui fonctionne côté serveur
-    const nomSplit = nom.replace(/ /g, ",");
+    let url = "";
+    let isPhoneSearch = false;
 
-    const response = await fetch(`/api/students/findByName/${nomSplit}`, {
+    // CHOIX DE LA ROUTE API
+    if (tel && tel.length >= 8) {
+      // Si on a un téléphone valide, on priorise la recherche par téléphone
+      url = `/api/students/findByPhone/${tel}`;
+      isPhoneSearch = true;
+    } else {
+      // Sinon on fait la recherche par nom
+      const nomSplit = nom.replace(/ /g, ",");
+      url = `/api/students/findByName/${nomSplit}`;
+    }
+
+    const response = await fetch(url, {
       method: "GET",
       headers: { "Content-Type": "application/json" },
       signal: controller.signal,
@@ -191,20 +217,21 @@ async function checkDuplicates() {
       candidates = result;
     }
 
-    // 🚀 LE FILTRE MAGIQUE AMÉLIORÉ : Recherche par début de mot
-    const motsRecherches = nom.toLowerCase().split(" ");
+    // Filtre intelligent (UNIQUEMENT pour la recherche par nom)
+    if (!isPhoneSearch && candidates.length > 0) {
+      const motsRecherches = nom.toLowerCase().split(" ");
+      candidates = candidates.filter((c) => {
+        const nomCandidat = (c.name || c.nomComplet || "").toLowerCase();
+        const motsDuCandidat = nomCandidat.split(" ");
 
-    candidates = candidates.filter((c) => {
-      const nomCandidat = (c.name || c.nomComplet || "").toLowerCase();
-      const motsDuCandidat = nomCandidat.split(" "); // On découpe le nom du candidat en mots
-
-      // Pour chaque mot tapé, on vérifie s'il correspond au DÉBUT d'au moins un mot du candidat
-      return motsRecherches.every((motRecherche) =>
-        motsDuCandidat.some((motCandidat) =>
-          motCandidat.startsWith(motRecherche),
-        ),
-      );
-    });
+        // Chaque mot tapé doit correspondre au DÉBUT d'un mot du nom complet
+        return motsRecherches.every((motRecherche) =>
+          motsDuCandidat.some((motCandidat) =>
+            motCandidat.startsWith(motRecherche),
+          ),
+        );
+      });
+    }
 
     if (candidates.length > 0) {
       if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("warning");
@@ -231,6 +258,8 @@ async function checkDuplicates() {
 
     if (error.name === "AbortError") {
       btnText.innerText = "⏳ Trop long (Timeout)";
+    } else if (error.message.includes("404")) {
+      btnText.innerText = "❌ Route Tel introuvable";
     } else {
       btnText.innerText = "❌ Erreur Serveur";
     }
