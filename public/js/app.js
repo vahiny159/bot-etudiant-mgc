@@ -552,11 +552,9 @@ function emptyData() {
 function resetForm() {
   if (tg.HapticFeedback) tg.HapticFeedback.selectionChanged();
 
-  // Vider le champ caché ID
   document.getElementById("studentId").value = "";
   selectedClass = null;
 
-  // Vider tous les inputs texte/tel/date
   document
     .querySelectorAll(
       'input[type="text"], input[type="tel"], input[type="date"]',
@@ -586,11 +584,14 @@ function resetForm() {
     banner.classList.remove("flex");
   }
 
-  // Remettre le texte du bouton principal
-  const btnText = document.getElementById("btn-text");
-  if (btnText)
-    btnText.innerHTML = `<img src="icons/save.svg" alt="Icone save" class="w-8 h-8 object-contain" /><span>Enregistrer le dossier</span>`;
+  // --- RÉINITIALISER LE BOUTON PRINCIPAL (Design) ---
   const submitBtn = document.getElementById("main-btn");
+  const btnText = document.getElementById("btn-text");
+
+  if (btnText) {
+    btnText.innerHTML = `<img src="icons/save.svg" alt="Icone save" class="w-8 h-8 object-contain" /><span>Enregistrer le dossier</span>`;
+  }
+
   if (submitBtn) {
     submitBtn.classList.remove(
       "from-amber-400",
