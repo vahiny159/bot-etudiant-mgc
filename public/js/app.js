@@ -140,14 +140,14 @@ async function checkUserTelegram() {
   }
 }
 
-// --- CHECK DOUBLON ---
+// --- CHECK DOUBLON (Ultra-précis avec l'API native Strapi) ---
 async function checkDuplicates() {
   let nomBrut = document.getElementById("nomComplet").value;
   const btn = document.getElementById("btn-check");
   const btnText = document.getElementById("check-text");
   let btnIcon = document.getElementById("check-icon");
 
-  // Nettoyage intelligent du nom
+  // On nettoie les espaces multiples avant d'envoyer
   const nom = nomBrut.trim().replace(/\s+/g, " ");
 
   if (!nom) {
@@ -162,6 +162,7 @@ async function checkDuplicates() {
   const originalText = "Check doublons";
 
   btnText.innerText = "Recherche...";
+  // Petit cercle de chargement à la place de l'icône
   if (btnIcon)
     btnIcon.innerHTML = `<span class="animate-spin inline-block h-4 w-4 border-2 border-yellow-800 border-t-transparent rounded-full"></span>`;
   btn.disabled = true;
@@ -170,26 +171,42 @@ async function checkDuplicates() {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000);
 
-    const nomSplit = nom.replace(/ /g, ",");
+    // 🚀 LA MAGIE EST ICI : Recherche multi-mots stricte (ET / AND)
+    const mots = nom.split(" ");
+    let queryParams = "?";
+    mots.forEach((mot, index) => {
+      // $containsi = recherche insensible à la casse (majuscule/minuscule)
+      queryParams += `filters[$and][${index}][name][$containsi]=${encodeURIComponent(mot)}&`;
+    });
 
-    const response = await fetch(`/api/students/findByName/${nomSplit}`, {
+    // On limite à 10 résultats pour ne pas faire bugger la popup
+    queryParams += "pagination[limit]=10";
+
+    // ❌ Fini le /api/students/findByName
+    // ✅ On tape sur la route officielle /api/people
+    const response = await fetch(`/api/people${queryParams}`, {
       method: "GET",
       headers: { "Content-Type": "application/json" },
+      signal: controller.signal, // Permet d'annuler la requête si c'est trop long
     });
 
     clearTimeout(timeoutId);
-    const text = await response.text();
-    const result = text ? JSON.parse(text) : null;
+
+    const result = await response.json();
 
     if (!response.ok) throw new Error(`Erreur Server ${response.status}`);
 
-    if (result && Array.isArray(result) && result.length > 0) {
+    // Avec l'API native, les résultats sont dans "result.data"
+    const candidates = result.data || [];
+
+    if (candidates.length > 0) {
       if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("warning");
       resetBtn(btn, btnText, btnIcon, originalClass, originalText);
-      showDuplicateModal(result);
+      showDuplicateModal(candidates);
     } else {
       if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("success");
 
+      // Look vert de validation
       btn.className =
         "w-full flex justify-center items-center gap-2 py-3.5 rounded-xl font-bold text-sm transition-all bg-green-50 text-green-700 border border-green-200";
       btnText.innerText = "Aucun doublon trouvé !";
@@ -209,7 +226,7 @@ async function checkDuplicates() {
     if (error.name === "AbortError") {
       btnText.innerText = "⏳ Trop long (Timeout)";
     } else {
-      btnText.innerText = "❌ Erreur de vérification";
+      btnText.innerText = "❌ Erreur Serveur";
     }
 
     setTimeout(() => {
@@ -220,9 +237,11 @@ async function checkDuplicates() {
   }
 }
 
+// Fonction utilitaire pour remettre le bouton à son état normal
 function resetBtn(btn, txtSpan, iconSpan, css, txt) {
   btn.className = css;
   txtSpan.innerText = txt;
+  // On remet l'icône image d'origine
   if (iconSpan)
     iconSpan.innerHTML = `<img src="icons/duplicate.svg" alt="Icone Duplicate" class="w-5 h-5 object-contain" />`;
 }
