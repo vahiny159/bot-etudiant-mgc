@@ -261,14 +261,46 @@ function showDuplicateModal(candidates) {
 }
 
 function closeModal() {
-  const modal = document.getElementById("duplicate-modal");
-  const modalContent = document.getElementById("modal-content");
-  modal.classList.add("opacity-0");
-  if (modalContent) {
-    modalContent.classList.remove("scale-100");
-    modalContent.classList.add("scale-95");
+  const modal = document.getElementById("modal-check");
+  modal.classList.add("hidden");
+  modal.classList.remove("flex");
+
+  currentStudentId = null;
+  document.getElementById("studentId").value = "";
+  document.getElementById("checkForm").reset();
+
+  const banner = document.getElementById("edit-banner");
+  if (banner) {
+    banner.classList.add("hidden");
+    banner.classList.remove("flex");
   }
-  setTimeout(() => modal.classList.add("hidden"), 300);
+
+  const submitBtn = document.getElementById("btn-submit");
+  const btnText = document.getElementById("btn-text");
+
+  if (submitBtn && btnText) {
+    btnText.innerText = "Enregistrer le dossier";
+
+    submitBtn.classList.remove(
+      "bg-gradient-to-r",
+      "from-amber-500",
+      "to-orange-600",
+      "hover:from-amber-600",
+      "hover:to-orange-700",
+      "border-amber-500/20",
+      "shadow-lg",
+      "shadow-amber-500/20",
+    );
+
+    submitBtn.classList.add(
+      "bg-blue-600",
+      "hover:bg-blue-700",
+      "border-transparent",
+    );
+  }
+
+  emptyData();
+  if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred("light");
 }
 
 async function loadExistingStudent(id) {
@@ -377,8 +409,26 @@ async function loadExistingStudent(id) {
       banner.classList.add("flex");
     }
 
+    const submitBtn = document.getElementById("main-btn");
     const btnText = document.getElementById("btn-text");
-    if (btnText) btnText.innerText = "Mettre à jour le dossier";
+
+    if (submitBtn && btnText) {
+      btnText.innerHTML = `<img src="icons/save.svg" alt="Icone save" class="w-8 h-8 object-contain" /><span>Mettre à jour le dossier</span>`;
+
+      submitBtn.classList.remove(
+        "from-lemon-400",
+        "to-lemon-500",
+        "text-gray-900",
+        "shadow-black/5",
+      );
+
+      submitBtn.classList.add(
+        "from-amber-400",
+        "to-orange-500",
+        "text-white",
+        "shadow-orange-500/30",
+      );
+    }
   }
 }
 
