@@ -616,6 +616,21 @@ function resetForm() {
   const btnText = document.getElementById("btn-text");
   if (btnText)
     btnText.innerHTML = `<img src="icons/save.svg" alt="Icone save" class="w-8 h-8 object-contain" /><span>Enregistrer le dossier</span>`;
+  const submitBtn = document.getElementById("main-btn");
+  if (submitBtn) {
+    submitBtn.classList.remove(
+      "from-amber-400",
+      "to-orange-500",
+      "text-white",
+      "shadow-orange-500/30",
+    );
+    submitBtn.classList.add(
+      "from-lemon-400",
+      "to-lemon-500",
+      "text-gray-900",
+      "shadow-black/5",
+    );
+  }
 }
 
 // --- SOUMISSION ---
