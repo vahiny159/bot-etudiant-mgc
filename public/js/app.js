@@ -147,6 +147,7 @@ async function checkDuplicates() {
   const btnText = document.getElementById("check-text");
   let btnIcon = document.getElementById("check-icon");
 
+  // Nettoyage intelligent du nom
   const nom = nomBrut.trim().replace(/\s+/g, " ");
 
   if (!nom) {
@@ -169,32 +170,23 @@ async function checkDuplicates() {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000);
 
-    const mots = nom.split(" ");
-    let queryParams = "?";
-    mots.forEach((mot, index) => {
-      queryParams += `filters[$and][${index}][name][$containsi]=${encodeURIComponent(mot)}&`;
-    });
+    const nomSplit = nom.replace(/ /g, ",");
 
-    queryParams += "pagination[limit]=10";
-
-    const response = await fetch(`/api/people${queryParams}`, {
+    const response = await fetch(`/api/students/findByName/${nomSplit}`, {
       method: "GET",
       headers: { "Content-Type": "application/json" },
-      signal: controller.signal,
     });
 
     clearTimeout(timeoutId);
-
-    const result = await response.json();
+    const text = await response.text();
+    const result = text ? JSON.parse(text) : null;
 
     if (!response.ok) throw new Error(`Erreur Server ${response.status}`);
 
-    const candidates = result.data || [];
-
-    if (candidates.length > 0) {
+    if (result && Array.isArray(result) && result.length > 0) {
       if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("warning");
       resetBtn(btn, btnText, btnIcon, originalClass, originalText);
-      showDuplicateModal(candidates);
+      showDuplicateModal(result);
     } else {
       if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("success");
 
@@ -217,7 +209,7 @@ async function checkDuplicates() {
     if (error.name === "AbortError") {
       btnText.innerText = "⏳ Trop long (Timeout)";
     } else {
-      btnText.innerText = "❌ Erreur Serveur";
+      btnText.innerText = "❌ Erreur de vérification";
     }
 
     setTimeout(() => {
@@ -228,20 +220,12 @@ async function checkDuplicates() {
   }
 }
 
-// Fonction utilitaire pour remettre le bouton à son état normal
 function resetBtn(btn, txtSpan, iconSpan, css, txt) {
   btn.className = css;
   txtSpan.innerText = txt;
   if (iconSpan)
     iconSpan.innerHTML = `<img src="icons/duplicate.svg" alt="Icone Duplicate" class="w-5 h-5 object-contain" />`;
 }
-
-// function resetBtn(btn, txtSpan, iconSpan, css, txt) {
-//   btn.className = css;
-//   txtSpan.innerText = txt;
-//   if (iconSpan)
-//     iconSpan.innerHTML = `<img src="icons/duplicate.svg" alt="Icone Duplicate" class="w-5 h-5 object-contain" />`;
-// }
 
 // --- MODALE DES RÉSULTATS ---
 function showDuplicateModal(candidates) {
