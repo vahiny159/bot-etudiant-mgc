@@ -280,51 +280,50 @@ async function loadExistingStudent(id) {
       document.getElementById(elId).value = val || "";
   };
 
-  // populate=* pour récupérer la relation classe + tree
-  const response = await fetch(`/api/people/${id}?populate=*`, {
+  const response = await fetch(`/api/people/${id}?populate=deep,4`, {
     method: "GET",
     headers: { "Content-Type": "application/json" },
   });
   const text = await response.text();
   const result = text ? JSON.parse(text) : null;
 
-  // Log complet pour debugger les noms de champs
-  console.log("📦 loadExistingStudent result:", JSON.stringify(result, null, 2));
+  console.log("loadExistingStudent result:", JSON.stringify(result, null, 2));
 
   if (response.ok && result) {
     const student = result.data?.attributes || result;
 
-    // Champs de base
     setVal("nomComplet", student.name);
     setVal("telephone", student.phone);
     setVal("dateNaissance", student.birthday);
 
-    // Facebook : peut être "facebook" ou "facebookId" selon la config Strapi
     setVal("facebook", student.facebook || student.facebookId || "");
 
-    // Liaison (relationWithTree)
     setVal("liaison", student.relationWithTree || "");
 
-    // Calcul âge
     if (student.birthday) {
-      document.getElementById("dateNaissance").dispatchEvent(new Event("change"));
+      document
+        .getElementById("dateNaissance")
+        .dispatchEvent(new Event("change"));
     }
 
-    // Sexe
     if (student.gender) {
       document.getElementById("sexeInput").value = student.gender;
-      document
-        .getElementsByName("sexe_radio")
-        .forEach((r) => { if (r.value === student.gender) r.checked = true; });
+      document.getElementsByName("sexe_radio").forEach((r) => {
+        if (r.value === student.gender) r.checked = true;
+      });
     }
 
-    // Classe — relation Strapi v4 : student.class.data.id
     const classeId =
       student.class?.data?.id ||
       student.classes?.data?.[0]?.id ||
       student.class?.id ||
       null;
-    console.log("🏫 classeId trouvé:", classeId, "| student.class:", student.class);
+    console.log(
+      "🏫 classeId trouvé:",
+      classeId,
+      "| student.class:",
+      student.class,
+    );
 
     if (classeId) {
       selectedClass = String(classeId);
@@ -332,30 +331,50 @@ async function loadExistingStudent(id) {
       if (select) select.value = selectedClass;
     }
 
-    // Tree — relation Strapi v4 : student.tree.data.attributes
-    const treeData = student.tree?.data?.attributes || null;
-    console.log("🌳 treeData trouvé:", treeData);
+    // gestion du tree
+    let treeData = null;
+    let treeId = null;
+
+    if (student.tree?.data?.attributes) {
+      treeData = student.tree.data.attributes;
+      treeId = student.tree.data.id;
+    } else if (student.tree && typeof student.tree === "object") {
+      treeData = student.tree;
+      treeId = student.tree.id;
+    }
+
+    console.log("treeData trouvé:", treeData);
 
     if (treeData) {
-      // On remplit dataTree global pour que submitForm() puisse l'utiliser
-      dataTree = { id: student.tree.data.id, ...treeData };
+      dataTree = { id: treeId, ...treeData };
 
-      setVal("nomTree", treeData.name || "");
-      setVal("telTree", treeData.phone || "");
-      setVal("departement", treeData.cell?.data?.attributes?.team?.data?.attributes?.department?.data?.attributes?.name || "");
+      setVal("nomTree", treeData.name || treeData.nomComplet || "");
+      setVal("telTree", treeData.phone || treeData.telephone || "");
 
-      // Bloquer les champs tree en lecture seule (comme getDataTree le fait)
+      const appId =
+        treeData.appId ||
+        treeData.user?.data?.attributes?.username ||
+        treeData.user?.username ||
+        "";
+      setVal("idApp", appId);
+
+      const deptName =
+        treeData.cell?.data?.attributes?.team?.data?.attributes?.department
+          ?.data?.attributes?.name ||
+        treeData.cell?.team?.department?.name ||
+        treeData.departement ||
+        "";
+      setVal("departement", deptName);
+
       document.getElementById("nomTree").disabled = true;
       document.getElementById("departement").disabled = true;
     } else {
-      // Pas de tree lié — on essaie le champ "treeName" direct sur le student
       setVal("nomTree", student.treeName || "");
     }
 
     if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("success");
     tg.showAlert(`📂 Profil chargé : ${student.name}`);
 
-    // Afficher la bannière "mode modification"
     const banner = document.getElementById("edit-banner");
     if (banner) {
       banner.classList.remove("hidden");
@@ -366,8 +385,6 @@ async function loadExistingStudent(id) {
     if (btnText) btnText.innerText = "Mettre à jour le dossier";
   }
 }
-
-
 
 // Squelette liste déroulante classe
 function updateClassesList(data) {
@@ -443,6 +460,10 @@ function setSexe(valeur) {
  */
 async function getDataTree() {
   let appId = document.getElementById("idApp").value;
+  if (!appId) {
+    emptyData();
+    return;
+  }
   const spinner = document.getElementById("spinner");
   spinner.classList.remove("hidden");
 
@@ -473,7 +494,7 @@ async function getDataTree() {
   }
 }
 
-function fillDataTree() {
+function fillDataTree(dataTree) {
   let dptInput = document.getElementById("departement");
   let nameInput = document.getElementById("nomTree");
   let phoneInput = document.getElementById("telTree");
@@ -517,7 +538,9 @@ function resetForm() {
 
   // Vider tous les inputs texte/tel/date
   document
-    .querySelectorAll('input[type="text"], input[type="tel"], input[type="date"]')
+    .querySelectorAll(
+      'input[type="text"], input[type="tel"], input[type="date"]',
+    )
     .forEach((el) => (el.value = ""));
 
   // Reset sexe
@@ -545,7 +568,8 @@ function resetForm() {
 
   // Remettre le texte du bouton principal
   const btnText = document.getElementById("btn-text");
-  if (btnText) btnText.innerHTML = `<img src="icons/save.svg" alt="Icone save" class="w-8 h-8 object-contain" /><span>Enregistrer le dossier</span>`;
+  if (btnText)
+    btnText.innerHTML = `<img src="icons/save.svg" alt="Icone save" class="w-8 h-8 object-contain" /><span>Enregistrer le dossier</span>`;
 }
 
 // --- SOUMISSION ---
@@ -568,7 +592,14 @@ async function submitForm() {
   const facebook = document.getElementById("facebook").value.trim();
 
   // Validations — tous les champs Fruit sont obligatoires
-  if (!nom || !sexe || !telephone || !dateNaissance || !facebook || !selectedClass) {
+  if (
+    !nom ||
+    !sexe ||
+    !telephone ||
+    !dateNaissance ||
+    !facebook ||
+    !selectedClass
+  ) {
     if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("error");
     tg.showAlert("Veuillez remplir tous les champs de la partie Fruit.");
 
