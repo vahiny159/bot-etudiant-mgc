@@ -149,12 +149,9 @@ async function checkDuplicates() {
   const btnText = document.getElementById("check-text");
   let btnIcon = document.getElementById("check-icon");
 
-  // Nettoyage : On enlève les espaces superflus du nom
   const nom = nomBrut.trim().replace(/\s+/g, " ");
-  // Nettoyage : On garde uniquement les chiffres du téléphone (ex: "034 00 11" devient "0340011")
   const tel = telBrut.replace(/\D/g, "");
 
-  // 1ère sécurité : Si les DEUX sont vides
   if (nom === "" && tel === "") {
     if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("error");
     const oldText = btnText.innerText;
@@ -163,7 +160,6 @@ async function checkDuplicates() {
     return;
   }
 
-  // 2ème sécurité : S'il n'y a QUE le téléphone, il doit être assez long
   if (nom === "" && tel.length < 8) {
     if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("error");
     const oldText = btnText.innerText;
@@ -172,7 +168,6 @@ async function checkDuplicates() {
     return;
   }
 
-  // Si on passe les sécurités, on lance la recherche
   const originalClass = btn.className;
   const originalText = "Check doublons";
 
@@ -188,13 +183,10 @@ async function checkDuplicates() {
     let url = "";
     let isPhoneSearch = false;
 
-    // CHOIX DE LA ROUTE API
     if (tel && tel.length >= 8) {
-      // Si on a un téléphone valide, on priorise la recherche par téléphone
       url = `/api/students/findByPhone/${tel}`;
       isPhoneSearch = true;
     } else {
-      // Sinon on fait la recherche par nom
       const nomSplit = nom.replace(/ /g, ",");
       url = `/api/students/findByName/${nomSplit}`;
     }
@@ -207,24 +199,32 @@ async function checkDuplicates() {
 
     clearTimeout(timeoutId);
 
-    const text = await response.text();
-    const result = text ? JSON.parse(text) : null;
+    if (!response.ok) {
+      if (response.status === 404 && isPhoneSearch) {
+        throw new Error("ROUTE_PHONE_NOT_FOUND");
+      }
+      throw new Error(`Erreur Server ${response.status}`);
+    }
 
-    if (!response.ok) throw new Error(`Erreur Server ${response.status}`);
+    const text = await response.text();
+    let result = null;
+    try {
+      result = text ? JSON.parse(text) : null;
+    } catch (e) {
+      throw new Error("FORMAT_INVALIDE");
+    }
 
     let candidates = [];
     if (result && Array.isArray(result)) {
       candidates = result;
     }
 
-    // Filtre intelligent (UNIQUEMENT pour la recherche par nom)
     if (!isPhoneSearch && candidates.length > 0) {
       const motsRecherches = nom.toLowerCase().split(" ");
       candidates = candidates.filter((c) => {
         const nomCandidat = (c.name || c.nomComplet || "").toLowerCase();
         const motsDuCandidat = nomCandidat.split(" ");
 
-        // Chaque mot tapé doit correspondre au DÉBUT d'un mot du nom complet
         return motsRecherches.every((motRecherche) =>
           motsDuCandidat.some((motCandidat) =>
             motCandidat.startsWith(motRecherche),
@@ -256,10 +256,13 @@ async function checkDuplicates() {
     btn.className =
       "w-full flex justify-center items-center gap-2 py-3.5 rounded-xl font-bold text-sm transition-all bg-red-50 text-red-700 border border-red-200";
 
+    // Gestion propre des messages d'erreur
     if (error.name === "AbortError") {
       btnText.innerText = "⏳ Trop long (Timeout)";
-    } else if (error.message.includes("404")) {
+    } else if (error.message === "ROUTE_PHONE_NOT_FOUND") {
       btnText.innerText = "❌ Route Tel introuvable";
+    } else if (error.message === "FORMAT_INVALIDE") {
+      btnText.innerText = "❌ Le serveur a renvoyé du HTML";
     } else {
       btnText.innerText = "❌ Erreur Serveur";
     }
