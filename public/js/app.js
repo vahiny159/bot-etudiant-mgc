@@ -236,26 +236,33 @@ function showDuplicateModal(candidates) {
 
   list.innerHTML = "";
   candidates.forEach((s) => {
+    // 🔍 ON REGARDE CE QUE L'API NOUS ENVOIE VRAIMENT
+    console.log("🔍 Données du doublon trouvées :", s);
+
+    // On gère le format natif Strapi (s.attributes) ou le format plat (s)
+    const data = s.attributes || s;
+
+    const displayName = data.name || data.nomComplet || "Nom inconnu";
+
+    // Si la donnée n'existe pas, on affiche "Non fourni par l'API" pour comprendre le bug
+    const displayPhone =
+      data.phone || data.telephone
+        ? `📞 ${data.phone || data.telephone}`
+        : "📞 Non fourni par l'API";
+    const displayDate = data.birthday
+      ? `🎂 ${data.birthday}`
+      : "🎂 Non fourni par l'API";
+
     const btn = document.createElement("button");
     btn.className =
       "w-full relative flex items-center justify-between p-3.5 rounded-2xl bg-white border border-yellow-200 hover:bg-yellow-50 transition-all active:scale-[0.98] group text-left shadow-sm mb-2.5";
     btn.onclick = () => loadExistingStudent(s.id);
 
-    const displayName = s.name || s.nomComplet || "Nom inconnu";
-
-    // Ajout d'informations pour différencier les homonymes
-    const displayPhone = s.phone
-      ? `<div class="text-[11px] font-medium text-gray-500 mt-1 flex items-center gap-1">📞 ${s.phone}</div>`
-      : "";
-    const displayDate = s.birthday
-      ? `<div class="text-[11px] font-medium text-gray-500 mt-0.5 flex items-center gap-1">🎂 ${s.birthday}</div>`
-      : "";
-
     btn.innerHTML = `
       <div class="flex-1 pr-2">
         <div class="font-bold text-gray-900 text-sm group-hover:text-yellow-800 transition-colors leading-tight">${displayName}</div>
-        ${displayPhone}
-        ${displayDate}
+        <div class="text-[11px] font-medium text-gray-400 mt-1 flex items-center gap-1">${displayPhone}</div>
+        <div class="text-[11px] font-medium text-gray-400 mt-0.5 flex items-center gap-1">${displayDate}</div>
       </div>
       <div class="flex-shrink-0 h-9 w-9 rounded-full bg-yellow-100 text-yellow-600 flex items-center justify-center shadow-inner border border-yellow-200 group-hover:bg-yellow-400 group-hover:text-white transition-all">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
