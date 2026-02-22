@@ -280,32 +280,35 @@ async function loadExistingStudent(id) {
       document.getElementById(elId).value = val || "";
   };
 
-  const response = await fetch(`/api/people/${id}?populate=deep,4`, {
+  const queryParams =
+    "?populate[0]=class&populate[1]=tree&populate[2]=tree.user";
+
+  const response = await fetch(`/api/people/${id}${queryParams}`, {
     method: "GET",
     headers: { "Content-Type": "application/json" },
   });
+
   const text = await response.text();
   const result = text ? JSON.parse(text) : null;
-
-  console.log("loadExistingStudent result:", JSON.stringify(result, null, 2));
 
   if (response.ok && result) {
     const student = result.data?.attributes || result;
 
+    // Champs de base
     setVal("nomComplet", student.name);
     setVal("telephone", student.phone);
     setVal("dateNaissance", student.birthday);
-
     setVal("facebook", student.facebook || student.facebookId || "");
-
     setVal("liaison", student.relationWithTree || "");
 
+    // Calcul âge
     if (student.birthday) {
       document
         .getElementById("dateNaissance")
         .dispatchEvent(new Event("change"));
     }
 
+    // Sexe
     if (student.gender) {
       document.getElementById("sexeInput").value = student.gender;
       document.getElementsByName("sexe_radio").forEach((r) => {
@@ -313,25 +316,19 @@ async function loadExistingStudent(id) {
       });
     }
 
+    // Classe
     const classeId =
       student.class?.data?.id ||
       student.classes?.data?.[0]?.id ||
       student.class?.id ||
       null;
-    console.log(
-      "🏫 classeId trouvé:",
-      classeId,
-      "| student.class:",
-      student.class,
-    );
-
     if (classeId) {
       selectedClass = String(classeId);
       const select = document.getElementById("classeSelect");
       if (select) select.value = selectedClass;
     }
 
-    // gestion du tree
+    // gestion tree
     let treeData = null;
     let treeId = null;
 
@@ -343,27 +340,24 @@ async function loadExistingStudent(id) {
       treeId = student.tree.id;
     }
 
-    console.log("treeData trouvé:", treeData);
-
     if (treeData) {
       dataTree = { id: treeId, ...treeData };
 
-      setVal("nomTree", treeData.name || treeData.nomComplet || "");
-      setVal("telTree", treeData.phone || treeData.telephone || "");
+      // Noms et Téléphones
+      setVal("nomTree", treeData.name || "");
+      setVal("telTree", treeData.phone || "");
 
+      // ID SMADA
       const appId =
-        treeData.appId ||
         treeData.user?.data?.attributes?.username ||
         treeData.user?.username ||
+        treeData.scjId ||
         "";
       setVal("idApp", appId);
 
+      // Département
       const deptName =
-        treeData.cell?.data?.attributes?.team?.data?.attributes?.department
-          ?.data?.attributes?.name ||
-        treeData.cell?.team?.department?.name ||
-        treeData.departement ||
-        "";
+        treeData.department || treeData.registrationDepartment || "";
       setVal("departement", deptName);
 
       document.getElementById("nomTree").disabled = true;
@@ -375,6 +369,7 @@ async function loadExistingStudent(id) {
     if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("success");
     tg.showAlert(`📂 Profil chargé : ${student.name}`);
 
+    // Afficher la bannière "mode modification"
     const banner = document.getElementById("edit-banner");
     if (banner) {
       banner.classList.remove("hidden");
