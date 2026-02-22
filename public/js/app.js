@@ -261,46 +261,20 @@ function showDuplicateModal(candidates) {
 }
 
 function closeModal() {
-  const modal = document.getElementById("modal-check");
-  modal.classList.add("hidden");
-  modal.classList.remove("flex");
+  const modal = document.getElementById("duplicate-modal");
+  const modalContent = document.getElementById("modal-content");
 
-  currentStudentId = null;
-  document.getElementById("studentId").value = "";
-  document.getElementById("checkForm").reset();
+  if (!modal) return; // Sécurité anti-crash
 
-  const banner = document.getElementById("edit-banner");
-  if (banner) {
-    banner.classList.add("hidden");
-    banner.classList.remove("flex");
+  modal.classList.add("opacity-0");
+  if (modalContent) {
+    modalContent.classList.remove("scale-100");
+    modalContent.classList.add("scale-95");
   }
 
-  const submitBtn = document.getElementById("btn-submit");
-  const btnText = document.getElementById("btn-text");
-
-  if (submitBtn && btnText) {
-    btnText.innerText = "Enregistrer le dossier";
-
-    submitBtn.classList.remove(
-      "bg-gradient-to-r",
-      "from-amber-500",
-      "to-orange-600",
-      "hover:from-amber-600",
-      "hover:to-orange-700",
-      "border-amber-500/20",
-      "shadow-lg",
-      "shadow-amber-500/20",
-    );
-
-    submitBtn.classList.add(
-      "bg-blue-600",
-      "hover:bg-blue-700",
-      "border-transparent",
-    );
-  }
-
-  emptyData();
-  if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred("light");
+  setTimeout(() => {
+    modal.classList.add("hidden");
+  }, 300);
 }
 
 async function loadExistingStudent(id) {
