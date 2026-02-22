@@ -142,10 +142,13 @@ async function checkUserTelegram() {
 
 // --- CHECK DOUBLON ---
 async function checkDuplicates() {
-  const nom = document.getElementById("nomComplet").value;
+  let nomBrut = document.getElementById("nomComplet").value;
   const btn = document.getElementById("btn-check");
   const btnText = document.getElementById("check-text");
   let btnIcon = document.getElementById("check-icon");
+
+  // Nettoyage intelligent du nom
+  const nom = nomBrut.trim().replace(/\s+/g, " ");
 
   if (!nom) {
     if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("error");
@@ -156,10 +159,11 @@ async function checkDuplicates() {
   }
 
   const originalClass = btn.className;
-  const originalText = "Vérifier les doublons";
+  const originalText = "Check doublons";
 
   btnText.innerText = "Recherche...";
-  if (btnIcon) btnIcon.innerText = "⏳";
+  if (btnIcon)
+    btnIcon.innerHTML = `<span class="animate-spin inline-block h-4 w-4 border-2 border-yellow-800 border-t-transparent rounded-full"></span>`;
   btn.disabled = true;
 
   try {
@@ -168,7 +172,6 @@ async function checkDuplicates() {
 
     const nomSplit = nom.replace(/ /g, ",");
 
-    // ✅ CORRECTION : URL relative, suppression de Authorization
     const response = await fetch(`/api/students/findByName/${nomSplit}`, {
       method: "GET",
       headers: { "Content-Type": "application/json" },
@@ -181,33 +184,32 @@ async function checkDuplicates() {
     if (!response.ok) throw new Error(`Erreur Server ${response.status}`);
 
     if (result && Array.isArray(result) && result.length > 0) {
-      // Doublon trouvé
       if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("warning");
       resetBtn(btn, btnText, btnIcon, originalClass, originalText);
       showDuplicateModal(result);
     } else {
-      // Pas de doublon
       if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("success");
+
       btn.className =
-        "w-full flex justify-center items-center gap-2 py-3.5 rounded-xl font-bold text-sm transition-all bg-green-100 text-green-700 border border-green-300";
-      btnText.innerText = "✅ C'est tout bon !";
-      if (btnIcon) btnIcon.innerText = "";
+        "w-full flex justify-center items-center gap-2 py-3.5 rounded-xl font-bold text-sm transition-all bg-green-50 text-green-700 border border-green-200";
+      btnText.innerText = "Aucun doublon trouvé !";
+      if (btnIcon) btnIcon.innerHTML = "✅";
 
       setTimeout(() => {
         resetBtn(btn, btnText, btnIcon, originalClass, originalText);
-      }, 2500);
+      }, 3000);
     }
   } catch (error) {
     console.error("Erreur Check:", error);
     if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("error");
 
     btn.className =
-      "w-full flex justify-center items-center gap-2 py-3.5 rounded-xl font-bold text-sm transition-all bg-red-100 text-red-700 border border-red-300";
+      "w-full flex justify-center items-center gap-2 py-3.5 rounded-xl font-bold text-sm transition-all bg-red-50 text-red-700 border border-red-200";
 
     if (error.name === "AbortError") {
       btnText.innerText = "⏳ Trop long (Timeout)";
     } else {
-      btnText.innerText = "❌ Erreur Serveur";
+      btnText.innerText = "❌ Erreur de vérification";
     }
 
     setTimeout(() => {
@@ -218,13 +220,14 @@ async function checkDuplicates() {
   }
 }
 
-// --- UTILITAIRES ---
 function resetBtn(btn, txtSpan, iconSpan, css, txt) {
   btn.className = css;
   txtSpan.innerText = txt;
-  if (iconSpan) iconSpan.innerText = "🔍";
+  if (iconSpan)
+    iconSpan.innerHTML = `<img src="icons/duplicate.svg" alt="Icone Duplicate" class="w-5 h-5 object-contain" />`;
 }
 
+// --- MODALE DES RÉSULTATS ---
 function showDuplicateModal(candidates) {
   const modal = document.getElementById("duplicate-modal");
   const list = document.getElementById("duplicate-list");
@@ -235,18 +238,31 @@ function showDuplicateModal(candidates) {
   candidates.forEach((s) => {
     const btn = document.createElement("button");
     btn.className =
-      "w-full relative flex items-center justify-between p-4 rounded-2xl bg-yellow-50 border border-yellow-200 hover:bg-yellow-100 transition-all active:scale-[0.98] group text-left shadow-sm mb-2";
+      "w-full relative flex items-center justify-between p-3.5 rounded-2xl bg-white border border-yellow-200 hover:bg-yellow-50 transition-all active:scale-[0.98] group text-left shadow-sm mb-2.5";
     btn.onclick = () => loadExistingStudent(s.id);
 
-    // Adaptation nomComplet ou name selon Strapi
     const displayName = s.name || s.nomComplet || "Nom inconnu";
 
+    // Ajout d'informations pour différencier les homonymes
+    const displayPhone = s.phone
+      ? `<div class="text-[11px] font-medium text-gray-500 mt-1 flex items-center gap-1">📞 ${s.phone}</div>`
+      : "";
+    const displayDate = s.birthday
+      ? `<div class="text-[11px] font-medium text-gray-500 mt-0.5 flex items-center gap-1">🎂 ${s.birthday}</div>`
+      : "";
+
     btn.innerHTML = `
-              <div>
-                <div class="font-bold text-gray-900 text-base group-hover:text-yellow-800 transition-colors">${displayName}</div>
-             </div>
-             <div class="h-8 w-8 rounded-full bg-white text-yellow-500 flex items-center justify-center shadow-sm border border-yellow-100 group-hover:scale-110 transition-transform">✏️</div>
-          `;
+      <div class="flex-1 pr-2">
+        <div class="font-bold text-gray-900 text-sm group-hover:text-yellow-800 transition-colors leading-tight">${displayName}</div>
+        ${displayPhone}
+        ${displayDate}
+      </div>
+      <div class="flex-shrink-0 h-9 w-9 rounded-full bg-yellow-100 text-yellow-600 flex items-center justify-center shadow-inner border border-yellow-200 group-hover:bg-yellow-400 group-hover:text-white transition-all">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
+          <path d="M2.695 14.763l-1.262 3.155a.5.5 0 00.65.65l3.155-1.262a4 4 0 001.343-.885L17.5 5.5a2.121 2.121 0 00-3-3L3.58 13.42a4 4 0 00-.885 1.343z" />
+        </svg>
+      </div>
+    `;
     list.appendChild(btn);
   });
 
