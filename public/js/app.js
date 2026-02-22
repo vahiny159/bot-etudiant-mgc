@@ -258,13 +258,13 @@ async function checkDuplicates() {
 
     // Gestion propre des messages d'erreur
     if (error.name === "AbortError") {
-      btnText.innerText = "⏳ Trop long (Timeout)";
+      btnText.innerText = "Timeout";
     } else if (error.message === "ROUTE_PHONE_NOT_FOUND") {
-      btnText.innerText = "❌ Route Tel introuvable";
+      btnText.innerText = "Route Tel introuvable";
     } else if (error.message === "FORMAT_INVALIDE") {
-      btnText.innerText = "❌ Le serveur a renvoyé du HTML";
+      btnText.innerText = "Le serveur a renvoyé du HTML";
     } else {
-      btnText.innerText = "❌ Erreur Serveur";
+      btnText.innerText = "Erreur Serveur";
     }
 
     setTimeout(() => {
