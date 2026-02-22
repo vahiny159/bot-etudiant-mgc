@@ -191,13 +191,19 @@ async function checkDuplicates() {
       candidates = result;
     }
 
-    // 🚀 LE FILTRE MAGIQUE : On élimine les résultats vagues !
+    // 🚀 LE FILTRE MAGIQUE AMÉLIORÉ : Recherche par début de mot
     const motsRecherches = nom.toLowerCase().split(" ");
 
     candidates = candidates.filter((c) => {
       const nomCandidat = (c.name || c.nomComplet || "").toLowerCase();
-      // Le nom du candidat doit obligatoirement contenir TOUS les mots tapés
-      return motsRecherches.every((mot) => nomCandidat.includes(mot));
+      const motsDuCandidat = nomCandidat.split(" "); // On découpe le nom du candidat en mots
+
+      // Pour chaque mot tapé, on vérifie s'il correspond au DÉBUT d'au moins un mot du candidat
+      return motsRecherches.every((motRecherche) =>
+        motsDuCandidat.some((motCandidat) =>
+          motCandidat.startsWith(motRecherche),
+        ),
+      );
     });
 
     if (candidates.length > 0) {
