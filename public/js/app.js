@@ -293,6 +293,7 @@ async function loadExistingStudent(id) {
 
   if (response.ok && result) {
     const student = result.data?.attributes || result;
+    console.log("👤 Données du Fruit :", student);
 
     // Champs de base
     setVal("nomComplet", student.name);
