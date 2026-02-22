@@ -263,18 +263,12 @@ function showDuplicateModal(candidates) {
 function closeModal() {
   const modal = document.getElementById("duplicate-modal");
   const modalContent = document.getElementById("modal-content");
-
-  if (!modal) return; // Sécurité anti-crash
-
   modal.classList.add("opacity-0");
   if (modalContent) {
     modalContent.classList.remove("scale-100");
     modalContent.classList.add("scale-95");
   }
-
-  setTimeout(() => {
-    modal.classList.add("hidden");
-  }, 300);
+  setTimeout(() => modal.classList.add("hidden"), 300);
 }
 
 async function loadExistingStudent(id) {
@@ -299,7 +293,6 @@ async function loadExistingStudent(id) {
 
   if (response.ok && result) {
     const student = result.data?.attributes || result;
-    console.log("👤 Données du Fruit :", student);
 
     // Champs de base
     setVal("nomComplet", student.name);
@@ -335,7 +328,7 @@ async function loadExistingStudent(id) {
       if (select) select.value = selectedClass;
     }
 
-    // gestion tree
+    // Gestion tree
     let treeData = null;
     let treeId = null;
 
@@ -350,11 +343,9 @@ async function loadExistingStudent(id) {
     if (treeData) {
       dataTree = { id: treeId, ...treeData };
 
-      // Noms et Téléphones
       setVal("nomTree", treeData.name || "");
       setVal("telTree", treeData.phone || "");
 
-      // ID SMADA
       const appId =
         treeData.user?.data?.attributes?.username ||
         treeData.user?.username ||
@@ -362,7 +353,6 @@ async function loadExistingStudent(id) {
         "";
       setVal("idApp", appId);
 
-      // Département
       const deptName =
         treeData.department || treeData.registrationDepartment || "";
       setVal("departement", deptName);
@@ -376,33 +366,14 @@ async function loadExistingStudent(id) {
     if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("success");
     tg.showAlert(`📂 Profil chargé : ${student.name}`);
 
-    // Afficher la bannière "mode modification"
     const banner = document.getElementById("edit-banner");
     if (banner) {
       banner.classList.remove("hidden");
       banner.classList.add("flex");
     }
 
-    const submitBtn = document.getElementById("main-btn");
     const btnText = document.getElementById("btn-text");
-
-    if (submitBtn && btnText) {
-      btnText.innerHTML = `<img src="icons/save.svg" alt="Icone save" class="w-8 h-8 object-contain" /><span>Mettre à jour le dossier</span>`;
-
-      submitBtn.classList.remove(
-        "from-lemon-400",
-        "to-lemon-500",
-        "text-gray-900",
-        "shadow-black/5",
-      );
-
-      submitBtn.classList.add(
-        "from-amber-400",
-        "to-orange-500",
-        "text-white",
-        "shadow-orange-500/30",
-      );
-    }
+    if (btnText) btnText.innerText = "Mettre à jour le dossier";
   }
 }
 
@@ -584,28 +555,10 @@ function resetForm() {
     banner.classList.remove("flex");
   }
 
-  // --- RÉINITIALISER LE BOUTON PRINCIPAL (Design) ---
-  const submitBtn = document.getElementById("main-btn");
+  // Remettre le texte du bouton principal
   const btnText = document.getElementById("btn-text");
-
-  if (btnText) {
+  if (btnText)
     btnText.innerHTML = `<img src="icons/save.svg" alt="Icone save" class="w-8 h-8 object-contain" /><span>Enregistrer le dossier</span>`;
-  }
-
-  if (submitBtn) {
-    submitBtn.classList.remove(
-      "from-amber-400",
-      "to-orange-500",
-      "text-white",
-      "shadow-orange-500/30",
-    );
-    submitBtn.classList.add(
-      "from-lemon-400",
-      "to-lemon-500",
-      "text-gray-900",
-      "shadow-black/5",
-    );
-  }
 }
 
 // --- SOUMISSION ---

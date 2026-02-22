@@ -128,27 +128,23 @@
 
       <div class="max-w-lg mx-auto space-y-6">
         <!-- Bannière mode modification (cachée par défaut) -->
-        <div
-          id="edit-banner"
-          class="hidden flex-row items-center gap-3 p-3 mb-6 rounded-2xl border border-amber-200/80 bg-gradient-to-r from-amber-50 to-orange-50/50 shadow-sm animate-in fade-in slide-in-from-top-2 duration-300"
-        >
-          <div
-            class="flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-full bg-amber-100/80 text-amber-600"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 20 20"
-              fill="currentColor"
-              class="w-5 h-5"
-            >
-              <path
-                d="M5.433 13.917l1.262-3.155A4 4 0 017.58 9.42l6.92-6.918a2.121 2.121 0 013 3l-6.92 6.918c-.383.383-.84.685-1.343.886l-3.154 1.262a.5.5 0 01-.65-.65z"
-              />
-              <path
-                d="M3.5 5.75c0-.69.56-1.25 1.25-1.25H10A.75.75 0 0010 3H4.75A2.75 2.75 0 002 5.75v9.5A2.75 2.75 0 004.75 18h9.5A2.75 2.75 0 0017 15.25V10a.75.75 0 00-1.5 0v5.25c0 .69-.56 1.25-1.25 1.25h-9.5c-.69 0-1.25-.56-1.25-1.25v-9.5z"
-              />
-            </svg>
+        <div id="edit-banner"
+  class="hidden items-center justify-between gap-3 bg-blue-50/80 backdrop-blur-sm border border-blue-200 rounded-2xl px-4 py-3 shadow-sm">
+          <div class="flex items-center gap-2">
+            <span class="text-lg">✏️</span>
+            <span class="text-sm font-bold text-blue-800">Mode modification</span>
           </div>
+          
+          <button onclick="resetForm()"
+            class="group flex items-center gap-1.5 bg-white border border-blue-200 text-blue-700 text-xs font-bold px-3 py-2 rounded-xl hover:bg-blue-50 hover:border-blue-300 hover:shadow-sm active:scale-95 transition-all duration-300">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-blue-500 group-hover:-rotate-180 transition-transform duration-500 ease-in-out" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            
+            Nouveau dossier
+          </button>
+        </div>
 
           <div class="flex-1">
             <h3 class="text-sm font-bold text-amber-900 leading-tight">
