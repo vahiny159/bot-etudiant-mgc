@@ -614,15 +614,14 @@ async function submitForm() {
   spinner.classList.remove("hidden");
   btnText.innerText = "Enregistrement...";
 
-  // Collecte des données
   const data = {
     name: nom,
     phone: telephone,
     birthday: dateNaissance,
-    facebook: facebook,
+    facebookId: facebook,
     relationWithTree: document.getElementById("liaison").value,
     gender: sexe,
-    nomTree: document.getElementById("nomTree").value,
+    treeName: document.getElementById("nomTree").value,
   };
   // Tree
   if (Object.keys(dataTree).length > 0) {
