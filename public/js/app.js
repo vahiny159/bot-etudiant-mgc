@@ -181,23 +181,26 @@ async function checkDuplicates() {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000);
 
-    let url = "";
     let isPhoneSearch = false;
-
-    // 🚀 UTILISATION DES REQUÊTES DE TON COLLÈGUE
-    // Base commune aux deux requêtes
-    const baseUrl = `/api/people?populate=*&filters[$and][0][user][level][$eq]=cs&pagination[page]=1&pagination[pageSize]=50`;
+    let queryString = `populate=*&filters[$and][0][user][level][$eq]=cs&pagination[page]=1&pagination[pageSize]=50`;
 
     if (tel && tel.length >= 8) {
-      // 📱 Filtre avec le numéro de téléphone
+      // Filtre avec le numéro de téléphone
       const safeTel = encodeURIComponent(tel);
-      url = `${baseUrl}&filters[$and][1][$or][0][phone][$contains]=${safeTel}&filters[$and][1][$or][1][phone2][$contains]=${safeTel}&filters[$and][1][$or][2][phone3][$contains]=${safeTel}`;
+      queryString += `&filters[$and][1][$or][0][phone][$contains]=${safeTel}&filters[$and][1][$or][1][phone2][$contains]=${safeTel}&filters[$and][1][$or][2][phone3][$contains]=${safeTel}`;
       isPhoneSearch = true;
     } else {
-      // 👤 Filtre avec le nom
+      // Filtre avec le nom
       const safeNom = encodeURIComponent(nom);
-      url = `${baseUrl}&filters[$and][1][$or][0][name][$containsi]=${safeNom}&filters[$and][1][$or][1][firstName][$containsi]=${safeNom}&filters[$and][1][$or][2][lastName][$containsi]=${safeNom}`;
+      queryString += `&filters[$and][1][$or][0][name][$containsi]=${safeNom}&filters[$and][1][$or][1][firstName][$containsi]=${safeNom}&filters[$and][1][$or][2][lastName][$containsi]=${safeNom}`;
     }
+
+    queryString = queryString
+      .replace(/\[/g, "%5B")
+      .replace(/\]/g, "%5D")
+      .replace(/\$/g, "%24");
+
+    const url = `/api/people?${queryString}`;
 
     const response = await fetch(url, {
       method: "GET",
