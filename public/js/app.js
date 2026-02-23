@@ -184,15 +184,17 @@ async function checkDuplicates() {
     let url = "";
     let isPhoneSearch = false;
 
+    // 🚀 UTILISATION DES REQUÊTES DE TON COLLÈGUE
+    // Base commune aux deux requêtes
     const baseUrl = `/api/people?populate=*&filters[$and][0][user][level][$eq]=cs&pagination[page]=1&pagination[pageSize]=50`;
 
     if (tel && tel.length >= 8) {
-      // Filtre avec le numéro de téléphone
+      // 📱 Filtre avec le numéro de téléphone
       const safeTel = encodeURIComponent(tel);
       url = `${baseUrl}&filters[$and][1][$or][0][phone][$contains]=${safeTel}&filters[$and][1][$or][1][phone2][$contains]=${safeTel}&filters[$and][1][$or][2][phone3][$contains]=${safeTel}`;
       isPhoneSearch = true;
     } else {
-      // Filtre avec le nom
+      // 👤 Filtre avec le nom
       const safeNom = encodeURIComponent(nom);
       url = `${baseUrl}&filters[$and][1][$or][0][name][$containsi]=${safeNom}&filters[$and][1][$or][1][firstName][$containsi]=${safeNom}&filters[$and][1][$or][2][lastName][$containsi]=${safeNom}`;
     }
