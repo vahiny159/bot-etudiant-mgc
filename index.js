@@ -214,6 +214,7 @@ app.get("/api/students/checkDuplicates", async (req, res) => {
   console.log("🔍 Vérification doublons...");
   try {
     const { name, phone } = req.query;
+    const cleanPhone = phone ? phone.replace(/\D/g, "") : "";
 
     const strapiUrl = new URL(`${process.env.STRAPI_API_URL}/api/people`);
     strapiUrl.searchParams.append("populate", "*");
@@ -221,8 +222,8 @@ app.get("/api/students/checkDuplicates", async (req, res) => {
     if (name) {
       strapiUrl.searchParams.append("filters[$and][1][$or][0][name][$containsi]", name);
     }
-    if (phone) {
-      strapiUrl.searchParams.append("filters[$and][1][$or][1][phone][$containsi]", phone);
+    if (cleanPhone) {
+      strapiUrl.searchParams.append("filters[$and][1][$or][1][phone][$containsi]", cleanPhone);
     }
     strapiUrl.searchParams.append("pagination[page]", "1");
     strapiUrl.searchParams.append("pagination[pageSize]", "50");
