@@ -184,8 +184,7 @@ async function checkDuplicates() {
 
     // On utilise EXACTEMENT la structure de ton collègue
     let url =
-      "/api/students?populate=*&filters[$and][0][user][level][$eq]=cs&pagination[page]=1&pagination[pageSize]=50";
-
+      "/people?populate=*&filters[$and][0][user][level][$eq]=cs&pagination[page]=1&pagination[pageSize]=50";
     if (tel && tel.length >= 8) {
       url += `&filters[$and][1][$or][0][phone][$contains]=${encodeURIComponent(tel)}&filters[$and][1][$or][1][phone2][$contains]=${encodeURIComponent(tel)}&filters[$and][1][$or][2][phone3][$contains]=${encodeURIComponent(tel)}`;
       isPhoneSearch = true;
