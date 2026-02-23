@@ -335,6 +335,12 @@ async function loadExistingStudent(id) {
     setVal("facebook", student.facebook || student.facebookId || "");
     setVal("liaison", student.relationWithTree || "");
 
+    // Bbhall
+    if (student.Bbhall) {
+      const bbhallSelect = document.getElementById("bbhallSelect");
+      if (bbhallSelect) bbhallSelect.value = student.Bbhall;
+    }
+
     // Calcul âge
     if (student.birthday) {
       document
@@ -344,9 +350,11 @@ async function loadExistingStudent(id) {
 
     // Sexe
     if (student.gender) {
+      const genderMap = { M: "H", F: "F" };
+      const radioValue = genderMap[student.gender] || student.gender;
       document.getElementById("sexeInput").value = student.gender;
       document.getElementsByName("sexe_radio").forEach((r) => {
-        if (r.value === student.gender) r.checked = true;
+        if (r.value === radioValue) r.checked = true;
       });
     }
 
@@ -579,6 +587,10 @@ function resetForm() {
   const liaison = document.getElementById("liaison");
   if (liaison) liaison.selectedIndex = 0;
 
+  // Reset Bbhall
+  const bbhall = document.getElementById("bbhallSelect");
+  if (bbhall) bbhall.selectedIndex = 0;
+
   // Reset section Tree
   emptyData();
 
@@ -610,7 +622,7 @@ async function submitForm() {
   const nom = nomInput.value;
   const sexe = sexeInput.value;
 
-  const telephone = document.getElementById("telephone").value.trim();
+  const telephone = document.getElementById("telephone").value.replace(/\s/g, "");
   const dateNaissance = document.getElementById("dateNaissance").value;
   const facebook = document.getElementById("facebook").value.trim();
 
@@ -649,6 +661,8 @@ async function submitForm() {
     relationWithTree: document.getElementById("liaison").value,
     gender: sexe,
     treeName: document.getElementById("nomTree").value,
+    level: "cs",
+    Bbhall: document.getElementById("bbhallSelect").value || undefined,
   };
   // Tree
   if (Object.keys(dataTree).length > 0) {
