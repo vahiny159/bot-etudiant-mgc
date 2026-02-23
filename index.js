@@ -217,7 +217,9 @@ app.get("/api/students/checkDuplicates", async (req, res) => {
     const cleanPhone = phone ? phone.replace(/\D/g, "") : "";
 
     const strapiUrl = new URL(`${process.env.STRAPI_API_URL}/api/people`);
-    strapiUrl.searchParams.append("populate", "*");
+    strapiUrl.searchParams.append("populate[class]", "true");
+    strapiUrl.searchParams.append("populate[user]", "true");
+    strapiUrl.searchParams.append("populate[tree]", "true");
     strapiUrl.searchParams.append("filters[$and][0][user][level][$ne]", "member");
     if (name) {
       strapiUrl.searchParams.append("filters[$and][1][$or][0][name][$containsi]", name);
