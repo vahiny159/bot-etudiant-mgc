@@ -20,6 +20,13 @@ inputs.forEach((input) => {
 async function init() {
   document.body.style.display = "none";
   await checkUserTelegram();
+  
+  // Initialiser la date d'export à aujourd'hui
+  const exportDateInput = document.getElementById("exportDate");
+  if (exportDateInput) {
+    const today = new Date().toISOString().split('T')[0];
+    exportDateInput.value = today;
+  }
 }
 
 // ON PAGE LOAD
@@ -263,10 +270,14 @@ async function exportStudentsToExcel() {
   btnText.innerText = "⏳ Export en cours...";
 
   try {
-    // Récupérer la classe sélectionnée
-    const classeSelect = document.getElementById("classeSelect");
-    const classId = classeSelect ? classeSelect.value : null;
+    // Récupérer la classe et la date des champs dédiés
+    const exportClassSelect = document.getElementById("exportClasseSelect");
+    const exportDateInput = document.getElementById("exportDate");
+    
+    const classId = exportClassSelect ? exportClassSelect.value : null;
+    const selectedDate = exportDateInput ? exportDateInput.value : null;
 
+    // Validation des champs
     if (!classId) {
       if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("error");
       btn.className = "w-full flex justify-center items-center gap-2 py-3.5 rounded-xl font-bold text-sm transition-all bg-red-50 text-red-700 border border-red-200";
@@ -279,11 +290,20 @@ async function exportStudentsToExcel() {
       return;
     }
 
-    // Date du jour au format yyyy-MM-dd
-    const today = new Date().toISOString().split('T')[0];
+    if (!selectedDate) {
+      if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("error");
+      btn.className = "w-full flex justify-center items-center gap-2 py-3.5 rounded-xl font-bold text-sm transition-all bg-red-50 text-red-700 border border-red-200";
+      btnText.innerText = "❌ Veuillez sélectionner une date";
+      setTimeout(() => {
+        btn.className = originalClass;
+        btnText.innerText = originalText;
+        btn.disabled = false;
+      }, 3000);
+      return;
+    }
 
     // Construire l'URL avec les paramètres
-    const url = `/api/people/students/export?classId=${classId}&createdAtFrom=${today}`;
+    const url = `/api/people/students/export?classId=${classId}&createdAtFrom=${selectedDate}`;
 
     // Faire la requête
     const response = await fetch(url, {
@@ -299,7 +319,7 @@ async function exportStudentsToExcel() {
     const downloadUrl = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = downloadUrl;
-    a.download = `etudiants_classe_${classId}_${today}.xlsx`;
+    a.download = `etudiants_classe_${classId}_${selectedDate}.xlsx`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -861,11 +881,24 @@ function fillListClass(data) {
   select.innerHTML =
     '<option value="" disabled selected>Sélectionner une classe</option>';
 
+  const exportSelect = document.getElementById("exportClasseSelect");
+  if (exportSelect) {
+    exportSelect.innerHTML =
+      '<option value="" disabled selected>Sélectionnez une classe...</option>';
+  }
+
   data.forEach((classe) => {
     const option = document.createElement("option");
     option.value = classe.id;
     option.textContent = classe.name || classe.attributes?.name || "Classe";
     select.appendChild(option);
+
+    if (exportSelect) {
+      const exportOption = document.createElement("option");
+      exportOption.value = classe.id;
+      exportOption.textContent = classe.name || classe.attributes?.name || "Classe";
+      exportSelect.appendChild(exportOption);
+    }
   });
 }
 
