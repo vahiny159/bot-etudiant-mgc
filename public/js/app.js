@@ -140,8 +140,7 @@ async function checkUserTelegram() {
   }
 }
 
-// --- CHECK DOUBLON ---
-// --- CHECK DOUBLON (Connexion officielle avec l'API Dev) ---
+// --- CHECK DOUBLON (Version Définitive - API Distante sans Token) ---
 async function checkDuplicates() {
   const nomBrut = document.getElementById("nomComplet").value;
   const telBrut = document.getElementById("telephone").value;
@@ -184,29 +183,25 @@ async function checkDuplicates() {
     let url = "";
     let isPhoneSearch = false;
 
-    // 🚀 L'ADRESSE EXACTE DU SERVEUR DE TON COLLÈGUE
+    // 🚀 L'ADRESSE ABSOLUE DU SERVEUR DE L'API (La clé du succès !)
     const baseUrl =
       "https://api-dev.madagodscare.com/api/people?populate=*&filters[%24and][0][user][level][%24eq]=cs&pagination[page]=1&pagination[pageSize]=50";
 
     if (tel && tel.length >= 8) {
-      // 📱 Recherche par Téléphone avec les %24
+      // 📱 Recherche par Téléphone avec l'encodage de Sophie (%24)
       const safeTel = encodeURIComponent(tel);
       url = `${baseUrl}&filters[%24and][1][%24or][0][phone][%24contains]=${safeTel}&filters[%24and][1][%24or][1][phone2][%24contains]=${safeTel}&filters[%24and][1][%24or][2][phone3][%24contains]=${safeTel}`;
       isPhoneSearch = true;
     } else {
-      // 👤 Recherche par Nom avec les %24
+      // 👤 Recherche par Nom avec l'encodage de Sophie (%24)
       const safeNom = encodeURIComponent(nom);
       url = `${baseUrl}&filters[%24and][1][%24or][0][name][%24containsi]=${safeNom}&filters[%24and][1][%24or][1][firstName][%24containsi]=${safeNom}&filters[%24and][1][%24or][2][lastName][%24containsi]=${safeNom}`;
     }
 
     const response = await fetch(url, {
       method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        // 🔐 LE TOKEN SECRET (Copie exacte du Postman de ton collègue)
-        Authorization:
-          "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTQ1NSwiaWF0IjoxNzcxODM3Njc1LCJleHAiOjE3NzQ0Mjk2NzV9.rqdMGRLyi1bYRhsf8S_4uySrN_IbvGLP995Jfa8hUTA",
-      },
+      // On retire le token Bearer puisque la route est publique !
+      headers: { "Content-Type": "application/json" },
       signal: controller.signal,
     });
 
@@ -226,10 +221,11 @@ async function checkDuplicates() {
     if (!isPhoneSearch && candidates.length > 0) {
       const motsRecherches = nom.toLowerCase().split(" ");
       candidates = candidates.filter((c) => {
+        const data = c.attributes || c;
         const nomCandidat = (
-          c.name ||
-          c.firstName ||
-          c.lastName ||
+          data.name ||
+          data.firstName ||
+          data.lastName ||
           ""
         ).toLowerCase();
         const motsDuCandidat = nomCandidat.split(" ");
@@ -268,7 +264,7 @@ async function checkDuplicates() {
     if (error.name === "AbortError") {
       btnText.innerText = "⏳ Trop long (Timeout)";
     } else {
-      btnText.innerText = "❌ Erreur API distante";
+      btnText.innerText = "❌ Erreur Serveur API";
     }
 
     setTimeout(() => {
