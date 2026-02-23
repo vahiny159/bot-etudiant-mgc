@@ -246,6 +246,91 @@ function resetBtn(btn, txtSpan, iconSpan, css, txt) {
     iconSpan.innerHTML = `<img src="icons/duplicate.svg" alt="Icone Duplicate" class="w-5 h-5 object-contain" />`;
 }
 
+// --- EXPORT EXCEL ---
+async function exportStudentsToExcel() {
+  const btn = document.getElementById("btn-export");
+  const btnText = document.getElementById("export-text");
+  const btnIcon = document.getElementById("export-icon");
+
+  if (!btn || !btnText) return;
+
+  const originalClass = btn.className;
+  const originalText = btnText.innerText;
+
+  // Désactiver le bouton pendant le traitement
+  btn.disabled = true;
+  btn.className = "w-full flex justify-center items-center gap-2 py-3.5 rounded-xl font-bold text-sm transition-all bg-blue-50 text-blue-700 border border-blue-200";
+  btnText.innerText = "⏳ Export en cours...";
+
+  try {
+    // Récupérer la classe sélectionnée
+    const classeSelect = document.getElementById("classeSelect");
+    const classId = classeSelect ? classeSelect.value : null;
+
+    if (!classId) {
+      if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("error");
+      btn.className = "w-full flex justify-center items-center gap-2 py-3.5 rounded-xl font-bold text-sm transition-all bg-red-50 text-red-700 border border-red-200";
+      btnText.innerText = "❌ Veuillez sélectionner une classe";
+      setTimeout(() => {
+        btn.className = originalClass;
+        btnText.innerText = originalText;
+        btn.disabled = false;
+      }, 3000);
+      return;
+    }
+
+    // Date du jour au format yyyy-MM-dd
+    const today = new Date().toISOString().split('T')[0];
+
+    // Construire l'URL avec les paramètres
+    const url = `/api/people/students/export?classId=${classId}&createdAtFrom=${today}`;
+
+    // Faire la requête
+    const response = await fetch(url, {
+      method: "GET",
+    });
+
+    if (!response.ok) {
+      throw new Error("Erreur lors de l'export");
+    }
+
+    // Télécharger le fichier
+    const blob = await response.blob();
+    const downloadUrl = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = downloadUrl;
+    a.download = `etudiants_classe_${classId}_${today}.xlsx`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(downloadUrl);
+
+    // Succès
+    if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("success");
+    btn.className = "w-full flex justify-center items-center gap-2 py-3.5 rounded-xl font-bold text-sm transition-all bg-green-50 text-green-700 border border-green-200";
+    btnText.innerText = "✅ Export réussi !";
+
+    setTimeout(() => {
+      btn.className = originalClass;
+      btnText.innerText = originalText;
+      btn.disabled = false;
+    }, 3000);
+
+  } catch (error) {
+    console.error("Erreur Export:", error);
+    if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("error");
+
+    btn.className = "w-full flex justify-center items-center gap-2 py-3.5 rounded-xl font-bold text-sm transition-all bg-red-50 text-red-700 border border-red-200";
+    btnText.innerText = "❌ Erreur d'export";
+
+    setTimeout(() => {
+      btn.className = originalClass;
+      btnText.innerText = originalText;
+      btn.disabled = false;
+    }, 3000);
+  }
+}
+
 // --- MODALE DES RÉSULTATS ---
 function showDuplicateModal(candidates) {
   const modal = document.getElementById("duplicate-modal");
