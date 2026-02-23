@@ -152,7 +152,6 @@ async function checkDuplicates() {
   const nom = nomBrut.trim().replace(/\s+/g, " ");
   const tel = telBrut.replace(/\D/g, "");
 
-  // Vérifications de base
   if (nom === "" && tel === "") {
     if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("error");
     const oldText = btnText.innerText;
@@ -182,25 +181,31 @@ async function checkDuplicates() {
     const timeoutId = setTimeout(() => controller.abort(), 10000);
 
     let isPhoneSearch = false;
-    let queryString = `populate=*&filters[$and][0][user][level][$eq]=cs&pagination[page]=1&pagination[pageSize]=50`;
+    let queryParams = `populate=*&filters[$and][0][user][level][$eq]=cs&pagination[page]=1&pagination[pageSize]=50`;
 
     if (tel && tel.length >= 8) {
-      // Filtre avec le numéro de téléphone
-      const safeTel = encodeURIComponent(tel);
-      queryString += `&filters[$and][1][$or][0][phone][$contains]=${safeTel}&filters[$and][1][$or][1][phone2][$contains]=${safeTel}&filters[$and][1][$or][2][phone3][$contains]=${safeTel}`;
+      // 📱 Ajout du filtre téléphone
+      queryParams += `&filters[$and][1][$or][0][phone][$contains]=${tel}&filters[$and][1][$or][1][phone2][$contains]=${tel}&filters[$and][1][$or][2][phone3][$contains]=${tel}`;
       isPhoneSearch = true;
     } else {
-      // Filtre avec le nom
-      const safeNom = encodeURIComponent(nom);
-      queryString += `&filters[$and][1][$or][0][name][$containsi]=${safeNom}&filters[$and][1][$or][1][firstName][$containsi]=${safeNom}&filters[$and][1][$or][2][lastName][$containsi]=${safeNom}`;
+      // 👤 Ajout du filtre nom
+      queryParams += `&filters[$and][1][$or][0][name][$containsi]=${nom}&filters[$and][1][$or][1][firstName][$containsi]=${nom}&filters[$and][1][$or][2][lastName][$containsi]=${nom}`;
     }
 
-    queryString = queryString
-      .replace(/\[/g, "%5B")
-      .replace(/\]/g, "%5D")
-      .replace(/\$/g, "%24");
+    // 🛡️ ENCODAGE PARFAIT ANTI-404
+    // Transforme les [ ] et $ en caractères web sécurisés (%5B, %5D, %24)
+    const safeQuery = queryParams
+      .split("&")
+      .map((param) => {
+        const idx = param.indexOf("=");
+        if (idx === -1) return encodeURIComponent(param);
+        const key = param.substring(0, idx);
+        const value = param.substring(idx + 1);
+        return `${encodeURIComponent(key)}=${encodeURIComponent(value)}`;
+      })
+      .join("&");
 
-    const url = `/api/people?${queryString}`;
+    const url = `/api/people?${safeQuery}`;
 
     const response = await fetch(url, {
       method: "GET",
@@ -219,6 +224,7 @@ async function checkDuplicates() {
 
     let candidates = result?.data || [];
 
+    // Filtre frontend de précision pour les noms
     if (!isPhoneSearch && candidates.length > 0) {
       const motsRecherches = nom.toLowerCase().split(" ");
       candidates = candidates.filter((c) => {
@@ -263,9 +269,9 @@ async function checkDuplicates() {
       "w-full flex justify-center items-center gap-2 py-3.5 rounded-xl font-bold text-sm transition-all bg-red-50 text-red-700 border border-red-200";
 
     if (error.name === "AbortError") {
-      btnText.innerText = "Trop long (Timeout)";
+      btnText.innerText = "⏳ Trop long (Timeout)";
     } else {
-      btnText.innerText = "Erreur Serveur";
+      btnText.innerText = "❌ Erreur Serveur";
     }
 
     setTimeout(() => {
