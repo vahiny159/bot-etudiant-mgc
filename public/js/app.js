@@ -181,31 +181,20 @@ async function checkDuplicates() {
     const timeoutId = setTimeout(() => controller.abort(), 10000);
 
     let isPhoneSearch = false;
-    let queryParams = `populate=*&filters[$and][0][user][level][$eq]=cs&pagination[page]=1&pagination[pageSize]=50`;
+
+    // On utilise EXACTEMENT la structure de ton collègue
+    let url =
+      "/api/people?populate=*&filters[$and][0][user][level][$eq]=cs&pagination[page]=1&pagination[pageSize]=50";
 
     if (tel && tel.length >= 8) {
-      // 📱 Ajout du filtre téléphone
-      queryParams += `&filters[$and][1][$or][0][phone][$contains]=${tel}&filters[$and][1][$or][1][phone2][$contains]=${tel}&filters[$and][1][$or][2][phone3][$contains]=${tel}`;
+      url += `&filters[$and][1][$or][0][phone][$contains]=${encodeURIComponent(tel)}&filters[$and][1][$or][1][phone2][$contains]=${encodeURIComponent(tel)}&filters[$and][1][$or][2][phone3][$contains]=${encodeURIComponent(tel)}`;
       isPhoneSearch = true;
     } else {
-      // 👤 Ajout du filtre nom
-      queryParams += `&filters[$and][1][$or][0][name][$containsi]=${nom}&filters[$and][1][$or][1][firstName][$containsi]=${nom}&filters[$and][1][$or][2][lastName][$containsi]=${nom}`;
+      url += `&filters[$and][1][$or][0][name][$containsi]=${encodeURIComponent(nom)}&filters[$and][1][$or][1][firstName][$containsi]=${encodeURIComponent(nom)}&filters[$and][1][$or][2][lastName][$containsi]=${encodeURIComponent(nom)}`;
     }
 
-    // 🛡️ ENCODAGE PARFAIT ANTI-404
-    // Transforme les [ ] et $ en caractères web sécurisés (%5B, %5D, %24)
-    const safeQuery = queryParams
-      .split("&")
-      .map((param) => {
-        const idx = param.indexOf("=");
-        if (idx === -1) return encodeURIComponent(param);
-        const key = param.substring(0, idx);
-        const value = param.substring(idx + 1);
-        return `${encodeURIComponent(key)}=${encodeURIComponent(value)}`;
-      })
-      .join("&");
-
-    const url = `/api/people?${safeQuery}`;
+    // On log l'URL exacte pour pouvoir la vérifier
+    console.log("🔗 URL de recherche :", url);
 
     const response = await fetch(url, {
       method: "GET",
@@ -215,16 +204,26 @@ async function checkDuplicates() {
 
     clearTimeout(timeoutId);
 
+    // 🔍 LECTURE DE LA RÉPONSE AVANT DE PLANTER
+    const text = await response.text();
+
     if (!response.ok) {
-      throw new Error(`Erreur Server ${response.status}`);
+      console.error(
+        `🚨 Erreur ${response.status} reçue. Contenu du serveur :`,
+        text,
+      );
+
+      // On analyse le type d'erreur
+      if (text.includes("<!DOCTYPE") || text.includes("<html")) {
+        throw new Error("404_NGINX");
+      } else {
+        throw new Error("404_STRAPI");
+      }
     }
 
-    const text = await response.text();
     const result = text ? JSON.parse(text) : null;
-
     let candidates = result?.data || [];
 
-    // Filtre frontend de précision pour les noms
     if (!isPhoneSearch && candidates.length > 0) {
       const motsRecherches = nom.toLowerCase().split(" ");
       candidates = candidates.filter((c) => {
@@ -268,8 +267,13 @@ async function checkDuplicates() {
     btn.className =
       "w-full flex justify-center items-center gap-2 py-3.5 rounded-xl font-bold text-sm transition-all bg-red-50 text-red-700 border border-red-200";
 
+    // Affichage spécifique pour comprendre le bug
     if (error.name === "AbortError") {
       btnText.innerText = "⏳ Trop long (Timeout)";
+    } else if (error.message === "404_NGINX") {
+      btnText.innerText = "❌ Bloqué par le serveur proxy";
+    } else if (error.message === "404_STRAPI") {
+      btnText.innerText = "❌ Bloqué par Strapi";
     } else {
       btnText.innerText = "❌ Erreur Serveur";
     }
