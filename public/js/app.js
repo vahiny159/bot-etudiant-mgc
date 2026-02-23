@@ -180,18 +180,11 @@ async function checkDuplicates() {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000);
 
-    let url = "";
-    let isPhoneSearch = false;
-
-    if (tel && tel.length >= 8) {
-      // Recherche prioritaire par téléphone
-      url = `/api/students/findByPhone/${tel}`;
-      isPhoneSearch = true;
-    } else {
-      // Recherche par nom
-      const nomSplit = nom.replace(/ /g, ",");
-      url = `/api/students/findByName/${nomSplit}`;
-    }
+    // Appel unique avec name OR phone
+    const params = new URLSearchParams();
+    if (nom) params.append("name", nom);
+    if (tel) params.append("phone", tel);
+    const url = `/api/students/checkDuplicates?${params.toString()}`;
 
     const response = await fetch(url, {
       method: "GET",
@@ -201,40 +194,10 @@ async function checkDuplicates() {
 
     clearTimeout(timeoutId);
 
-    const text = await response.text();
-
-    // Protection (si la route n'existe pas encore)
-    if (text.includes("<!DOCTYPE") || text.includes("<html")) {
-      if (isPhoneSearch) throw new Error("ROUTE_PHONE_NOT_FOUND");
-      throw new Error(`Route introuvable sur le serveur`);
-    }
-
     if (!response.ok) throw new Error(`Erreur Server ${response.status}`);
 
-    const result = text ? JSON.parse(text) : null;
+    const result = await response.json();
     let candidates = Array.isArray(result) ? result : result?.data || [];
-
-    // Filtre pour la recherche par nom
-    if (!isPhoneSearch && candidates.length > 0) {
-      const motsRecherches = nom.toLowerCase().split(" ");
-      candidates = candidates.filter((c) => {
-        const data = c.attributes || c;
-        const nomCandidat = (
-          data.name ||
-          data.firstName ||
-          data.lastName ||
-          data.nomComplet ||
-          ""
-        ).toLowerCase();
-        const motsDuCandidat = nomCandidat.split(" ");
-
-        return motsRecherches.every((motRecherche) =>
-          motsDuCandidat.some((motCandidat) =>
-            motCandidat.startsWith(motRecherche),
-          ),
-        );
-      });
-    }
 
     if (candidates.length > 0) {
       if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("warning");

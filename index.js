@@ -209,21 +209,27 @@ app.put("/api/people/:id", async (req, res) => {
   }
 });
 
-// --- CHECK DOUBLONS ---
-app.get("/api/students/findByName/:names", async (req, res) => {
+// --- CHECK DOUBLONS (name OR phone) ---
+app.get("/api/students/checkDuplicates", async (req, res) => {
   console.log("🔍 Vérification doublons...");
   try {
-    const { names } = req.params;
-    let strapiUrl;
+    const { name, phone } = req.query;
 
-    if (process.env.USE_STANDARD_ROUTES === "true") {
-      const cleanName = names.replace(/,/g, " ").trim();
-      strapiUrl = `${process.env.STRAPI_API_URL}/api/people?filters[name][$contains]=${encodeURIComponent(cleanName)}`;
-    } else {
-      strapiUrl = `${process.env.STRAPI_API_URL}/api/students/findByName/${names}`;
+    const strapiUrl = new URL(`${process.env.STRAPI_API_URL}/api/people`);
+    strapiUrl.searchParams.append("populate", "*");
+    strapiUrl.searchParams.append("filters[$and][0][user][level][$ne]", "member");
+    if (name) {
+      strapiUrl.searchParams.append("filters[$and][1][$or][0][name][$containsi]", name);
     }
+    if (phone) {
+      strapiUrl.searchParams.append("filters[$and][1][$or][1][phone][$containsi]", phone);
+    }
+    strapiUrl.searchParams.append("pagination[page]", "1");
+    strapiUrl.searchParams.append("pagination[pageSize]", "50");
 
-    const response = await fetch(strapiUrl, {
+    console.log("📍 URL Strapi:", strapiUrl.toString());
+
+    const response = await fetch(strapiUrl.toString(), {
       headers: {
         Authorization: `Bearer ${process.env.APP_TOKEN}`,
         "Content-Type": "application/json",
@@ -232,6 +238,7 @@ app.get("/api/students/findByName/:names", async (req, res) => {
     const result = await response.json();
 
     if (!response.ok) {
+      console.error("Erreur Strapi:", result);
       return res.status(response.status).json(result);
     }
 
