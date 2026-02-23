@@ -152,6 +152,7 @@ async function checkDuplicates() {
   const nom = nomBrut.trim().replace(/\s+/g, " ");
   const tel = telBrut.replace(/\D/g, "");
 
+  // Vérifications de base
   if (nom === "" && tel === "") {
     if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("error");
     const oldText = btnText.innerText;
@@ -183,12 +184,17 @@ async function checkDuplicates() {
     let url = "";
     let isPhoneSearch = false;
 
+    const baseUrl = `/api/people?populate=*&filters[$and][0][user][level][$eq]=cs&pagination[page]=1&pagination[pageSize]=50`;
+
     if (tel && tel.length >= 8) {
-      url = `/api/students/findByPhone/${tel}`;
+      // Filtre avec le numéro de téléphone
+      const safeTel = encodeURIComponent(tel);
+      url = `${baseUrl}&filters[$and][1][$or][0][phone][$contains]=${safeTel}&filters[$and][1][$or][1][phone2][$contains]=${safeTel}&filters[$and][1][$or][2][phone3][$contains]=${safeTel}`;
       isPhoneSearch = true;
     } else {
-      const nomSplit = nom.replace(/ /g, ",");
-      url = `/api/students/findByName/${nomSplit}`;
+      // Filtre avec le nom
+      const safeNom = encodeURIComponent(nom);
+      url = `${baseUrl}&filters[$and][1][$or][0][name][$containsi]=${safeNom}&filters[$and][1][$or][1][firstName][$containsi]=${safeNom}&filters[$and][1][$or][2][lastName][$containsi]=${safeNom}`;
     }
 
     const response = await fetch(url, {
@@ -200,29 +206,24 @@ async function checkDuplicates() {
     clearTimeout(timeoutId);
 
     if (!response.ok) {
-      if (response.status === 404 && isPhoneSearch) {
-        throw new Error("ROUTE_PHONE_NOT_FOUND");
-      }
       throw new Error(`Erreur Server ${response.status}`);
     }
 
     const text = await response.text();
-    let result = null;
-    try {
-      result = text ? JSON.parse(text) : null;
-    } catch (e) {
-      throw new Error("FORMAT_INVALIDE");
-    }
+    const result = text ? JSON.parse(text) : null;
 
-    let candidates = [];
-    if (result && Array.isArray(result)) {
-      candidates = result;
-    }
+    let candidates = result?.data || [];
 
     if (!isPhoneSearch && candidates.length > 0) {
       const motsRecherches = nom.toLowerCase().split(" ");
       candidates = candidates.filter((c) => {
-        const nomCandidat = (c.name || c.nomComplet || "").toLowerCase();
+        const data = c.attributes || c;
+        const nomCandidat = (
+          data.name ||
+          data.firstName ||
+          data.lastName ||
+          ""
+        ).toLowerCase();
         const motsDuCandidat = nomCandidat.split(" ");
 
         return motsRecherches.every((motRecherche) =>
@@ -256,13 +257,8 @@ async function checkDuplicates() {
     btn.className =
       "w-full flex justify-center items-center gap-2 py-3.5 rounded-xl font-bold text-sm transition-all bg-red-50 text-red-700 border border-red-200";
 
-    // Gestion propre des messages d'erreur
     if (error.name === "AbortError") {
-      btnText.innerText = "Timeout";
-    } else if (error.message === "ROUTE_PHONE_NOT_FOUND") {
-      btnText.innerText = "Route Tel introuvable";
-    } else if (error.message === "FORMAT_INVALIDE") {
-      btnText.innerText = "Le serveur a renvoyé du HTML";
+      btnText.innerText = "Trop long (Timeout)";
     } else {
       btnText.innerText = "Erreur Serveur";
     }
