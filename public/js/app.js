@@ -150,7 +150,7 @@ async function checkDuplicates() {
   let btnIcon = document.getElementById("check-icon");
 
   const nom = nomBrut.trim().replace(/\s+/g, " ");
-  const tel = telBrut.trim();
+  const tel = telBrut.replace(/\D/g, "");
 
   if (nom === "" && tel === "") {
     if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("error");
