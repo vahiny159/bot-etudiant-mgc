@@ -141,6 +141,7 @@ async function checkUserTelegram() {
 }
 
 // --- CHECK DOUBLON ---
+// --- CHECK DOUBLON (Connexion officielle avec l'API Dev) ---
 async function checkDuplicates() {
   const nomBrut = document.getElementById("nomComplet").value;
   const telBrut = document.getElementById("telephone").value;
@@ -180,57 +181,55 @@ async function checkDuplicates() {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000);
 
+    let url = "";
     let isPhoneSearch = false;
 
-    // On utilise EXACTEMENT la structure de ton collègue
-    let url =
-      "/api/people?populate=*&filters[$and][0][user][level][$eq]=cs&pagination[page]=1&pagination[pageSize]=50";
+    // 🚀 L'ADRESSE EXACTE DU SERVEUR DE TON COLLÈGUE
+    const baseUrl =
+      "https://api-dev.madagodscare.com/api/people?populate=*&filters[%24and][0][user][level][%24eq]=cs&pagination[page]=1&pagination[pageSize]=50";
+
     if (tel && tel.length >= 8) {
-      url += `&filters[$and][1][$or][0][phone][$contains]=${encodeURIComponent(tel)}&filters[$and][1][$or][1][phone2][$contains]=${encodeURIComponent(tel)}&filters[$and][1][$or][2][phone3][$contains]=${encodeURIComponent(tel)}`;
+      // 📱 Recherche par Téléphone avec les %24
+      const safeTel = encodeURIComponent(tel);
+      url = `${baseUrl}&filters[%24and][1][%24or][0][phone][%24contains]=${safeTel}&filters[%24and][1][%24or][1][phone2][%24contains]=${safeTel}&filters[%24and][1][%24or][2][phone3][%24contains]=${safeTel}`;
       isPhoneSearch = true;
     } else {
-      url += `&filters[$and][1][$or][0][name][$containsi]=${encodeURIComponent(nom)}&filters[$and][1][$or][1][firstName][$containsi]=${encodeURIComponent(nom)}&filters[$and][1][$or][2][lastName][$containsi]=${encodeURIComponent(nom)}`;
+      // 👤 Recherche par Nom avec les %24
+      const safeNom = encodeURIComponent(nom);
+      url = `${baseUrl}&filters[%24and][1][%24or][0][name][%24containsi]=${safeNom}&filters[%24and][1][%24or][1][firstName][%24containsi]=${safeNom}&filters[%24and][1][%24or][2][lastName][%24containsi]=${safeNom}`;
     }
-
-    // On log l'URL exacte pour pouvoir la vérifier
-    console.log("🔗 URL de recherche :", url);
 
     const response = await fetch(url, {
       method: "GET",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        // 🔐 LE TOKEN SECRET (Copie exacte du Postman de ton collègue)
+        Authorization:
+          "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTQ1NSwiaWF0IjoxNzcxODM3Njc1LCJleHAiOjE3NzQ0Mjk2NzV9.rqdMGRLyi1bYRhsf8S_4uySrN_IbvGLP995Jfa8hUTA",
+      },
       signal: controller.signal,
     });
 
     clearTimeout(timeoutId);
 
-    // 🔍 LECTURE DE LA RÉPONSE AVANT DE PLANTER
-    const text = await response.text();
-
     if (!response.ok) {
-      console.error(
-        `🚨 Erreur ${response.status} reçue. Contenu du serveur :`,
-        text,
-      );
-
-      // On analyse le type d'erreur
-      if (text.includes("<!DOCTYPE") || text.includes("<html")) {
-        throw new Error("404_NGINX");
-      } else {
-        throw new Error("404_STRAPI");
-      }
+      throw new Error(`Erreur Server API ${response.status}`);
     }
 
+    const text = await response.text();
     const result = text ? JSON.parse(text) : null;
+
+    // Les données Strapi natives sont dans le tableau .data
     let candidates = result?.data || [];
 
+    // Filtre front-end pour la précision des noms
     if (!isPhoneSearch && candidates.length > 0) {
       const motsRecherches = nom.toLowerCase().split(" ");
       candidates = candidates.filter((c) => {
-        const data = c.attributes || c;
         const nomCandidat = (
-          data.name ||
-          data.firstName ||
-          data.lastName ||
+          c.name ||
+          c.firstName ||
+          c.lastName ||
           ""
         ).toLowerCase();
         const motsDuCandidat = nomCandidat.split(" ");
@@ -266,15 +265,10 @@ async function checkDuplicates() {
     btn.className =
       "w-full flex justify-center items-center gap-2 py-3.5 rounded-xl font-bold text-sm transition-all bg-red-50 text-red-700 border border-red-200";
 
-    // Affichage spécifique pour comprendre le bug
     if (error.name === "AbortError") {
       btnText.innerText = "⏳ Trop long (Timeout)";
-    } else if (error.message === "404_NGINX") {
-      btnText.innerText = "❌ Bloqué par le serveur proxy";
-    } else if (error.message === "404_STRAPI") {
-      btnText.innerText = "❌ Bloqué par Strapi";
     } else {
-      btnText.innerText = "❌ Erreur Serveur";
+      btnText.innerText = "❌ Erreur API distante";
     }
 
     setTimeout(() => {
