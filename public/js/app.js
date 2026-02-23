@@ -140,7 +140,7 @@ async function checkUserTelegram() {
   }
 }
 
-// --- CHECK DOUBLON (Version Définitive - API Distante sans Token) ---
+// --- CHECK DOUBLON ---
 async function checkDuplicates() {
   const nomBrut = document.getElementById("nomComplet").value;
   const telBrut = document.getElementById("telephone").value;
@@ -183,41 +183,38 @@ async function checkDuplicates() {
     let url = "";
     let isPhoneSearch = false;
 
-    // 🚀 L'ADRESSE ABSOLUE DU SERVEUR DE L'API (La clé du succès !)
-    const baseUrl =
-      "https://api-dev.madagodscare.com/api/people?populate=*&filters[%24and][0][user][level][%24eq]=cs&pagination[page]=1&pagination[pageSize]=50";
-
     if (tel && tel.length >= 8) {
-      // 📱 Recherche par Téléphone avec l'encodage de Sophie (%24)
-      const safeTel = encodeURIComponent(tel);
-      url = `${baseUrl}&filters[%24and][1][%24or][0][phone][%24contains]=${safeTel}&filters[%24and][1][%24or][1][phone2][%24contains]=${safeTel}&filters[%24and][1][%24or][2][phone3][%24contains]=${safeTel}`;
+      // Recherche prioritaire par téléphone
+      url = `/api/students/findByPhone/${tel}`;
       isPhoneSearch = true;
     } else {
-      // 👤 Recherche par Nom avec l'encodage de Sophie (%24)
-      const safeNom = encodeURIComponent(nom);
-      url = `${baseUrl}&filters[%24and][1][%24or][0][name][%24containsi]=${safeNom}&filters[%24and][1][%24or][1][firstName][%24containsi]=${safeNom}&filters[%24and][1][%24or][2][lastName][%24containsi]=${safeNom}`;
+      // Recherche par nom
+      const nomSplit = nom.replace(/ /g, ",");
+      url = `/api/students/findByName/${nomSplit}`;
     }
 
     const response = await fetch(url, {
       method: "GET",
-      // On retire le token Bearer puisque la route est publique !
       headers: { "Content-Type": "application/json" },
       signal: controller.signal,
     });
 
     clearTimeout(timeoutId);
 
-    if (!response.ok) {
-      throw new Error(`Erreur Server API ${response.status}`);
+    const text = await response.text();
+
+    // Protection (si la route n'existe pas encore)
+    if (text.includes("<!DOCTYPE") || text.includes("<html")) {
+      if (isPhoneSearch) throw new Error("ROUTE_PHONE_NOT_FOUND");
+      throw new Error(`Route introuvable sur le serveur`);
     }
 
-    const text = await response.text();
+    if (!response.ok) throw new Error(`Erreur Server ${response.status}`);
+
     const result = text ? JSON.parse(text) : null;
+    let candidates = Array.isArray(result) ? result : result?.data || [];
 
-    // Les données Strapi natives sont dans le tableau .data
-    let candidates = result?.data || [];
-
-    // Filtre front-end pour la précision des noms
+    // Filtre pour la recherche par nom
     if (!isPhoneSearch && candidates.length > 0) {
       const motsRecherches = nom.toLowerCase().split(" ");
       candidates = candidates.filter((c) => {
@@ -226,6 +223,7 @@ async function checkDuplicates() {
           data.name ||
           data.firstName ||
           data.lastName ||
+          data.nomComplet ||
           ""
         ).toLowerCase();
         const motsDuCandidat = nomCandidat.split(" ");
@@ -263,8 +261,10 @@ async function checkDuplicates() {
 
     if (error.name === "AbortError") {
       btnText.innerText = "⏳ Trop long (Timeout)";
+    } else if (error.message === "ROUTE_PHONE_NOT_FOUND") {
+      btnText.innerText = "❌ API Tél en attente";
     } else {
-      btnText.innerText = "❌ Erreur Serveur API";
+      btnText.innerText = "❌ Erreur Serveur";
     }
 
     setTimeout(() => {
