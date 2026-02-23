@@ -257,6 +257,8 @@ function showDuplicateModal(candidates) {
   candidates.forEach((s) => {
     const data = s.attributes || s;
     const displayName = data.name || data.nomComplet || "Nom inconnu";
+    const displayPhone =
+      data.phone || data.telephone || "Aucun numéro renseigné";
 
     const btn = document.createElement("button");
     btn.className =
@@ -270,7 +272,9 @@ function showDuplicateModal(candidates) {
         </div>
         <div>
           <div class="font-bold text-gray-900 text-base group-hover:text-yellow-800 transition-colors">${displayName}</div>
-          <div class="text-[11px] font-bold text-yellow-600/70 uppercase tracking-wide mt-0.5">Dossier existant</div>
+          <div class="text-[12px] font-bold text-yellow-600/80 tracking-wide mt-0.5 flex items-center gap-1">
+            📞 ${displayPhone}
+          </div>
         </div>
       </div>
       
@@ -283,7 +287,6 @@ function showDuplicateModal(candidates) {
     list.appendChild(btn);
   });
 
-  // Affichage fluide de la modale
   modal.classList.remove("hidden");
   requestAnimationFrame(() => {
     modal.classList.remove("opacity-0");
@@ -622,7 +625,9 @@ async function submitForm() {
   const nom = nomInput.value;
   const sexe = sexeInput.value;
 
-  const telephone = document.getElementById("telephone").value.replace(/\s/g, "");
+  const telephone = document
+    .getElementById("telephone")
+    .value.replace(/\s/g, "");
   const dateNaissance = document.getElementById("dateNaissance").value;
   const facebook = document.getElementById("facebook").value.trim();
 
