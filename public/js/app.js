@@ -184,19 +184,6 @@ async function checkDuplicates() {
     const params = new URLSearchParams();
     if (nom) params.append("name", nom);
     if (tel) params.append("phone", tel);
-
-    // 🚀 L'OPTIMISATION DE SOPHIE : Le filtre "fields"
-    // On exige que le serveur ne cherche et ne renvoie QUE ces champs spécifiques
-    params.append("fields[0]", "name");
-    params.append("fields[1]", "firstName");
-    params.append("fields[2]", "lastName");
-    params.append("fields[3]", "nomComplet");
-    params.append("fields[4]", "phone");
-    params.append("fields[5]", "telephone");
-
-    // On bloque formellement le "populate" (qui chargeait les relations lourdes)
-    params.append("populate", "false");
-
     const url = `/api/students/checkDuplicates?${params.toString()}`;
 
     const response = await fetch(url, {
