@@ -25,7 +25,7 @@ let currentStudent = null;
 let currentStudentReports = [];
 let currentTeacherId = null;
 
-// recherche etudiant
+// recherche bb
 async function searchStudent() {
   const input = document.getElementById("searchStudentInput");
   const val = input.value.trim();
@@ -67,6 +67,7 @@ async function searchStudent() {
   }
 }
 
+// selection bb
 function selectStudent(studentData) {
   if (tg.HapticFeedback) tg.HapticFeedback.selectionChanged();
   closeSearchModal();
@@ -86,7 +87,7 @@ function selectStudent(studentData) {
   document.getElementById("nomComplet").value = attrs.name || "";
   document.getElementById("telephone").value = attrs.phone || "";
 
-
+  // gestion interview
   const hasInterviewCb = document.getElementById("hasInterview");
   const interviewDateContainer = document.getElementById("interview-date-container");
   const interviewDateInput = document.getElementById("dateInterview");
@@ -122,9 +123,7 @@ function resetStudentSearch() {
   currentStudent = null;
   currentStudentReports = [];
   document.getElementById("selected-student-card").classList.add("hidden");
-  document
-    .getElementById("main-form-section")
-    .classList.add("hidden", "opacity-0");
+  document.getElementById("main-form-section").classList.add("hidden", "opacity-0");
   document.getElementById("bottom-action-bar").classList.add("hidden");
   document.getElementById("searchStudentInput").value = "";
 
@@ -132,39 +131,19 @@ function resetStudentSearch() {
   document.getElementById("bbLessonSelect").selectedIndex = 0;
   document.getElementById("dateLesson").value = "";
   resetTeacherSearch();
+
+  // NETTOYAGE INTERVIEW
   document.getElementById("hasInterview").checked = false;
   document.getElementById("interview-date-container").classList.add("hidden");
   document.getElementById("dateInterview").value = "";
 }
-// --- Pré-remplissage de l'Interview ---
-const hasInterviewCb = document.getElementById("hasInterview");
-const interviewDateContainer = document.getElementById(
-  "interview-date-container",
-);
-const interviewDateInput = document.getElementById("dateInterview");
 
-if (attrs.firstRegistrationInterview === true) {
-  hasInterviewCb.checked = true;
-  interviewDateContainer.classList.remove("hidden");
-
-  if (attrs.firstRegistrationDate) {
-    interviewDateInput.value = attrs.firstRegistrationDate.split("T")[0];
-  }
-} else {
-  hasInterviewCb.checked = false;
-  interviewDateContainer.classList.add("hidden");
-  interviewDateInput.value = "";
-}
-// update leçon
+// gestion leçon
 function updateLessonUI() {
   const select = document.getElementById("bbLessonSelect");
   const options = select.options;
-
   const totalLessons = Object.keys(LESSONS).length;
-
-  const completedCodes = currentStudentReports.map(
-    (r) => (r.attributes || r).code,
-  );
+  const completedCodes = currentStudentReports.map((r) => (r.attributes || r).code);
 
   let highestNum = 0;
   completedCodes.forEach((code) => {
@@ -201,50 +180,46 @@ function updateLessonUI() {
   }
 }
 
-// logique pour les leçons
-document
-  .getElementById("bbLessonSelect")
-  .addEventListener("change", function (e) {
-    const selectedCode = e.target.value;
-    const infoBadge = document.getElementById("lesson-status-info");
+// changement de leçon
+document.getElementById("bbLessonSelect").addEventListener("change", function (e) {
+  const selectedCode = e.target.value;
+  const infoBadge = document.getElementById("lesson-status-info");
 
-    if (!selectedCode || !currentStudent) return;
+  if (!selectedCode || !currentStudent) return;
 
-    // chercher si l'étudiant a déjà fait la leçon
-    const existingReport = currentStudentReports.find((r) => {
-      const rAttrs = r.attributes || r;
-      return rAttrs.code === selectedCode;
-    });
+  // chercher si l'étudiant a déjà fait la leçon
+  const existingReport = currentStudentReports.find((r) => {
+    const rAttrs = r.attributes || r;
+    return rAttrs.code === selectedCode;
+  });
 
-    if (existingReport) {
-      const rAttrs = existingReport.attributes || existingReport;
-      infoBadge.classList.remove("hidden");
+  if (existingReport) {
+    const rAttrs = existingReport.attributes || existingReport;
+    infoBadge.classList.remove("hidden");
 
-      // pré-remplir la date
-      if (rAttrs.date) {
-        document.getElementById("dateLesson").value = rAttrs.date.split("T")[0];
-      }
+    // pré-remplir la date
+    if (rAttrs.date) {
+      document.getElementById("dateLesson").value = rAttrs.date.split("T")[0];
+    }
 
-      //  MOUCHARDS POUR LE TEACHER
-      console.log(`\n--- VÉRIFICATION LEÇON ${selectedCode} ---`);
-      console.log("Objet complet de la leçon :", rAttrs);
-      console.log("Champ 'teacher' :", rAttrs.teacher);
+    // MOUCHARDS POUR LE BBT
+    console.log(`\n--- VÉRIFICATION LEÇON ${selectedCode} ---`);
+    console.log("Objet complet de la leçon :", rAttrs);
+    console.log("Champ 'teacher' :", rAttrs.teacher);
 
-      if (rAttrs.teacher && rAttrs.teacher.data) {
-        console.log("✅ Teacher trouvé :", rAttrs.teacher.data.attributes?.name);
-        selectTeacher(rAttrs.teacher.data, true);
-      } else {
-        console.log("❌ Aucun teacher valide trouvé dans les données (ou teacher.data est null)");
-        resetTeacherSearch();
-      }
-      // ==========================================
-
+    if (rAttrs.teacher && rAttrs.teacher.data) {
+      console.log("✅ Teacher trouvé :", rAttrs.teacher.data.attributes?.name);
+      selectTeacher(rAttrs.teacher.data, true);
     } else {
-      infoBadge.classList.add("hidden");
-      document.getElementById("dateLesson").value = "";
+      console.log("❌ Aucun teacher valide trouvé dans les données (ou teacher.data est null)");
       resetTeacherSearch();
     }
-  });
+  } else {
+    infoBadge.classList.add("hidden");
+    document.getElementById("dateLesson").value = "";
+    resetTeacherSearch();
+  }
+});
 
 // recherche bbt
 async function searchTeacher() {
@@ -310,7 +285,7 @@ function resetTeacherSearch() {
   document.getElementById("selected-teacher-card").classList.remove("flex");
 }
 
-// SOUMISSION FINALE
+// soumission finale
 async function submitBBLesson() {
   if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred("medium");
 
@@ -414,7 +389,7 @@ async function submitBBLesson() {
   }
 }
 
-// MODALE GÉNÉRIQUE DE RÉSULTATS
+// modales génériques de résultat
 function showSearchModal(candidates, type) {
   const modal = document.getElementById("search-modal");
   const list = document.getElementById("search-results-list");
