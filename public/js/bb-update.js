@@ -74,6 +74,10 @@ function selectStudent(studentData) {
   currentStudent = studentData;
   const attrs = studentData.attributes || studentData;
 
+  console.log("⬇️ DONNÉES REÇUES DE STRAPI :", attrs);
+  console.log("- Interview cochée ? :", attrs.firstRegistrationInterview);
+  console.log("- Date d'interview ? :", attrs.firstRegistrationDate);
+
   // auvegarde rapports existants
   currentStudentReports = attrs.bbReports?.data || [];
 
@@ -118,6 +122,9 @@ function resetStudentSearch() {
   document.getElementById("bbLessonSelect").selectedIndex = 0;
   document.getElementById("dateLesson").value = "";
   resetTeacherSearch();
+  document.getElementById("hasInterview").checked = false;
+  document.getElementById("interview-date-container").classList.add("hidden");
+  document.getElementById("dateInterview").value = "";
 }
 // --- Pré-remplissage de l'Interview ---
 const hasInterviewCb = document.getElementById("hasInterview");
