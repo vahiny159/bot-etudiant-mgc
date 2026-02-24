@@ -74,25 +74,35 @@ function selectStudent(studentData) {
   currentStudent = studentData;
   const attrs = studentData.attributes || studentData;
 
-  console.log("⬇️ DONNÉES REÇUES DE STRAPI :", attrs);
-  console.log("- Interview cochée ? :", attrs.firstRegistrationInterview);
-  console.log("- Date d'interview ? :", attrs.firstRegistrationDate);
+  console.log("⬇️ DOSSIER CHARGÉ :", attrs.name, attrs.firstRegistrationInterview);
 
-  // auvegarde rapports existants
   currentStudentReports = attrs.bbReports?.data || [];
 
-  // Affichage carte
-  document.getElementById("display-student-name").innerText =
-    attrs.name || "Nom Inconnu";
-  document.getElementById("display-student-id").innerText =
-    attrs.user?.data?.attributes?.username || "Sans ID Smada";
-
+  document.getElementById("display-student-name").innerText = attrs.name || "Nom Inconnu";
+  document.getElementById("display-student-id").innerText = attrs.user?.data?.attributes?.username || "Sans ID Smada";
   document.getElementById("selected-student-card").classList.remove("hidden");
 
-  // pré-remplissage form
   document.getElementById("studentId").value = studentData.id;
   document.getElementById("nomComplet").value = attrs.name || "";
   document.getElementById("telephone").value = attrs.phone || "";
+
+
+  const hasInterviewCb = document.getElementById("hasInterview");
+  const interviewDateContainer = document.getElementById("interview-date-container");
+  const interviewDateInput = document.getElementById("dateInterview");
+
+  if (attrs.firstRegistrationInterview === true) {
+    hasInterviewCb.checked = true;
+    interviewDateContainer.classList.remove("hidden");
+
+    if (attrs.firstRegistrationDate) {
+      interviewDateInput.value = attrs.firstRegistrationDate.split("T")[0];
+    }
+  } else {
+    hasInterviewCb.checked = false;
+    interviewDateContainer.classList.add("hidden");
+    interviewDateInput.value = "";
+  }
 
   const mainForm = document.getElementById("main-form-section");
   const bottomBar = document.getElementById("bottom-action-bar");
