@@ -259,8 +259,8 @@ async function submitBBLesson() {
       title: LESSONS[codeLesson],
       completed: true,
       date: `${dateLesson}T12:00:00.000Z`,
-      student: studentId,
-      teacher: currentTeacherId || null,
+      student: parseInt(studentId, 10),
+      teacher: currentTeacherId ? parseInt(currentTeacherId, 10) : null,
     };
 
     // chercher si c'est un PUT ou un POST

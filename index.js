@@ -260,6 +260,94 @@ app.get("/api/students/checkDuplicates", async (req, res) => {
   }
 });
 
+// --- SEARCH PEOPLE (students / teachers) - proxy to Strapi ---
+app.get("/api/people", async (req, res) => {
+  console.log("🔍 Recherche people...");
+  try {
+    // Use raw query string to preserve Strapi bracket notation (filters[$and]...)
+    // URLSearchParams(req.query) would break because Express/qs parses brackets into nested objects
+    const rawQuery = req.originalUrl.split("?")[1] || "";
+    const strapiUrl = `${process.env.STRAPI_API_URL}/api/people${rawQuery ? "?" + rawQuery : ""}`;
+
+    console.log("📍 URL Strapi:", strapiUrl);
+
+    const response = await fetch(strapiUrl, {
+      headers: {
+        Authorization: `Bearer ${process.env.APP_TOKEN}`,
+        "Content-Type": "application/json",
+      },
+    });
+    const result = await response.json();
+
+    if (!response.ok) {
+      console.error("Erreur Strapi search people:", result);
+      return res.status(response.status).json(result);
+    }
+
+    res.json(result);
+  } catch (e) {
+    console.error("Erreur recherche people:", e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// --- CREATE BB REPORT ---
+app.post("/api/bb-reports", async (req, res) => {
+  console.log("📝 Création BB Report...");
+  try {
+    const strapiUrl = `${process.env.STRAPI_API_URL}/api/bb-reports`;
+
+    const response = await fetch(strapiUrl, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${process.env.APP_TOKEN}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(req.body),
+    });
+    const result = await response.json();
+
+    if (!response.ok) {
+      console.error("Erreur Strapi create BB Report:", result);
+      return res.status(response.status).json(result);
+    }
+
+    res.json(result);
+  } catch (e) {
+    console.error("Erreur création BB Report:", e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// --- UPDATE BB REPORT ---
+app.put("/api/bb-reports/:id", async (req, res) => {
+  const { id } = req.params;
+  console.log(`🔄 Update BB Report ID: ${id}`);
+  try {
+    const strapiUrl = `${process.env.STRAPI_API_URL}/api/bb-reports/${id}`;
+
+    const response = await fetch(strapiUrl, {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${process.env.APP_TOKEN}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(req.body),
+    });
+    const result = await response.json();
+
+    if (!response.ok) {
+      console.error("Erreur Strapi update BB Report:", result);
+      return res.status(response.status).json(result);
+    }
+
+    res.json(result);
+  } catch (e) {
+    console.error("Erreur update BB Report:", e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
 // EXPORT STUDENTS TO EXCEL
 app.get("/api/people/students/export", async (req, res) => {
   console.log("📊 Export Excel des étudiants...");
@@ -287,11 +375,11 @@ app.get("/api/people/students/export", async (req, res) => {
 
     // Récupérer le fichier Excel et le transférer
     const buffer = await response.arrayBuffer();
-    
+
     // Copier les headers importants
     const contentType = response.headers.get('content-type') || 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
     const contentDisposition = response.headers.get('content-disposition') || `attachment; filename="export_students_${classId}_${createdAtFrom}.xlsx"`;
-    
+
     res.setHeader('Content-Type', contentType);
     res.setHeader('Content-Disposition', contentDisposition);
     res.send(Buffer.from(buffer));
