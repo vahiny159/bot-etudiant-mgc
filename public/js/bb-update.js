@@ -1,0 +1,400 @@
+// ==========================================
+// 🚀 INITIALISATION ET VARIABLES GLOBALES
+// ==========================================
+let tg = window.Telegram.WebApp;
+tg.expand();
+tg.ready();
+tg.setHeaderColor("#F9FAFB");
+
+const BASE_URL = "https://api-dev.madagodscare.com";
+
+// Dictionnaire officiel des leçons (Instruction 6)
+const LESSONS = {
+  BB01: "Hazo Ambolena Amoron'ny Rano Velona",
+  BB02: "Tempoly Tsara",
+  BB03: "Fahalalana Fototra ny Baiboly",
+  BB04: "Testamenta Taloha sy Testamenta Vaovao",
+  BB05: "Fanavahana Vanim-potoana",
+  BB06: "Nahoana i Jesosy no Antsoina hoe Mesia?",
+  BB07: "Fanavahana ny Tsara sy ny Ratsy (Fizarana 1)",
+  BB08: "Fanavahana ny Tsara sy ny Ratsy (Fizarana 2)",
+  BB09: "Tsiambaratelon'ny Fanjakan'ny Lanitra Voasoratra Anaty Fanoharana",
+  BB10: "Saha Efatra",
+  BB11: "Mazava sy Maizina (Fizarana 1-2)",
+  BB12: "Mosary",
+};
+
+// L'état de l'application (La mémoire)
+let currentStudent = null;
+let currentStudentReports = []; // Historique des leçons du student
+let currentTeacherId = null;
+
+// ==========================================
+// 🔍 1. RECHERCHE ET SÉLECTION DE L'ÉTUDIANT
+// ==========================================
+async function searchStudent() {
+  const input = document.getElementById("searchStudentInput");
+  const val = input.value.trim();
+  const btnIcon = document.getElementById("search-student-icon");
+
+  if (!val) {
+    if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("error");
+    return;
+  }
+
+  btnIcon.innerHTML = `<span class="animate-spin inline-block h-4 w-4 border-2 border-blue-600 border-t-transparent rounded-full"></span>`;
+  input.disabled = true;
+
+  try {
+    const safeVal = encodeURIComponent(val);
+
+    // Requête sécurisée (Instruction 1) avec encodage des $ en %24
+    let query = `populate[user]=*&populate[bbReports][populate][teacher][populate][user]=*`;
+    query += `&filters[%24and][0][user][level][%24ne]=member`;
+    query += `&filters[%24and][1][%24or][0][name][%24containsi]=${safeVal}`;
+    query += `&filters[%24and][1][%24or][1][user][username][%24containsi]=${safeVal}`;
+
+    const response = await fetch(`${BASE_URL}/api/people?${query}`, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+    });
+
+    if (!response.ok) throw new Error("Erreur serveur");
+    const result = await response.json();
+    const candidates = result.data || [];
+
+    showSearchModal(candidates, "student");
+  } catch (error) {
+    console.error("Erreur recherche étudiant:", error);
+    tg.showAlert("Erreur lors de la recherche. Veuillez réessayer.");
+  } finally {
+    btnIcon.innerHTML = "Go";
+    input.disabled = false;
+  }
+}
+
+function selectStudent(studentData) {
+  if (tg.HapticFeedback) tg.HapticFeedback.selectionChanged();
+  closeSearchModal();
+
+  currentStudent = studentData;
+  const attrs = studentData.attributes || studentData;
+
+  // Sauvegarde des rapports existants
+  currentStudentReports = attrs.bbReports?.data || [];
+
+  // Affichage de la carte
+  document.getElementById("display-student-name").innerText =
+    attrs.name || "Nom Inconnu";
+  document.getElementById("display-student-id").innerText =
+    attrs.user?.data?.attributes?.username || "Sans ID Smada";
+
+  document.getElementById("selected-student-card").classList.remove("hidden");
+
+  // Pré-remplissage du formulaire
+  document.getElementById("studentId").value = studentData.id;
+  document.getElementById("nomComplet").value = attrs.name || "";
+  document.getElementById("telephone").value = attrs.phone || "";
+
+  // On affiche le reste du formulaire
+  const mainForm = document.getElementById("main-form-section");
+  const bottomBar = document.getElementById("bottom-action-bar");
+  mainForm.classList.remove("hidden");
+  bottomBar.classList.remove("hidden");
+
+  // Petite animation d'apparition
+  requestAnimationFrame(() => {
+    mainForm.classList.remove("opacity-0");
+  });
+
+  // Déclencher la vérification de la leçon si une est déjà sélectionnée
+  document.getElementById("bbLessonSelect").dispatchEvent(new Event("change"));
+}
+
+function resetStudentSearch() {
+  currentStudent = null;
+  currentStudentReports = [];
+  document.getElementById("selected-student-card").classList.add("hidden");
+  document
+    .getElementById("main-form-section")
+    .classList.add("hidden", "opacity-0");
+  document.getElementById("bottom-action-bar").classList.add("hidden");
+  document.getElementById("searchStudentInput").value = "";
+
+  // Reset complet du form
+  document.getElementById("bbLessonSelect").selectedIndex = 0;
+  document.getElementById("dateLesson").value = "";
+  resetTeacherSearch();
+}
+
+// ==========================================
+// 🧠 2. LOGIQUE INTELLIGENTE DES LEÇONS
+// ==========================================
+document
+  .getElementById("bbLessonSelect")
+  .addEventListener("change", function (e) {
+    const selectedCode = e.target.value; // ex: "BB02"
+    const infoBadge = document.getElementById("lesson-status-info");
+
+    if (!selectedCode || !currentStudent) return;
+
+    // Chercher si l'étudiant a déjà fait cette leçon
+    const existingReport = currentStudentReports.find((r) => {
+      const rAttrs = r.attributes || r;
+      return rAttrs.code === selectedCode;
+    });
+
+    if (existingReport) {
+      const rAttrs = existingReport.attributes || existingReport;
+      infoBadge.classList.remove("hidden");
+
+      // Pré-remplir la date
+      if (rAttrs.date) {
+        document.getElementById("dateLesson").value = rAttrs.date.split("T")[0];
+      }
+
+      // Pré-remplir le teacher s'il existe
+      if (rAttrs.teacher && rAttrs.teacher.data) {
+        const teacherData = rAttrs.teacher.data;
+        selectTeacher(teacherData, true); // true = mode silencieux (sans haptic)
+      }
+    } else {
+      infoBadge.classList.add("hidden");
+      document.getElementById("dateLesson").value = "";
+      resetTeacherSearch();
+    }
+  });
+
+// ==========================================
+// 🔍 3. RECHERCHE ET SÉLECTION DU TEACHER
+// ==========================================
+async function searchTeacher() {
+  const input = document.getElementById("searchTeacherInput");
+  const val = input.value.trim();
+  const btnIcon = document.getElementById("search-teacher-icon");
+
+  if (!val) return;
+
+  btnIcon.innerText = "⏳";
+  input.disabled = true;
+
+  try {
+    const safeVal = encodeURIComponent(val);
+
+    // Requête sécurisée (Instruction 2)
+    let query = `populate[user]=*`;
+    query += `&filters[%24and][0][user][level][%24eq]=member`;
+    query += `&filters[%24and][1][status][%24eq]=active`;
+    query += `&filters[%24and][2][%24or][0][name][%24containsi]=${safeVal}`;
+    query += `&filters[%24and][2][%24or][1][user][username][%24containsi]=${safeVal}`;
+
+    const response = await fetch(`${BASE_URL}/api/people?${query}`, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+    });
+
+    if (!response.ok) throw new Error("Erreur serveur");
+    const result = await response.json();
+    const candidates = result.data || [];
+
+    showSearchModal(candidates, "teacher");
+  } catch (error) {
+    console.error("Erreur recherche teacher:", error);
+    tg.showAlert("Impossible de trouver le membre.");
+  } finally {
+    btnIcon.innerText = "Chercher";
+    input.disabled = false;
+  }
+}
+
+function selectTeacher(teacherData, silent = false) {
+  if (!silent && tg.HapticFeedback) tg.HapticFeedback.selectionChanged();
+  closeSearchModal();
+
+  currentTeacherId = teacherData.id;
+  const attrs = teacherData.attributes || teacherData;
+  const teacherIdApp = attrs.user?.data?.attributes?.username || "";
+
+  document.getElementById("display-teacher-name").innerText =
+    `👨‍🏫 ${attrs.name} ${teacherIdApp ? "(" + teacherIdApp + ")" : ""}`;
+  document.getElementById("searchTeacherInput").classList.add("hidden");
+  document.getElementById("btn-search-teacher").classList.add("hidden");
+  document.getElementById("selected-teacher-card").classList.remove("hidden");
+  document.getElementById("selected-teacher-card").classList.add("flex");
+}
+
+function resetTeacherSearch() {
+  currentTeacherId = null;
+  document.getElementById("searchTeacherInput").value = "";
+  document.getElementById("searchTeacherInput").classList.remove("hidden");
+  document.getElementById("btn-search-teacher").classList.remove("hidden");
+  document.getElementById("selected-teacher-card").classList.add("hidden");
+  document.getElementById("selected-teacher-card").classList.remove("flex");
+}
+
+// ==========================================
+// 📤 4. SOUMISSION FINALE (LA MAGIE)
+// ==========================================
+async function submitBBLesson() {
+  if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred("medium");
+
+  const btn = document.getElementById("main-btn");
+  const spinner = document.getElementById("spinner");
+  const btnText = document.getElementById("btn-text");
+
+  // Récupération des données
+  const studentId = document.getElementById("studentId").value;
+  const nom = document.getElementById("nomComplet").value.trim();
+  const tel = document.getElementById("telephone").value.replace(/\s/g, "");
+  const codeLesson = document.getElementById("bbLessonSelect").value;
+  const dateLesson = document.getElementById("dateLesson").value;
+
+  const hasInterview = document.getElementById("hasInterview").checked;
+  const dateInterview = document.getElementById("dateInterview").value;
+
+  // Validation
+  if (!nom || !codeLesson || !dateLesson) {
+    tg.showAlert("⚠️ Veuillez remplir le Nom, la Leçon BB et sa Date.");
+    if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("error");
+    return;
+  }
+
+  if (hasInterview && !dateInterview) {
+    tg.showAlert("⚠️ Vous avez coché 'Interview', veuillez préciser la date.");
+    return;
+  }
+
+  btn.disabled = true;
+  spinner.classList.remove("hidden");
+  btnText.innerHTML = "<span>Traitement en cours...</span>";
+
+  try {
+    // 1. Préparation des données du BB Report (Instructions 3 & 4 & 6)
+    const reportData = {
+      code: codeLesson,
+      title: LESSONS[codeLesson],
+      completed: true,
+      date: `${dateLesson}T12:00:00.000Z`, // Formatage ISO
+      student: studentId,
+      teacher: currentTeacherId || null,
+    };
+
+    // Chercher si c'est un PUT ou un POST
+    const existingReport = currentStudentReports.find(
+      (r) => (r.attributes || r).code === codeLesson,
+    );
+
+    let reportUrl = `${BASE_URL}/api/bb-reports`;
+    let reportMethod = "POST";
+    if (existingReport) {
+      reportUrl = `${BASE_URL}/api/bb-reports/${existingReport.id}`;
+      reportMethod = "PUT";
+    }
+
+    // ➡️ APPEL API 1 : Enregistrement du Rapport
+    const reportResponse = await fetch(reportUrl, {
+      method: reportMethod,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ data: reportData }),
+    });
+
+    if (!reportResponse.ok)
+      throw new Error("Erreur lors de la sauvegarde du rapport BB.");
+
+    // 2. Préparation des données du Student (Instructions 5 & 7)
+    // Extraction du numéro (ex: "BB05" -> 5)
+    const lessonNumber = parseInt(codeLesson.replace("BB", ""), 10);
+
+    const studentData = {
+      name: nom,
+      phone: tel,
+      bbLessonNumber: lessonNumber,
+      firstRegistrationInterview: hasInterview,
+      firstRegistrationDate: hasInterview
+        ? `${dateInterview}T12:00:00.000Z`
+        : null,
+    };
+
+    // ➡️ APPEL API 2 : Mise à jour du profil de l'étudiant
+    const studentResponse = await fetch(`${BASE_URL}/api/people/${studentId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ data: studentData }),
+    });
+
+    if (!studentResponse.ok)
+      throw new Error("Erreur lors de la mise à jour de l'étudiant.");
+
+    // Succès total !
+    if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("success");
+    tg.showAlert("✅ Leçon et Profil mis à jour avec succès !");
+
+    // On nettoie la page pour la prochaine saisie
+    resetStudentSearch();
+  } catch (error) {
+    console.error("Erreur Submit:", error);
+    tg.showAlert(`❌ ${error.message}`);
+    if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("error");
+  } finally {
+    btn.disabled = false;
+    spinner.classList.add("hidden");
+    btnText.innerHTML = "<span>Enregistrer la leçon</span>";
+  }
+}
+
+// ==========================================
+// 🎨 MODALE GÉNÉRIQUE DE RÉSULTATS (UI)
+// ==========================================
+function showSearchModal(candidates, type) {
+  const modal = document.getElementById("search-modal");
+  const list = document.getElementById("search-results-list");
+  const title = document.getElementById("search-modal-title");
+
+  if (candidates.length === 0) {
+    tg.showAlert("Aucun résultat trouvé.");
+    return;
+  }
+
+  title.innerText =
+    type === "student" ? "Sélectionner l'étudiant" : "Sélectionner le Teacher";
+  list.innerHTML = "";
+
+  candidates.forEach((item) => {
+    const data = item.attributes || item;
+    const name = data.name || "Inconnu";
+    const smadaId = data.user?.data?.attributes?.username || "---";
+
+    const btn = document.createElement("button");
+    btn.className =
+      "w-full text-left p-3 bg-gray-50 hover:bg-blue-50 border border-gray-200 rounded-xl mb-2 flex justify-between items-center transition-colors";
+
+    btn.onclick = () => {
+      if (type === "student") selectStudent(item);
+      else selectTeacher(item);
+    };
+
+    btn.innerHTML = `
+      <div>
+        <div class="font-bold text-gray-900">${name}</div>
+        <div class="text-xs text-gray-500 font-mono">ID: ${smadaId}</div>
+      </div>
+      <div class="text-blue-500 text-lg">›</div>
+    `;
+    list.appendChild(btn);
+  });
+
+  modal.classList.remove("hidden");
+  requestAnimationFrame(() => {
+    modal.classList.remove("opacity-0");
+    document
+      .getElementById("search-modal-content")
+      .classList.remove("scale-95");
+  });
+}
+
+function closeSearchModal() {
+  const modal = document.getElementById("search-modal");
+  modal.classList.add("opacity-0");
+  document.getElementById("search-modal-content").classList.add("scale-95");
+  setTimeout(() => modal.classList.add("hidden"), 300);
+}

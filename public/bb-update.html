@@ -1,0 +1,404 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>Mise à jour BB - MGC</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: { sans: ['"Plus Jakarta Sans"', "sans-serif"] },
+            colors: {
+              lemon: {
+                300: "#fde047",
+                400: "#facc15",
+                500: "#eab308",
+                900: "#713f12",
+              },
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      body {
+        -webkit-tap-highlight-color: transparent;
+        -webkit-overflow-scrolling: touch;
+      }
+      .input-fast {
+        background: #f9fafb;
+        transition:
+          border-color 0.2s ease,
+          box-shadow 0.2s ease;
+      }
+      .input-fast:focus {
+        background: #ffffff;
+        border-color: #facc15;
+        box-shadow: 0 0 0 4px rgba(250, 204, 21, 0.15);
+        outline: none;
+      }
+      /* Cacher la scrollbar pour un look d'app native */
+      ::-webkit-scrollbar {
+        width: 0px;
+        background: transparent;
+      }
+    </style>
+  </head>
+
+  <body
+    class="antialiased pb-32 relative overflow-x-hidden min-h-screen text-gray-900 bg-gray-50"
+  >
+    <div class="fixed inset-0 z-0 pointer-events-none">
+      <div
+        class="absolute inset-0 bg-gradient-to-br from-gray-100 via-yellow-50 to-gray-100"
+      ></div>
+      <div
+        class="absolute inset-0 opacity-[0.04]"
+        style="
+          background-image: url(&quot;data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3z' fill='%239C92AC' fill-opacity='1' fill-rule='evenodd'/%3E%3C/svg%3E&quot;);
+        "
+      ></div>
+    </div>
+
+    <div class="relative z-10 px-4 pt-6">
+      <header class="text-center mb-6">
+        <h1 class="text-3xl font-black tracking-tighter text-gray-900">
+          Suivi Leçons BB
+        </h1>
+        <p class="text-sm font-medium text-gray-500 mt-1">
+          Mise à jour des rapports
+        </p>
+      </header>
+
+      <div class="max-w-lg mx-auto space-y-6">
+        <div class="relative group" id="search-student-section">
+          <div
+            class="absolute -inset-0.5 bg-gradient-to-r from-blue-300 to-blue-500 rounded-2xl opacity-40 blur"
+          ></div>
+          <div
+            class="relative bg-white rounded-2xl p-6 shadow-xl border border-blue-100"
+          >
+            <h2
+              class="text-xs font-bold uppercase tracking-wider text-blue-700 mb-4 flex items-center"
+            >
+              🔍 1. Trouver l'Étudiant
+            </h2>
+
+            <div class="flex gap-2">
+              <input
+                type="text"
+                id="searchStudentInput"
+                placeholder="Nom ou ID Smada..."
+                class="input-fast flex-1 border border-gray-200 rounded-xl px-4 py-3.5 font-semibold text-gray-900"
+              />
+              <button
+                onclick="searchStudent()"
+                id="btn-search-student"
+                class="bg-blue-50 text-blue-700 border border-blue-200 rounded-xl px-5 font-bold active:scale-95 transition-transform flex items-center justify-center"
+              >
+                <span id="search-student-icon">Go</span>
+              </button>
+            </div>
+
+            <div
+              id="selected-student-card"
+              class="hidden mt-4 p-4 bg-green-50 border border-green-200 rounded-xl flex items-center justify-between"
+            >
+              <div>
+                <div
+                  class="text-[10px] font-bold text-green-600 uppercase tracking-wider"
+                >
+                  Étudiant sélectionné
+                </div>
+                <div
+                  id="display-student-name"
+                  class="font-bold text-gray-900 text-lg"
+                ></div>
+                <div
+                  id="display-student-id"
+                  class="text-xs font-mono text-gray-500"
+                ></div>
+              </div>
+              <button
+                onclick="resetStudentSearch()"
+                class="text-gray-400 hover:text-red-500 p-2"
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div
+          id="main-form-section"
+          class="hidden opacity-0 transition-all duration-500 space-y-6"
+        >
+          <input type="hidden" id="studentId" value="" />
+          <input type="hidden" id="teacherId" value="" />
+
+          <div
+            class="relative bg-white rounded-2xl p-6 shadow-xl border border-yellow-400/20"
+          >
+            <h2
+              class="text-xs font-bold uppercase tracking-wider text-yellow-700 mb-4 flex items-center"
+            >
+              📖 2. Rapport de la leçon
+            </h2>
+
+            <div class="space-y-4">
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-xs font-bold text-gray-500 mb-1 ml-1"
+                    >NOM</label
+                  >
+                  <input
+                    type="text"
+                    id="nomComplet"
+                    class="input-fast w-full border border-gray-200 rounded-xl px-3 py-3 text-sm font-semibold"
+                  />
+                </div>
+                <div>
+                  <label class="block text-xs font-bold text-gray-500 mb-1 ml-1"
+                    >TÉLÉPHONE</label
+                  >
+                  <input
+                    type="tel"
+                    id="telephone"
+                    class="input-fast w-full border border-gray-200 rounded-xl px-3 py-3 text-sm font-semibold"
+                  />
+                </div>
+              </div>
+
+              <hr class="border-gray-100 my-2" />
+
+              <div>
+                <label class="block text-xs font-bold text-gray-500 mb-1 ml-1"
+                  >LEÇON BB *</label
+                >
+                <div class="relative">
+                  <select
+                    id="bbLessonSelect"
+                    class="input-fast w-full border border-gray-200 rounded-xl px-4 py-3.5 font-semibold text-gray-900 appearance-none bg-white"
+                  >
+                    <option value="" disabled selected>
+                      Sélectionnez la leçon...
+                    </option>
+                    <option value="BB01">
+                      BB01 - Hazo Ambolena Amoron'ny Rano Velona
+                    </option>
+                    <option value="BB02">BB02 - Tempoly Tsara</option>
+                    <option value="BB03">
+                      BB03 - Fahalalana Fototra ny Baiboly
+                    </option>
+                    <option value="BB04">
+                      BB04 - Testamenta Taloha sy Testamenta Vaovao
+                    </option>
+                    <option value="BB05">
+                      BB05 - Fanavahana Vanim-potoana
+                    </option>
+                    <option value="BB06">
+                      BB06 - Nahoana i Jesosy no Antsoina hoe Mesia?
+                    </option>
+                    <option value="BB07">
+                      BB07 - Fanavahana ny Tsara sy ny Ratsy (Fiz 1)
+                    </option>
+                    <option value="BB08">
+                      BB08 - Fanavahana ny Tsara sy ny Ratsy (Fiz 2)
+                    </option>
+                    <option value="BB09">
+                      BB09 - Tsiambaratelon'ny Fanjakan'ny Lanitra...
+                    </option>
+                    <option value="BB10">BB10 - Saha Efatra</option>
+                    <option value="BB11">
+                      BB11 - Mazava sy Maizina (Fiz 1-2)
+                    </option>
+                    <option value="BB12">BB12 - Mosary</option>
+                  </select>
+                  <div
+                    class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-500"
+                  >
+                    <svg class="h-4 w-4 fill-current" viewBox="0 0 20 20">
+                      <path
+                        d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"
+                      />
+                    </svg>
+                  </div>
+                </div>
+                <p
+                  id="lesson-status-info"
+                  class="text-xs font-medium text-blue-600 mt-1 ml-1 hidden"
+                >
+                  ℹ️ Cette leçon a déjà été validée. Elle sera mise à jour.
+                </p>
+              </div>
+
+              <div>
+                <label class="block text-xs font-bold text-gray-500 mb-1 ml-1"
+                  >DATE DE LA LEÇON *</label
+                >
+                <input
+                  type="date"
+                  id="dateLesson"
+                  class="input-fast w-full border border-gray-200 rounded-xl px-4 py-3.5 font-medium text-gray-900"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div
+            class="relative bg-white rounded-2xl p-6 shadow-xl border border-gray-200"
+          >
+            <h2
+              class="text-xs font-bold uppercase tracking-wider text-gray-500 mb-4 flex items-center"
+            >
+              ⚙️ 3. Options (Teacher & Interview)
+            </h2>
+
+            <div class="space-y-4">
+              <div>
+                <label class="block text-xs font-bold text-gray-500 mb-1 ml-1"
+                  >ENSEIGNANT (TEACHER)</label
+                >
+                <div class="flex gap-2">
+                  <input
+                    type="text"
+                    id="searchTeacherInput"
+                    placeholder="Nom ou ID du membre..."
+                    class="input-fast flex-1 border border-gray-200 rounded-xl px-4 py-3 text-sm"
+                  />
+                  <button
+                    onclick="searchTeacher()"
+                    id="btn-search-teacher"
+                    class="bg-gray-100 text-gray-700 border border-gray-200 rounded-xl px-4 font-bold active:scale-95 transition-transform"
+                  >
+                    <span id="search-teacher-icon">Chercher</span>
+                  </button>
+                </div>
+                <div
+                  id="selected-teacher-card"
+                  class="hidden mt-2 p-3 bg-gray-50 border border-gray-200 rounded-xl flex items-center justify-between"
+                >
+                  <div>
+                    <div
+                      id="display-teacher-name"
+                      class="font-bold text-gray-800 text-sm"
+                    ></div>
+                  </div>
+                  <button
+                    onclick="resetTeacherSearch()"
+                    class="text-gray-400 hover:text-red-500 text-xs font-bold px-2"
+                  >
+                    Retirer
+                  </button>
+                </div>
+              </div>
+
+              <div class="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                <label class="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    id="hasInterview"
+                    onchange="toggleInterviewDate()"
+                    class="w-5 h-5 rounded border-gray-300 text-yellow-500 focus:ring-yellow-500"
+                  />
+                  <span class="text-sm font-bold text-gray-700"
+                    >Interview d'inscription effectuée ?</span
+                  >
+                </label>
+
+                <div id="interview-date-container" class="hidden mt-3">
+                  <label class="block text-xs font-bold text-gray-500 mb-1 ml-1"
+                    >DATE DE L'INTERVIEW</label
+                  >
+                  <input
+                    type="date"
+                    id="dateInterview"
+                    class="input-fast w-full border border-gray-200 rounded-xl px-4 py-3 text-sm"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div
+      class="fixed bottom-0 left-0 right-0 p-4 pt-12 bg-gradient-to-t from-gray-50 via-gray-50 to-transparent z-40 hidden"
+      id="bottom-action-bar"
+    >
+      <button
+        id="main-btn"
+        onclick="submitBBLesson()"
+        class="relative w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold text-lg py-4 rounded-2xl shadow-lg active:scale-[0.98] transition-transform overflow-hidden group"
+      >
+        <div class="relative flex justify-center items-center">
+          <span
+            id="spinner"
+            class="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full mr-3 hidden"
+          ></span>
+          <span id="btn-text" class="flex items-center gap-2">
+            <span>Enregistrer la leçon</span>
+          </span>
+        </div>
+      </button>
+    </div>
+
+    <div
+      id="search-modal"
+      class="fixed inset-0 z-[60] flex items-center justify-center bg-gray-900/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300"
+    >
+      <div
+        class="relative bg-white/95 w-11/12 max-w-sm rounded-3xl p-6 shadow-2xl border border-gray-200 transform scale-95 transition-transform duration-300"
+        id="search-modal-content"
+      >
+        <div class="text-center mb-4">
+          <h3 class="text-lg font-black text-gray-900" id="search-modal-title">
+            Résultats
+          </h3>
+        </div>
+        <div
+          id="search-results-list"
+          class="space-y-2 mb-4 max-h-60 overflow-y-auto pr-1"
+        ></div>
+        <button
+          onclick="closeSearchModal()"
+          class="w-full py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-bold text-sm"
+        >
+          Annuler
+        </button>
+      </div>
+    </div>
+
+    <script src="js/bb-update.js"></script>
+
+    <script>
+      function toggleInterviewDate() {
+        const isChecked = document.getElementById("hasInterview").checked;
+        const container = document.getElementById("interview-date-container");
+        if (isChecked) {
+          container.classList.remove("hidden");
+          if (window.Telegram && window.Telegram.WebApp.HapticFeedback)
+            window.Telegram.WebApp.HapticFeedback.selectionChanged();
+        } else {
+          container.classList.add("hidden");
+          document.getElementById("dateInterview").value = ""; // on vide
+        }
+      }
+    </script>
+  </body>
+</html>
