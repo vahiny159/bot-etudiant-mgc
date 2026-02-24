@@ -1,6 +1,3 @@
-// ==========================================
-// 🚀 INITIALISATION ET VARIABLES GLOBALES
-// ==========================================
 let tg = window.Telegram.WebApp;
 tg.expand();
 tg.ready();
@@ -8,7 +5,7 @@ tg.setHeaderColor("#F9FAFB");
 
 const BASE_URL = "";
 
-// Dictionnaire officiel des leçons (Instruction 6)
+// leçon bb
 const LESSONS = {
   BB01: "Hazo Ambolena Amoron'ny Rano Velona",
   BB02: "Tempoly Tsara",
@@ -24,14 +21,11 @@ const LESSONS = {
   BB12: "Mosary",
 };
 
-// L'état de l'application (La mémoire)
 let currentStudent = null;
-let currentStudentReports = []; // Historique des leçons du student
+let currentStudentReports = [];
 let currentTeacherId = null;
 
-// ==========================================
-// 🔍 1. RECHERCHE ET SÉLECTION DE L'ÉTUDIANT
-// ==========================================
+// recherche etudiant
 async function searchStudent() {
   const input = document.getElementById("searchStudentInput");
   const val = input.value.trim();
@@ -48,7 +42,7 @@ async function searchStudent() {
   try {
     const safeVal = encodeURIComponent(val);
 
-    // Requête sécurisée (Instruction 1) avec encodage des $ en %24
+    // encodage pour la sécurité
     let query = `populate[user]=*&populate[bbReports][populate][teacher][populate][user]=*`;
     query += `&filters[%24and][0][user][level][%24ne]=member`;
     query += `&filters[%24and][1][%24or][0][name][%24containsi]=${safeVal}`;
@@ -80,10 +74,10 @@ function selectStudent(studentData) {
   currentStudent = studentData;
   const attrs = studentData.attributes || studentData;
 
-  // Sauvegarde des rapports existants
+  // auvegarde rapports existants
   currentStudentReports = attrs.bbReports?.data || [];
 
-  // Affichage de la carte
+  // Affichage carte
   document.getElementById("display-student-name").innerText =
     attrs.name || "Nom Inconnu";
   document.getElementById("display-student-id").innerText =
@@ -91,23 +85,21 @@ function selectStudent(studentData) {
 
   document.getElementById("selected-student-card").classList.remove("hidden");
 
-  // Pré-remplissage du formulaire
+  // pré-remplissage form
   document.getElementById("studentId").value = studentData.id;
   document.getElementById("nomComplet").value = attrs.name || "";
   document.getElementById("telephone").value = attrs.phone || "";
 
-  // On affiche le reste du formulaire
   const mainForm = document.getElementById("main-form-section");
   const bottomBar = document.getElementById("bottom-action-bar");
   mainForm.classList.remove("hidden");
   bottomBar.classList.remove("hidden");
 
-  // Petite animation d'apparition
   requestAnimationFrame(() => {
     mainForm.classList.remove("opacity-0");
   });
 
-  // Déclencher la vérification de la leçon si une est déjà sélectionnée
+  // vérification si la leçon est déjà sélectionnée
   document.getElementById("bbLessonSelect").dispatchEvent(new Event("change"));
 }
 
@@ -121,24 +113,22 @@ function resetStudentSearch() {
   document.getElementById("bottom-action-bar").classList.add("hidden");
   document.getElementById("searchStudentInput").value = "";
 
-  // Reset complet du form
+  // reset form
   document.getElementById("bbLessonSelect").selectedIndex = 0;
   document.getElementById("dateLesson").value = "";
   resetTeacherSearch();
 }
 
-// ==========================================
-// 🧠 2. LOGIQUE INTELLIGENTE DES LEÇONS
-// ==========================================
+// logique pour les leçons
 document
   .getElementById("bbLessonSelect")
   .addEventListener("change", function (e) {
-    const selectedCode = e.target.value; // ex: "BB02"
+    const selectedCode = e.target.value;
     const infoBadge = document.getElementById("lesson-status-info");
 
     if (!selectedCode || !currentStudent) return;
 
-    // Chercher si l'étudiant a déjà fait cette leçon
+    // chercher si l'étudiant a déjà fait la leçon
     const existingReport = currentStudentReports.find((r) => {
       const rAttrs = r.attributes || r;
       return rAttrs.code === selectedCode;
@@ -148,15 +138,15 @@ document
       const rAttrs = existingReport.attributes || existingReport;
       infoBadge.classList.remove("hidden");
 
-      // Pré-remplir la date
+      // pré-remplir la date
       if (rAttrs.date) {
         document.getElementById("dateLesson").value = rAttrs.date.split("T")[0];
       }
 
-      // Pré-remplir le teacher s'il existe
+      // pré-remplir le bbt
       if (rAttrs.teacher && rAttrs.teacher.data) {
         const teacherData = rAttrs.teacher.data;
-        selectTeacher(teacherData, true); // true = mode silencieux (sans haptic)
+        selectTeacher(teacherData, true);
       }
     } else {
       infoBadge.classList.add("hidden");
@@ -165,9 +155,7 @@ document
     }
   });
 
-// ==========================================
-// 🔍 3. RECHERCHE ET SÉLECTION DU TEACHER
-// ==========================================
+// recherche bbt
 async function searchTeacher() {
   const input = document.getElementById("searchTeacherInput");
   const val = input.value.trim();
@@ -181,7 +169,6 @@ async function searchTeacher() {
   try {
     const safeVal = encodeURIComponent(val);
 
-    // Requête sécurisée (Instruction 2)
     let query = `populate[user]=*`;
     query += `&filters[%24and][0][user][level][%24eq]=member`;
     query += `&filters[%24and][1][status][%24eq]=active`;
@@ -232,9 +219,7 @@ function resetTeacherSearch() {
   document.getElementById("selected-teacher-card").classList.remove("flex");
 }
 
-// ==========================================
-// 📤 4. SOUMISSION FINALE (LA MAGIE)
-// ==========================================
+// SOUMISSION FINALE
 async function submitBBLesson() {
   if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred("medium");
 
@@ -242,7 +227,6 @@ async function submitBBLesson() {
   const spinner = document.getElementById("spinner");
   const btnText = document.getElementById("btn-text");
 
-  // Récupération des données
   const studentId = document.getElementById("studentId").value;
   const nom = document.getElementById("nomComplet").value.trim();
   const tel = document.getElementById("telephone").value.replace(/\s/g, "");
@@ -252,7 +236,7 @@ async function submitBBLesson() {
   const hasInterview = document.getElementById("hasInterview").checked;
   const dateInterview = document.getElementById("dateInterview").value;
 
-  // Validation
+  // validation
   if (!nom || !codeLesson || !dateLesson) {
     tg.showAlert("⚠️ Veuillez remplir le Nom, la Leçon BB et sa Date.");
     if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("error");
@@ -269,17 +253,17 @@ async function submitBBLesson() {
   btnText.innerHTML = "<span>Traitement en cours...</span>";
 
   try {
-    // 1. Préparation des données du BB Report (Instructions 3 & 4 & 6)
+    // préparation des données du BB Report
     const reportData = {
       code: codeLesson,
       title: LESSONS[codeLesson],
       completed: true,
-      date: `${dateLesson}T12:00:00.000Z`, // Formatage ISO
+      date: `${dateLesson}T12:00:00.000Z`,
       student: studentId,
       teacher: currentTeacherId || null,
     };
 
-    // Chercher si c'est un PUT ou un POST
+    // chercher si c'est un PUT ou un POST
     const existingReport = currentStudentReports.find(
       (r) => (r.attributes || r).code === codeLesson,
     );
@@ -291,7 +275,7 @@ async function submitBBLesson() {
       reportMethod = "PUT";
     }
 
-    // ➡️ APPEL API 1 : Enregistrement du Rapport
+    // APPEL API : Enregistrement du Rapport
     const reportResponse = await fetch(reportUrl, {
       method: reportMethod,
       headers: { "Content-Type": "application/json" },
@@ -301,8 +285,7 @@ async function submitBBLesson() {
     if (!reportResponse.ok)
       throw new Error("Erreur lors de la sauvegarde du rapport BB.");
 
-    // 2. Préparation des données du Student (Instructions 5 & 7)
-    // Extraction du numéro (ex: "BB05" -> 5)
+    // préparation des données du Student
     const lessonNumber = parseInt(codeLesson.replace("BB", ""), 10);
 
     const studentData = {
@@ -315,7 +298,7 @@ async function submitBBLesson() {
         : null,
     };
 
-    // ➡️ APPEL API 2 : Mise à jour du profil de l'étudiant
+    // APPEL API : Mise à jour du profil de l'étudiant
     const studentResponse = await fetch(`${BASE_URL}/api/people/${studentId}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
@@ -325,11 +308,9 @@ async function submitBBLesson() {
     if (!studentResponse.ok)
       throw new Error("Erreur lors de la mise à jour de l'étudiant.");
 
-    // Succès total !
     if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("success");
     tg.showAlert("✅ Leçon et Profil mis à jour avec succès !");
 
-    // On nettoie la page pour la prochaine saisie
     resetStudentSearch();
   } catch (error) {
     console.error("Erreur Submit:", error);
@@ -342,9 +323,7 @@ async function submitBBLesson() {
   }
 }
 
-// ==========================================
-// 🎨 MODALE GÉNÉRIQUE DE RÉSULTATS (UI)
-// ==========================================
+// MODALE GÉNÉRIQUE DE RÉSULTATS
 function showSearchModal(candidates, type) {
   const modal = document.getElementById("search-modal");
   const list = document.getElementById("search-results-list");
