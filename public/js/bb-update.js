@@ -225,14 +225,20 @@ document
         document.getElementById("dateLesson").value = rAttrs.date.split("T")[0];
       }
 
-      console.log(`⬇️ DÉTAILS DE LA LEÇON ${selectedCode} :`, rAttrs);
+      //  MOUCHARDS POUR LE TEACHER
+      console.log(`\n--- VÉRIFICATION LEÇON ${selectedCode} ---`);
+      console.log("Objet complet de la leçon :", rAttrs);
+      console.log("Champ 'teacher' :", rAttrs.teacher);
 
-      // pré-remplir le teacher
       if (rAttrs.teacher && rAttrs.teacher.data) {
+        console.log("✅ Teacher trouvé :", rAttrs.teacher.data.attributes?.name);
         selectTeacher(rAttrs.teacher.data, true);
       } else {
+        console.log("❌ Aucun teacher valide trouvé dans les données (ou teacher.data est null)");
         resetTeacherSearch();
       }
+      // ==========================================
+
     } else {
       infoBadge.classList.add("hidden");
       document.getElementById("dateLesson").value = "";
