@@ -24,6 +24,7 @@ const LESSONS = {
 let currentStudent = null;
 let currentStudentReports = [];
 let currentTeacherId = null;
+let currentReportId = null;
 
 // recherche bb
 async function searchStudent() {
@@ -196,6 +197,8 @@ document.getElementById("bbLessonSelect").addEventListener("change", function (e
   if (existingReport) {
     const rAttrs = existingReport.attributes || existingReport;
     infoBadge.classList.remove("hidden");
+    document.getElementById("btn-delete-lesson").classList.remove("hidden");
+    currentReportId = existingReport.id;
 
     // pré-remplir la date
     if (rAttrs.date) {
@@ -217,6 +220,8 @@ document.getElementById("bbLessonSelect").addEventListener("change", function (e
   } else {
     infoBadge.classList.add("hidden");
     document.getElementById("dateLesson").value = "";
+    document.getElementById("btn-delete-lesson").classList.add("hidden");
+    currentReportId = null;
     resetTeacherSearch();
   }
 });
@@ -387,6 +392,62 @@ async function submitBBLesson() {
     spinner.classList.add("hidden");
     btnText.innerHTML = "<span>Enregistrer la leçon</span>";
   }
+}
+
+// suppression leçon
+async function deleteBBLesson() {
+  if (!currentReportId || !currentStudent) return;
+
+  // demande de confirmation à l'utilisateur via Telegram
+  tg.showConfirm("Voulez-vous vraiment annuler la validation de cette leçon ?", async (confirmed) => {
+    if (!confirmed) return;
+
+    if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred("heavy");
+
+    const btnDel = document.getElementById("btn-delete-lesson");
+    const originalText = btnDel.innerHTML;
+    btnDel.innerHTML = "Suppression en cours...";
+    btnDel.disabled = true;
+
+    try {
+      // suppression du rapport BB dans Strapi
+      const delResponse = await fetch(`${BASE_URL}/api/bb-reports/${currentReportId}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+      });
+
+      if (!delResponse.ok) throw new Error("Erreur lors de la suppression du rapport.");
+
+      const codeLessonToDelete = document.getElementById("bbLessonSelect").value;
+      const remainingReports = currentStudentReports.filter(r => (r.attributes || r).code !== codeLessonToDelete);
+
+      let newHighestNum = 0;
+      remainingReports.forEach(r => {
+        const num = parseInt((r.attributes || r).code.replace("BB", ""), 10);
+        if (num > newHighestNum) newHighestNum = num;
+      });
+
+      // mise à jour du niveau de l'étudiant
+      const studentId = document.getElementById("studentId").value;
+      await fetch(`${BASE_URL}/api/people/${studentId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ data: { bbLessonNumber: newHighestNum } }),
+      });
+
+      tg.showAlert("🗑️ La leçon a été annulée avec succès !");
+      if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("success");
+
+      resetStudentSearch();
+
+    } catch (error) {
+      console.error(error);
+      tg.showAlert(`Erreur: ${error.message}`);
+    } finally {
+      btnDel.innerHTML = originalText;
+      btnDel.disabled = false;
+    }
+  });
 }
 
 // modales génériques de résultat
