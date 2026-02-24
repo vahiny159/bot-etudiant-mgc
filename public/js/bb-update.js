@@ -99,7 +99,8 @@ function selectStudent(studentData) {
     mainForm.classList.remove("opacity-0");
   });
 
-  // vérification si la leçon est déjà sélectionnée
+  updateLessonUI();
+
   document.getElementById("bbLessonSelect").dispatchEvent(new Event("change"));
 }
 
@@ -117,6 +118,52 @@ function resetStudentSearch() {
   document.getElementById("bbLessonSelect").selectedIndex = 0;
   document.getElementById("dateLesson").value = "";
   resetTeacherSearch();
+}
+
+// update leçon
+function updateLessonUI() {
+  const select = document.getElementById("bbLessonSelect");
+  const options = select.options;
+
+  const totalLessons = Object.keys(LESSONS).length;
+
+  const completedCodes = currentStudentReports.map(
+    (r) => (r.attributes || r).code,
+  );
+
+  let highestNum = 0;
+  completedCodes.forEach((code) => {
+    const num = parseInt(code.replace("BB", ""), 10);
+    if (num > highestNum) highestNum = num;
+  });
+
+  // prochaine leçon logique
+  let nextLessonCode = null;
+  if (highestNum < totalLessons) {
+    nextLessonCode = `BB${String(highestNum + 1).padStart(2, "0")}`;
+  }
+
+  for (let i = 1; i < options.length; i++) {
+    const opt = options[i];
+    const code = opt.value;
+    const baseText = LESSONS[code];
+
+    if (completedCodes.includes(code)) {
+      opt.innerText = `✅ ${code} - ${baseText} (Fait)`;
+    } else if (code === nextLessonCode) {
+      opt.innerText = `👉 ${code} - ${baseText} (À faire)`;
+    } else {
+      opt.innerText = `🔒 ${code} - ${baseText}`;
+    }
+  }
+
+  if (nextLessonCode) {
+    select.value = nextLessonCode;
+  } else if (highestNum === totalLessons) {
+    select.value = `BB${String(totalLessons).padStart(2, "0")}`;
+  } else {
+    select.value = "BB01";
+  }
 }
 
 // logique pour les leçons
