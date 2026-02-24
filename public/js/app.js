@@ -20,6 +20,13 @@ inputs.forEach((input) => {
 async function init() {
   document.body.style.display = "none";
   await checkUserTelegram();
+  
+  // Initialiser la date d'export à aujourd'hui
+  const exportDateInput = document.getElementById("exportDate");
+  if (exportDateInput) {
+    const today = new Date().toISOString().split('T')[0];
+    exportDateInput.value = today;
+  }
 }
 
 // ON PAGE LOAD
@@ -244,6 +251,96 @@ function resetBtn(btn, txtSpan, iconSpan, css, txt) {
   txtSpan.innerText = txt;
   if (iconSpan)
     iconSpan.innerHTML = `<img src="icons/duplicate.svg" alt="Icone Duplicate" class="w-5 h-5 object-contain" />`;
+}
+
+// --- EXPORT EXCEL ---
+async function exportStudentsToExcel() {
+  const btn = document.getElementById("btn-export");
+  const btnText = document.getElementById("export-text");
+  const btnIcon = document.getElementById("export-icon");
+
+  if (!btn || !btnText) return;
+
+  const originalClass = btn.className;
+  const originalText = btnText.innerText;
+
+  // Désactiver le bouton pendant le traitement
+  btn.disabled = true;
+  btn.className = "w-full flex justify-center items-center gap-2 py-3.5 rounded-xl font-bold text-sm transition-all bg-blue-50 text-blue-700 border border-blue-200";
+  btnText.innerText = "⏳ Export en cours...";
+
+  try {
+    // Récupérer la classe et la date des champs dédiés
+    const exportClassSelect = document.getElementById("exportClasseSelect");
+    const exportDateInput = document.getElementById("exportDate");
+    
+    const classId = exportClassSelect ? exportClassSelect.value : null;
+    const selectedDate = exportDateInput ? exportDateInput.value : null;
+
+    // Validation des champs
+    if (!classId) {
+      if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("error");
+      btn.className = "w-full flex justify-center items-center gap-2 py-3.5 rounded-xl font-bold text-sm transition-all bg-red-50 text-red-700 border border-red-200";
+      btnText.innerText = "❌ Veuillez sélectionner une classe";
+      setTimeout(() => {
+        btn.className = originalClass;
+        btnText.innerText = originalText;
+        btn.disabled = false;
+      }, 3000);
+      return;
+    }
+
+    if (!selectedDate) {
+      if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("error");
+      btn.className = "w-full flex justify-center items-center gap-2 py-3.5 rounded-xl font-bold text-sm transition-all bg-red-50 text-red-700 border border-red-200";
+      btnText.innerText = "❌ Veuillez sélectionner une date";
+      setTimeout(() => {
+        btn.className = originalClass;
+        btnText.innerText = originalText;
+        btn.disabled = false;
+      }, 3000);
+      return;
+    }
+
+    // Construire l'URL complète avec les paramètres
+    const fullUrl = `${window.location.origin}/api/people/students/export?classId=${classId}&createdAtFrom=${selectedDate}`;
+
+    console.log("📥 Téléchargement depuis:", fullUrl);
+
+    // Utiliser l'API Telegram pour ouvrir le lien de téléchargement
+    if (tg.openLink) {
+      tg.openLink(fullUrl);
+      console.log("✅ Lien ouvert avec Telegram");
+    } else {
+      // Fallback pour les navigateurs normaux
+      window.open(fullUrl, '_blank');
+      console.log("✅ Lien ouvert dans nouvel onglet");
+    }
+
+    // Succès
+    if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("success");
+    btn.className = "w-full flex justify-center items-center gap-2 py-3.5 rounded-xl font-bold text-sm transition-all bg-green-50 text-green-700 border border-green-200";
+    btnText.innerText = "✅ Export réussi !";
+
+    setTimeout(() => {
+      btn.className = originalClass;
+      btnText.innerText = originalText;
+      btn.disabled = false;
+    }, 3000);
+
+  } catch (error) {
+    console.error("Erreur Export:", error);
+    if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("error");
+
+    btn.className = "w-full flex justify-center items-center gap-2 py-3.5 rounded-xl font-bold text-sm transition-all bg-red-50 text-red-700 border border-red-200";
+    btnText.innerText = "❌ Erreur d'export";
+
+    setTimeout(() => {
+      btn.className = originalClass;
+      btnText.innerText = originalText;
+      btn.disabled = false;
+    }, 3000);
+  }
 }
 
 // --- MODALE DES RÉSULTATS ---
@@ -776,11 +873,24 @@ function fillListClass(data) {
   select.innerHTML =
     '<option value="" disabled selected>Sélectionner une classe</option>';
 
+  const exportSelect = document.getElementById("exportClasseSelect");
+  if (exportSelect) {
+    exportSelect.innerHTML =
+      '<option value="" disabled selected>Sélectionnez une classe...</option>';
+  }
+
   data.forEach((classe) => {
     const option = document.createElement("option");
     option.value = classe.id;
     option.textContent = classe.name || classe.attributes?.name || "Classe";
     select.appendChild(option);
+
+    if (exportSelect) {
+      const exportOption = document.createElement("option");
+      exportOption.value = classe.id;
+      exportOption.textContent = classe.name || classe.attributes?.name || "Classe";
+      exportSelect.appendChild(exportOption);
+    }
   });
 }
 

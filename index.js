@@ -217,7 +217,9 @@ app.get("/api/students/checkDuplicates", async (req, res) => {
     const cleanPhone = phone ? phone.replace(/\D/g, "") : "";
 
     const strapiUrl = new URL(`${process.env.STRAPI_API_URL}/api/people`);
-    strapiUrl.searchParams.append("populate", "*");
+    strapiUrl.searchParams.append("populate[class]", "true");
+    strapiUrl.searchParams.append("populate[user]", "true");
+    strapiUrl.searchParams.append("populate[tree]", "true");
     strapiUrl.searchParams.append("filters[$and][0][user][level][$ne]", "member");
     if (name) {
       strapiUrl.searchParams.append("filters[$and][1][$or][0][name][$containsi]", name);
@@ -254,6 +256,47 @@ app.get("/api/students/checkDuplicates", async (req, res) => {
     res.json(finalData);
   } catch (e) {
     console.error("Erreur doublons:", e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// EXPORT STUDENTS TO EXCEL
+app.get("/api/people/students/export", async (req, res) => {
+  console.log("📊 Export Excel des étudiants...");
+  try {
+    const { classId, createdAtFrom } = req.query;
+
+    // Construire l'URL Strapi avec les paramètres
+    const strapiUrl = new URL(`${process.env.STRAPI_API_URL}/api/people/students/export`);
+    if (classId) strapiUrl.searchParams.append("classId", classId);
+    if (createdAtFrom) strapiUrl.searchParams.append("createdAtFrom", createdAtFrom);
+
+    console.log("📍 URL Strapi:", strapiUrl.toString());
+
+    const response = await fetch(strapiUrl.toString(), {
+      headers: {
+        Authorization: `Bearer ${process.env.APP_TOKEN}`,
+      },
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Erreur Strapi:", errorText);
+      return res.status(response.status).send(errorText);
+    }
+
+    // Récupérer le fichier Excel et le transférer
+    const buffer = await response.arrayBuffer();
+    
+    // Copier les headers importants
+    const contentType = response.headers.get('content-type') || 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+    const contentDisposition = response.headers.get('content-disposition') || `attachment; filename="export_students_${classId}_${createdAtFrom}.xlsx"`;
+    
+    res.setHeader('Content-Type', contentType);
+    res.setHeader('Content-Disposition', contentDisposition);
+    res.send(Buffer.from(buffer));
+  } catch (e) {
+    console.error("Erreur export:", e);
     res.status(500).json({ error: e.message });
   }
 });
