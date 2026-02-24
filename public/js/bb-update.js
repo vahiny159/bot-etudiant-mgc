@@ -119,7 +119,25 @@ function resetStudentSearch() {
   document.getElementById("dateLesson").value = "";
   resetTeacherSearch();
 }
+// --- Pré-remplissage de l'Interview ---
+const hasInterviewCb = document.getElementById("hasInterview");
+const interviewDateContainer = document.getElementById(
+  "interview-date-container",
+);
+const interviewDateInput = document.getElementById("dateInterview");
 
+if (attrs.firstRegistrationInterview === true) {
+  hasInterviewCb.checked = true;
+  interviewDateContainer.classList.remove("hidden");
+
+  if (attrs.firstRegistrationDate) {
+    interviewDateInput.value = attrs.firstRegistrationDate.split("T")[0];
+  }
+} else {
+  hasInterviewCb.checked = false;
+  interviewDateContainer.classList.add("hidden");
+  interviewDateInput.value = "";
+}
 // update leçon
 function updateLessonUI() {
   const select = document.getElementById("bbLessonSelect");
