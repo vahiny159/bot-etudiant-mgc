@@ -225,10 +225,13 @@ document
         document.getElementById("dateLesson").value = rAttrs.date.split("T")[0];
       }
 
-      // pré-remplir le bbt
+      console.log(`⬇️ DÉTAILS DE LA LEÇON ${selectedCode} :`, rAttrs);
+
+      // pré-remplir le teacher
       if (rAttrs.teacher && rAttrs.teacher.data) {
-        const teacherData = rAttrs.teacher.data;
-        selectTeacher(teacherData, true);
+        selectTeacher(rAttrs.teacher.data, true);
+      } else {
+        resetTeacherSearch();
       }
     } else {
       infoBadge.classList.add("hidden");
