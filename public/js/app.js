@@ -302,28 +302,20 @@ async function exportStudentsToExcel() {
       return;
     }
 
-    // Construire l'URL avec les paramètres
-    const url = `/api/people/students/export?classId=${classId}&createdAtFrom=${selectedDate}`;
+    // Construire l'URL complète avec les paramètres
+    const fullUrl = `${window.location.origin}/api/people/students/export?classId=${classId}&createdAtFrom=${selectedDate}`;
 
-    // Faire la requête
-    const response = await fetch(url, {
-      method: "GET",
-    });
+    console.log("📥 Téléchargement depuis:", fullUrl);
 
-    if (!response.ok) {
-      throw new Error("Erreur lors de l'export");
+    // Utiliser l'API Telegram pour ouvrir le lien de téléchargement
+    if (tg.openLink) {
+      tg.openLink(fullUrl);
+      console.log("✅ Lien ouvert avec Telegram");
+    } else {
+      // Fallback pour les navigateurs normaux
+      window.open(fullUrl, '_blank');
+      console.log("✅ Lien ouvert dans nouvel onglet");
     }
-
-    // Télécharger le fichier
-    const blob = await response.blob();
-    const downloadUrl = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = downloadUrl;
-    a.download = `etudiants_classe_${classId}_${selectedDate}.xlsx`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    window.URL.revokeObjectURL(downloadUrl);
 
     // Succès
     if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("success");
