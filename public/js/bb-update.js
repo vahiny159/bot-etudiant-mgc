@@ -6,7 +6,7 @@ tg.expand();
 tg.ready();
 tg.setHeaderColor("#F9FAFB");
 
-const BASE_URL = "https://api-dev.madagodscare.com";
+const BASE_URL = "";
 
 // Dictionnaire officiel des leçons (Instruction 6)
 const LESSONS = {
