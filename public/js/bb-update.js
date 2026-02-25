@@ -5,6 +5,111 @@ tg.setHeaderColor("#F9FAFB");
 
 const BASE_URL = "";
 
+// --- SÉCURITÉ TELEGRAM ---
+
+// Error page to display
+function showErrorPage(status, message) {
+  document.body.innerHTML = `
+    <style>
+      body {
+        margin: 0;
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #0f172a;
+        color: #e5e7eb;
+        font-family: Arial, sans-serif;
+      }
+      .error-box {
+        text-align: center;
+        padding: 40px;
+        border-radius: 12px;
+        background: #020617;
+        box-shadow: 0 20px 40px rgba(0,0,0,.4);
+      }
+      .error-code {
+        font-size: 72px;
+        font-weight: bold;
+        color: #ef4444;
+      }
+      .error-msg {
+        font-size: 20px;
+        margin-top: 10px;
+        opacity: .9;
+        color: #fcf8f8f6;
+      }
+    </style>
+
+    <div class="error-box">
+      <div class="error-code">${status}</div>
+      <div class="error-msg">${message}</div>
+    </div>
+  `;
+}
+
+// Check telegram User
+async function checkUserTelegram() {
+  document.body.style.display = "none";
+  let initData = tg.initData;
+
+  if (!initData) {
+    showErrorPage(403, "Veuillez ouvrir cette application depuis Telegram.");
+    document.body.style.display = "block";
+    return;
+  }
+
+  const tgUser = tg.initDataUnsafe?.user;
+  const userName = tgUser?.username
+    ? `@${tgUser.username}`
+    : tgUser?.first_name || "Utilisateur";
+
+  try {
+    const res = await fetch("/api/auth/telegram", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ initData }),
+    });
+
+    if (!res.ok) {
+      if (res.status === 403) {
+        showErrorPage(
+          403,
+          `Accès refusé pour <b>${userName}</b>.<br><br>Vous n'êtes pas autorisé à accéder à cette page.`,
+        );
+      } else if (res.status === 404) {
+        showErrorPage(
+          404,
+          `<b>${userName}</b> est introuvable dans la base de données.`,
+        );
+      } else if (res.status === 401) {
+        showErrorPage(401, "Signature Telegram invalide.");
+      } else {
+        showErrorPage(res.status, "Erreur de vérification.");
+      }
+
+      document.body.style.display = "block";
+      return;
+    }
+
+    const data = await res.json();
+
+    if (data.ok) {
+      document.body.style.display = "block";
+    } else {
+      showErrorPage(403, `Accès refusé pour <b>${userName}</b>.`);
+      document.body.style.display = "block";
+    }
+  } catch (e) {
+    console.error(e);
+    showErrorPage(500, "Erreur de connexion au serveur.");
+    document.body.style.display = "block";
+  }
+}
+
+// ON PAGE LOAD
+document.addEventListener("DOMContentLoaded", checkUserTelegram);
+
 // leçon bb
 const LESSONS = {
   BB01: "Hazo Ambolena Amoron'ny Rano Velona",
