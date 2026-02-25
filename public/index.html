@@ -456,27 +456,41 @@
     // confirmation pour décocher interview
     function toggleInterviewDate() {
       const cb = document.getElementById("hasInterview");
-      const isChecked = cb.checked;
       const container = document.getElementById("interview-date-container");
       const dateInput = document.getElementById("dateInterview");
 
-      if (isChecked) {
+      if (cb.checked) {
         container.classList.remove("hidden");
-        if (window.Telegram && window.Telegram.WebApp.HapticFeedback) {
-          window.Telegram.WebApp.HapticFeedback.selectionChanged();
+        if (typeof tg !== "undefined" && tg.HapticFeedback) {
+          tg.HapticFeedback.selectionChanged();
         }
       } else {
-        // vérifie s'il y a déjà une date saisie
-        if (dateInput.value !== "") {
-          if (window.Telegram && window.Telegram.WebApp.showConfirm) {
-            window.Telegram.WebApp.showConfirm("Are you sure you want to remove the interview ?", (confirmed) => {
+        if (dateInput.value && dateInput.value.trim() !== "") {
+
+          const cancelUncheck = () => {
+            cb.checked = true;
+            container.classList.remove("hidden");
+          };
+
+          const confirmUncheck = () => {
+            container.classList.add("hidden");
+            dateInput.value = "";
+          };
+
+          if (typeof tg !== "undefined" && tg.showConfirm) {
+            tg.showConfirm("Are you sure you want to remove the interview ?", (confirmed) => {
               if (confirmed) {
-                container.classList.add("hidden");
-                dateInput.value = "";
+                confirmUncheck();
               } else {
-                cb.checked = true;
+                cancelUncheck();
               }
             });
+          } else {
+            if (confirm("Are you sure you want to remove the interview ?")) {
+              confirmUncheck();
+            } else {
+              cancelUncheck();
+            }
           }
         } else {
           container.classList.add("hidden");
