@@ -179,6 +179,7 @@ async function searchStudent() {
 
   try {
     const safeVal = encodeURIComponent(val);
+    const cleanPhoneVal = encodeURIComponent(val.replace(/\s/g, ""));
 
     // encodage pour la sécurité
     let query = `populate[user]=*&populate[bbReports][populate][teacher][populate][user]=*`;
