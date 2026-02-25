@@ -441,7 +441,7 @@ async function submitBBLesson() {
   }
 
   if (codeLesson && !dateLesson) {
-    tg.showAlert("⚠️ You selected a lesson, please specify the date.");
+    tg.showAlert("⚠️ You selected a lesson but no date.\n\nAdd a date, or select '-- No lesson --' if you only want to save the interview.");
     if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("error");
     return;
   }
