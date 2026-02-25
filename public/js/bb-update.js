@@ -438,7 +438,10 @@ async function deleteBBLesson() {
       tg.showAlert("🗑️ La leçon a été annulée avec succès !");
       if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("success");
 
-      resetStudentSearch();
+      // On met à jour l'interface sans fermer le dossier
+      currentStudentReports = remainingReports;
+      updateLessonUI();
+      document.getElementById("bbLessonSelect").dispatchEvent(new Event("change"));
 
     } catch (error) {
       console.error(error);
