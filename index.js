@@ -574,7 +574,6 @@ if (bot) {
 
       // Enregistrer les commandes visibles dans le menu Telegram
       await bot.telegram.setMyCommands([
-        { command: "start", description: "🚀 Démarrer le bot" },
         { command: "menu", description: "📋 Afficher le menu principal" },
       ]);
       console.log("📋 Commandes du menu enregistrées.");
