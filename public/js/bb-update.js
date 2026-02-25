@@ -464,12 +464,6 @@ async function submitBBLesson() {
     return;
   }
 
-  if (!hasLesson && !hasInterview) {
-    tg.showAlert("⚠️ Please select a lesson or check the interview.");
-    if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("error");
-    return;
-  }
-
   btn.disabled = true;
   spinner.classList.remove("hidden");
   btnText.innerHTML = "<span>Processing...</span>";
