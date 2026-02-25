@@ -130,6 +130,16 @@ const LESSONS = {
 const DISPLAY_CODES = {
   BB01: "PL1",
   BB02: "PL2",
+  BB03: "BB01",
+  BB04: "BB02",
+  BB05: "BB03",
+  BB06: "BB04",
+  BB07: "BB05",
+  BB08: "BB06",
+  BB09: "BB07",
+  BB10: "BB8",
+  BB11: "BB9",
+  BB12: "BB10",
 };
 
 let currentStudent = null;
