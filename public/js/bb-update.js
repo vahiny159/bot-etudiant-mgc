@@ -356,6 +356,8 @@ async function submitBBLesson() {
     if (!reportResponse.ok)
       throw new Error("Erreur lors de la sauvegarde du rapport BB.");
 
+    const resultReport = await reportResponse.json();
+
     // préparation des données du Student
     const lessonNumber = parseInt(codeLesson.replace("BB", ""), 10);
 
@@ -382,7 +384,16 @@ async function submitBBLesson() {
     if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("success");
     tg.showAlert("✅ Leçon et Profil mis à jour avec succès !");
 
-    resetStudentSearch();
+    if (existingReport) {
+      const index = currentStudentReports.findIndex(r => r.id === existingReport.id);
+      if (index !== -1) currentStudentReports[index] = resultReport.data;
+    } else {
+      currentStudentReports.push(resultReport.data);
+    }
+
+    updateLessonUI();
+    document.getElementById("bbLessonSelect").dispatchEvent(new Event("change"));
+
   } catch (error) {
     console.error("Erreur Submit:", error);
     tg.showAlert(`❌ ${error.message}`);
