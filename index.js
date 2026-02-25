@@ -348,6 +348,25 @@ app.put("/api/bb-reports/:id", async (req, res) => {
   }
 });
 
+// delete bb repport
+app.delete('/api/bb-reports/:id', async (req, res) => {
+  try {
+    const response = await fetch(`${process.env.STRAPI_API_URL}/api/bb-reports/${req.params.id}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${process.env.STRAPI_API_TOKEN}` // Ton token d'API
+      }
+    });
+
+    const data = await response.json();
+    res.status(response.status).json(data);
+  } catch (error) {
+    console.error("Erreur Proxy DELETE :", error);
+    res.status(500).json({ error: 'Erreur lors de la suppression sur le proxy' });
+  }
+});
+
 // EXPORT STUDENTS TO EXCEL
 app.get("/api/people/students/export", async (req, res) => {
   console.log("📊 Export Excel des étudiants...");

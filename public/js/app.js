@@ -20,7 +20,7 @@ inputs.forEach((input) => {
 async function init() {
   document.body.style.display = "none";
   await checkUserTelegram();
-  
+
   // Initialiser la date d'export à aujourd'hui
   const exportDateInput = document.getElementById("exportDate");
   if (exportDateInput) {
@@ -273,7 +273,7 @@ async function exportStudentsToExcel() {
     // Récupérer la classe et la date des champs dédiés
     const exportClassSelect = document.getElementById("exportClasseSelect");
     const exportDateInput = document.getElementById("exportDate");
-    
+
     const classId = exportClassSelect ? exportClassSelect.value : null;
     const selectedDate = exportDateInput ? exportDateInput.value : null;
 
