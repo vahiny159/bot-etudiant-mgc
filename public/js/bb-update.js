@@ -185,7 +185,7 @@ async function searchStudent() {
     query += `&filters[%24and][0][user][level][%24ne]=member`;
     query += `&filters[%24and][1][%24or][0][name][%24containsi]=${safeVal}`;
     query += `&filters[%24and][1][%24or][1][user][username][%24containsi]=${safeVal}`;
-
+    query += `&filters[%24and][1][%24or][2][phone][%24containsi]=${cleanPhoneVal}`;
     const response = await fetch(`${BASE_URL}/api/people?${query}`, {
       method: "GET",
       headers: { "Content-Type": "application/json" },
