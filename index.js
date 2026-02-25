@@ -350,17 +350,24 @@ app.put("/api/bb-reports/:id", async (req, res) => {
 
 // delete bb repport
 app.delete('/api/bb-reports/:id', async (req, res) => {
+  console.log(`🗑️ Delete BB Report ID: ${req.params.id}`);
   try {
     const response = await fetch(`${process.env.STRAPI_API_URL}/api/bb-reports/${req.params.id}`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.STRAPI_API_TOKEN}` // Ton token d'API
+        'Authorization': `Bearer ${process.env.APP_TOKEN}`
       }
     });
 
-    const data = await response.json();
-    res.status(response.status).json(data);
+    const result = await response.json();
+
+    if (!response.ok) {
+      console.error("Erreur Strapi DELETE :", result);
+      return res.status(response.status).json(result);
+    }
+
+    res.json(result);
   } catch (error) {
     console.error("Erreur Proxy DELETE :", error);
     res.status(500).json({ error: 'Erreur lors de la suppression sur le proxy' });
