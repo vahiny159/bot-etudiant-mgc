@@ -431,9 +431,17 @@ async function submitBBLesson() {
   const hasInterview = document.getElementById("hasInterview").checked;
   const dateInterview = document.getElementById("dateInterview").value;
 
+  const hasLesson = codeLesson && dateLesson;
+
   // validation
-  if (!nom || !codeLesson || !dateLesson) {
-    tg.showAlert("⚠️ Please fill in the Name, BB Lesson, and Date.");
+  if (!nom) {
+    tg.showAlert("⚠️ Please fill in the student name.");
+    if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("error");
+    return;
+  }
+
+  if (codeLesson && !dateLesson) {
+    tg.showAlert("⚠️ You selected a lesson, please specify the date.");
     if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("error");
     return;
   }
@@ -443,59 +451,68 @@ async function submitBBLesson() {
     return;
   }
 
+  if (!hasLesson && !hasInterview) {
+    tg.showAlert("⚠️ Please select a lesson or check the interview.");
+    if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("error");
+    return;
+  }
+
   btn.disabled = true;
   spinner.classList.remove("hidden");
   btnText.innerHTML = "<span>Processing...</span>";
 
   try {
-    // préparation des données du BB Report
-    const reportData = {
-      code: codeLesson,
-      title: LESSONS[codeLesson],
-      completed: true,
-      date: `${dateLesson}T12:00:00.000Z`,
-      student: parseInt(studentId, 10),
-      teacher: currentTeacherId ? parseInt(currentTeacherId, 10) : null,
-    };
+    let existingReport = null;
+    let resultReport = null;
 
-    // chercher si c'est un PUT ou un POST
-    const existingReport = currentStudentReports.find(
-      (r) => (r.attributes || r).code === codeLesson,
-    );
+    // --- BB REPORT (seulement si une leçon est sélectionnée) ---
+    if (hasLesson) {
+      const reportData = {
+        code: codeLesson,
+        title: LESSONS[codeLesson],
+        completed: true,
+        date: `${dateLesson}T12:00:00.000Z`,
+        student: parseInt(studentId, 10),
+        teacher: currentTeacherId ? parseInt(currentTeacherId, 10) : null,
+      };
 
-    let reportUrl = `${BASE_URL}/api/bb-reports`;
-    let reportMethod = "POST";
-    if (existingReport) {
-      reportUrl = `${BASE_URL}/api/bb-reports/${existingReport.id}`;
-      reportMethod = "PUT";
+      existingReport = currentStudentReports.find(
+        (r) => (r.attributes || r).code === codeLesson,
+      );
+
+      let reportUrl = `${BASE_URL}/api/bb-reports`;
+      let reportMethod = "POST";
+      if (existingReport) {
+        reportUrl = `${BASE_URL}/api/bb-reports/${existingReport.id}`;
+        reportMethod = "PUT";
+      }
+
+      const reportResponse = await fetch(reportUrl, {
+        method: reportMethod,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ data: reportData }),
+      });
+
+      if (!reportResponse.ok)
+        throw new Error("Erreur lors de la sauvegarde du rapport BB.");
+
+      resultReport = await reportResponse.json();
     }
 
-    // APPEL API : Enregistrement du Rapport
-    const reportResponse = await fetch(reportUrl, {
-      method: reportMethod,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ data: reportData }),
-    });
-
-    if (!reportResponse.ok)
-      throw new Error("Erreur lors de la sauvegarde du rapport BB.");
-
-    const resultReport = await reportResponse.json();
-
-    // préparation des données du Student
-    const lessonNumber = parseInt(codeLesson.replace("BB", ""), 10);
-
+    // --- MISE À JOUR PROFIL ÉTUDIANT ---
     const studentData = {
       name: nom,
       phone: tel,
-      bbLessonNumber: lessonNumber,
       firstRegistrationInterview: hasInterview,
       firstRegistrationDate: hasInterview
         ? `${dateInterview}T12:00:00.000Z`
         : null,
     };
 
-    // APPEL API : Mise à jour du profil de l'étudiant
+    if (hasLesson) {
+      studentData.bbLessonNumber = parseInt(codeLesson.replace("BB", ""), 10);
+    }
+
     const studentResponse = await fetch(`${BASE_URL}/api/people/${studentId}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
@@ -506,28 +523,58 @@ async function submitBBLesson() {
       throw new Error("Erreur lors de la mise à jour de l'étudiant.");
 
     if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("success");
-    tg.showAlert("✅ Lesson and Profile updated successfully !");
 
-    // Notification Telegram
-    const actionLabel = existingReport ? "mis à jour" : "enregistré";
+    const successMsg = hasLesson
+      ? "✅ Lesson and Profile updated successfully !"
+      : "✅ Interview saved successfully !";
+    tg.showAlert(successMsg);
+
+    // --- NOTIFICATION TELEGRAM ---
     const teacherName = document.getElementById("display-teacher-name")?.innerText?.trim() || "Non assigné";
-    sendTelegramNotification(
-      `📖 <b>BB Lesson ${actionLabel}</b>\n` +
-      `👤 Étudiant : <b>${nom}</b>\n` +
-      `📚 Leçon : <b>${codeLesson} - ${LESSONS[codeLesson]}</b>\n` +
-      `📅 Date : ${dateLesson}\n` +
-      `🧑‍🏫 BBTeacher : <b>${teacherName}</b>`
-    );
+    let notifMsg = "";
 
-    if (existingReport) {
-      const index = currentStudentReports.findIndex(r => r.id === existingReport.id);
-      if (index !== -1) currentStudentReports[index] = resultReport.data;
+    if (hasLesson && hasInterview) {
+      // Leçon + Interview
+      const actionLabel = existingReport ? "mis à jour" : "enregistré";
+      notifMsg =
+        `📖 <b>BB Lesson ${actionLabel}</b>\n` +
+        `👤 Étudiant : <b>${nom}</b>\n` +
+        `📚 Leçon : <b>${codeLesson} - ${LESSONS[codeLesson]}</b>\n` +
+        `📅 Date leçon : ${dateLesson}\n` +
+        `🧑‍🏫 BBTeacher : <b>${teacherName}</b>\n` +
+        `🎤 Interview : ✅ ${dateInterview}`;
+    } else if (hasLesson) {
+      // Leçon seule
+      const actionLabel = existingReport ? "mis à jour" : "enregistré";
+      notifMsg =
+        `📖 <b>BB Lesson ${actionLabel}</b>\n` +
+        `👤 Étudiant : <b>${nom}</b>\n` +
+        `📚 Leçon : <b>${codeLesson} - ${LESSONS[codeLesson]}</b>\n` +
+        `📅 Date : ${dateLesson}\n` +
+        `🧑‍🏫 BBTeacher : <b>${teacherName}</b>`;
     } else {
-      currentStudentReports.push(resultReport.data);
+      // Interview seule
+      notifMsg =
+        `🎤 <b>Interview enregistré</b>\n` +
+        `👤 Étudiant : <b>${nom}</b>\n` +
+        `📅 Date : ${dateInterview}\n` +
+        `🧑‍🏫 BBTeacher : <b>${teacherName}</b>`;
     }
 
-    updateLessonUI();
-    document.getElementById("bbLessonSelect").dispatchEvent(new Event("change"));
+    sendTelegramNotification(notifMsg);
+
+    // --- MISE À JOUR UI ---
+    if (hasLesson && resultReport) {
+      if (existingReport) {
+        const index = currentStudentReports.findIndex(r => r.id === existingReport.id);
+        if (index !== -1) currentStudentReports[index] = resultReport.data;
+      } else {
+        currentStudentReports.push(resultReport.data);
+      }
+
+      updateLessonUI();
+      document.getElementById("bbLessonSelect").dispatchEvent(new Event("change"));
+    }
 
   } catch (error) {
     console.error("Erreur Submit:", error);
@@ -536,7 +583,7 @@ async function submitBBLesson() {
   } finally {
     btn.disabled = false;
     spinner.classList.add("hidden");
-    btnText.innerHTML = "<span>Save lesson</span>";
+    btnText.innerHTML = "<span>Save</span>";
   }
 }
 
