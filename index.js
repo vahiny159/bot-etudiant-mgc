@@ -535,17 +535,25 @@ app.get("/api/custom/classes/openedBB", async (req, res) => {
 
 // --- BOT TELEGRAM ---
 if (bot) {
+  // Menu d'actions (réutilisé par /start et /menu)
+  const mainMenuKeyboard = Markup.inlineKeyboard([
+    [Markup.button.webApp("📝 Remplir une Fiche", WEB_APP_URL)],
+    [Markup.button.webApp("📖 Suivi Leçons BB", `${WEB_APP_URL}/bb-update.html`)],
+  ]);
+
   bot.start((ctx) => {
     console.log("🤖 Commande /start reçue");
     ctx.reply(
       "👋 **Bienvenue !**\nChoisissez l'action que vous souhaitez effectuer :",
-      Markup.inlineKeyboard([
-        // formulaire d'inscription
-        [Markup.button.webApp("📝 Remplir une Fiche", WEB_APP_URL)],
+      mainMenuKeyboard
+    );
+  });
 
-        //  BB lesson update
-        [Markup.button.webApp("📖 Suivi Leçons BB", `${WEB_APP_URL}/bb-update.html`)],
-      ])
+  bot.command("menu", (ctx) => {
+    console.log("🤖 Commande /menu reçue");
+    ctx.reply(
+      "📋 **Menu principal**\nChoisissez une action :",
+      mainMenuKeyboard
     );
   });
 
@@ -561,8 +569,26 @@ if (bot) {
   // Lancement propre
   bot.telegram
     .deleteWebhook()
-    .then(() => {
+    .then(async () => {
       console.log("🧹 Webhook supprimé.");
+
+      // Enregistrer les commandes visibles dans le menu Telegram
+      await bot.telegram.setMyCommands([
+        { command: "start", description: "🚀 Démarrer le bot" },
+        { command: "menu", description: "📋 Afficher le menu principal" },
+      ]);
+      console.log("📋 Commandes du menu enregistrées.");
+
+      // Bouton Menu → ouvre directement la WebApp
+      await bot.telegram.setChatMenuButton({
+        menu_button: {
+          type: "web_app",
+          text: "📝 Ouvrir",
+          web_app: { url: WEB_APP_URL },
+        },
+      });
+      console.log("🔘 Bouton Menu configuré.");
+
       bot.launch();
       console.log(`🤖 Bot démarré avec succès ! Lien WebApp : ${WEB_APP_URL}`);
     })

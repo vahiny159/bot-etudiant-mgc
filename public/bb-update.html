@@ -91,12 +91,10 @@
 
           <div class="flex gap-2">
             <input type="text" id="searchStudentInput" placeholder="Name or Smada ID..."
-              class="input-fast flex-1 border border-gray-200 rounded-xl px-4 py-3.5 font-semibold text-gray-900" />
+              class="input-fast flex-1 min-w-0 border border-gray-200 rounded-xl px-4 py-3.5 font-semibold text-gray-900" />
             <button onclick="searchStudent()" id="btn-search-student"
-              class="bg-blue-50 text-blue-700 border border-blue-200 rounded-xl px-5 font-bold active:scale-95 transition-transform flex items-center justify-center">
-              <span id="search-student-icon">
-                <img src="icons/arrow-right.svg" alt="Go" class="w-5 h-5 object-contain" />
-              </span>
+              class="shrink-0 bg-blue-50 text-blue-700 border border-blue-200 rounded-xl px-5 py-3.5 font-bold active:scale-95 transition-transform flex items-center justify-center">
+              <span id="search-student-icon">Go</span>
             </button>
           </div>
 
@@ -201,9 +199,9 @@
               <label class="block text-xs font-bold text-gray-500 mb-1 ml-1">BBTeacher</label>
               <div class="flex gap-2">
                 <input type="text" id="searchTeacherInput" placeholder="Name or SMADAID..."
-                  class="input-fast flex-1 border border-gray-200 rounded-xl px-4 py-3 text-sm" />
+                  class="input-fast flex-1 min-w-0 border border-gray-200 rounded-xl px-4 py-3 text-sm" />
                 <button onclick="searchTeacher()" id="btn-search-teacher"
-                  class="bg-gray-100 text-gray-700 border border-gray-200 rounded-xl px-4 font-bold active:scale-95 transition-transform flex items-center gap-2">
+                  class="shrink-0 bg-gray-100 text-gray-700 border border-gray-200 rounded-xl px-4 py-3 font-bold active:scale-95 transition-transform flex items-center">
                   <span id="search-teacher-icon">Search</span>
                 </button>
               </div>

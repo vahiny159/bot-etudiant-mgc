@@ -510,11 +510,13 @@ async function submitBBLesson() {
 
     // Notification Telegram
     const actionLabel = existingReport ? "mis à jour" : "enregistré";
+    const teacherName = document.getElementById("display-teacher-name")?.innerText?.trim() || "Non assigné";
     sendTelegramNotification(
       `📖 <b>BB Lesson ${actionLabel}</b>\n` +
       `👤 Étudiant : <b>${nom}</b>\n` +
       `📚 Leçon : <b>${codeLesson} - ${LESSONS[codeLesson]}</b>\n` +
-      `📅 Date : ${dateLesson}`
+      `📅 Date : ${dateLesson}\n` +
+      `🧑‍🏫 BBTeacher : <b>${teacherName}</b>`
     );
 
     if (existingReport) {
