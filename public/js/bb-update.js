@@ -112,18 +112,18 @@ document.addEventListener("DOMContentLoaded", checkUserTelegram);
 
 // leçon bb
 const LESSONS = {
-  BB01: "Hazo Ambolena Amoron'ny Rano Velona",
-  BB02: "Tempoly Tsara",
-  BB03: "Fahalalana Fototra ny Baiboly",
-  BB04: "Testamenta Taloha sy Testamenta Vaovao",
-  BB05: "Fanavahana Vanim-potoana",
-  BB06: "Nahoana i Jesosy no Antsoina hoe Mesia?",
-  BB07: "Fanavahana ny Tsara sy ny Ratsy (Fizarana 1)",
-  BB08: "Fanavahana ny Tsara sy ny Ratsy (Fizarana 2)",
-  BB09: "Tsiambaratelon'ny Fanjakan'ny Lanitra Voasoratra Anaty Fanoharana",
-  BB10: "Saha Efatra",
-  BB11: "Mazava sy Maizina (Fizarana 1-2)",
-  BB12: "Mosary",
+  PL1: "Hazo Ambolena Amoron'ny Rano Velona",
+  PL2: "Tempoly Tsara",
+  BB01: "Fahalalana Fototra ny Baiboly",
+  BB02: "Testamenta Taloha sy Testamenta Vaovao",
+  BB03: "Fanavahana Vanim-potoana",
+  BB04: "Nahoana i Jesosy no Antsoina hoe Mesia?",
+  BB05: "Fanavahana ny Tsara sy ny Ratsy (Fizarana 1)",
+  BB06: "Fanavahana ny Tsara sy ny Ratsy (Fizarana 2)",
+  BB07: "Tsiambaratelon'ny Fanjakan'ny Lanitra Voasoratra Anaty Fanoharana",
+  BB8: "Saha Efatra",
+  BB9: "Mazava sy Maizina (Fizarana 1-2)",
+  BB10: "Mosary",
 };
 
 let currentStudent = null;
@@ -264,19 +264,20 @@ function resetStudentSearch() {
 function updateLessonUI() {
   const select = document.getElementById("bbLessonSelect");
   const options = select.options;
-  const totalLessons = Object.keys(LESSONS).length;
+  const lessonKeys = Object.keys(LESSONS);
   const completedCodes = currentStudentReports.map((r) => (r.attributes || r).code);
 
-  let highestNum = 0;
+  // trouver l'index le plus élevé complété
+  let highestIndex = -1;
   completedCodes.forEach((code) => {
-    const num = parseInt(code.replace("BB", ""), 10);
-    if (num > highestNum) highestNum = num;
+    const idx = lessonKeys.indexOf(code);
+    if (idx > highestIndex) highestIndex = idx;
   });
 
   // prochaine leçon logique
   let nextLessonCode = null;
-  if (highestNum < totalLessons) {
-    nextLessonCode = `BB${String(highestNum + 1).padStart(2, "0")}`;
+  if (highestIndex + 1 < lessonKeys.length) {
+    nextLessonCode = lessonKeys[highestIndex + 1];
   }
 
   for (let i = 1; i < options.length; i++) {
@@ -293,13 +294,8 @@ function updateLessonUI() {
     }
   }
 
-  if (nextLessonCode) {
-    select.value = nextLessonCode;
-  } else if (highestNum === totalLessons) {
-    select.value = `BB${String(totalLessons).padStart(2, "0")}`;
-  } else {
-    select.value = "BB01";
-  }
+  // pré-sélectionner "-- No lesson --"
+  select.selectedIndex = 0;
 }
 
 // changement de leçon
@@ -381,7 +377,7 @@ async function searchTeacher() {
     console.error("Erreur recherche teacher:", error);
     tg.showAlert("Impossible de trouver le membre.");
   } finally {
-    btnIcon.innerText = "Chercher";
+    btnIcon.innerText = "Search";
     input.disabled = false;
   }
 }
@@ -510,7 +506,8 @@ async function submitBBLesson() {
     };
 
     if (hasLesson) {
-      studentData.bbLessonNumber = parseInt(codeLesson.replace("BB", ""), 10);
+      const lessonKeys = Object.keys(LESSONS);
+      studentData.bbLessonNumber = lessonKeys.indexOf(codeLesson) + 1;
     }
 
     const studentResponse = await fetch(`${BASE_URL}/api/people/${studentId}`, {
@@ -563,18 +560,8 @@ async function submitBBLesson() {
 
     sendTelegramNotification(notifMsg);
 
-    // --- MISE À JOUR UI ---
-    if (hasLesson && resultReport) {
-      if (existingReport) {
-        const index = currentStudentReports.findIndex(r => r.id === existingReport.id);
-        if (index !== -1) currentStudentReports[index] = resultReport.data;
-      } else {
-        currentStudentReports.push(resultReport.data);
-      }
-
-      updateLessonUI();
-      document.getElementById("bbLessonSelect").dispatchEvent(new Event("change"));
-    }
+    // --- RESET COMPLET DU FORMULAIRE ---
+    resetStudentSearch();
 
   } catch (error) {
     console.error("Erreur Submit:", error);
@@ -614,11 +601,13 @@ async function deleteBBLesson() {
       const codeLessonToDelete = document.getElementById("bbLessonSelect").value;
       const remainingReports = currentStudentReports.filter(r => (r.attributes || r).code !== codeLessonToDelete);
 
-      let newHighestNum = 0;
+      let newHighestIndex = -1;
+      const lessonKeys = Object.keys(LESSONS);
       remainingReports.forEach(r => {
-        const num = parseInt((r.attributes || r).code.replace("BB", ""), 10);
-        if (num > newHighestNum) newHighestNum = num;
+        const idx = lessonKeys.indexOf((r.attributes || r).code);
+        if (idx > newHighestIndex) newHighestIndex = idx;
       });
+      const newHighestNum = newHighestIndex + 1;
 
       // mise à jour du niveau de l'étudiant
       const studentId = document.getElementById("studentId").value;
