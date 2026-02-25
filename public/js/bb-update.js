@@ -131,6 +131,22 @@ let currentStudentReports = [];
 let currentTeacherId = null;
 let currentReportId = null;
 
+// --- NOTIFICATION TELEGRAM ---
+async function sendTelegramNotification(message) {
+  try {
+    const chatId = tg.initDataUnsafe?.user?.id;
+    if (!chatId) return;
+
+    await fetch("/api/notify/telegram", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ chatId, message }),
+    });
+  } catch (e) {
+    console.error("Notification Telegram échouée:", e);
+  }
+}
+
 // recherche bb
 async function searchStudent() {
   const input = document.getElementById("searchStudentInput");
@@ -492,6 +508,15 @@ async function submitBBLesson() {
     if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("success");
     tg.showAlert("✅ Lesson and Profile updated successfully !");
 
+    // Notification Telegram
+    const actionLabel = existingReport ? "mis à jour" : "enregistré";
+    sendTelegramNotification(
+      `📖 <b>BB Lesson ${actionLabel}</b>\n` +
+      `👤 Étudiant : <b>${nom}</b>\n` +
+      `📚 Leçon : <b>${codeLesson} - ${LESSONS[codeLesson]}</b>\n` +
+      `📅 Date : ${dateLesson}`
+    );
+
     if (existingReport) {
       const index = currentStudentReports.findIndex(r => r.id === existingReport.id);
       if (index !== -1) currentStudentReports[index] = resultReport.data;
@@ -556,6 +581,14 @@ async function deleteBBLesson() {
 
       tg.showAlert("🗑️ Lesson record deleted successfully !");
       if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("success");
+
+      // Notification Telegram
+      const studentName = currentStudent?.attributes?.name || currentStudent?.name || "";
+      sendTelegramNotification(
+        `🗑️ <b>BB Lesson supprimée</b>\n` +
+        `👤 Étudiant : <b>${studentName}</b>\n` +
+        `📚 Leçon : <b>${codeLessonToDelete} - ${LESSONS[codeLessonToDelete] || ""}</b>`
+      );
 
       // On met à jour l'interface sans fermer le dossier
       currentStudentReports = remainingReports;

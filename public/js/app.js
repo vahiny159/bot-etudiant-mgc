@@ -1,6 +1,22 @@
 let dataTree = {};
 let selectedClass;
 
+// --- NOTIFICATION TELEGRAM ---
+async function sendTelegramNotification(message) {
+  try {
+    const chatId = tg.initDataUnsafe?.user?.id;
+    if (!chatId) return;
+
+    await fetch("/api/notify/telegram", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ chatId, message }),
+    });
+  } catch (e) {
+    console.error("Notification Telegram échouée:", e);
+  }
+}
+
 // --- ALWAYS USE TELEGRAM ---
 let tg = window.Telegram.WebApp;
 tg.expand();
@@ -829,6 +845,15 @@ async function submitForm() {
         result.data?.username ||
         result.data?.id ||
         "OK";
+
+      // Notification Telegram
+      const actionLabel = existingId ? "mis à jour" : "créé";
+      sendTelegramNotification(
+        `📝 <b>Dossier ${actionLabel}</b>\n` +
+        `👤 Nom : <b>${nom}</b>\n` +
+        `📞 Tél : ${telephone}\n` +
+        `🆔 Matricule : <b>${matricule}</b>`
+      );
 
       showSuccessModal(matricule);
     } else {

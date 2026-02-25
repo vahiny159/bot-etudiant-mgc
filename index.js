@@ -42,6 +42,7 @@ if (!PORT) {
 }
 
 const app = express();
+const bot = BOT_TOKEN ? new Telegraf(BOT_TOKEN) : null;
 
 app.use(cors());
 app.use(bodyParser.json());
@@ -126,6 +127,27 @@ app.post("/api/auth/telegram", async (req, res) => {
   } else {
     console.log("id exist");
     return res.json({ ok: true });
+  }
+});
+
+// --- NOTIFICATION TELEGRAM ---
+app.post("/api/notify/telegram", async (req, res) => {
+  try {
+    const { chatId, message } = req.body;
+
+    if (!chatId || !message) {
+      return res.status(400).json({ ok: false, message: "chatId and message required" });
+    }
+
+    if (!bot) {
+      return res.status(503).json({ ok: false, message: "Bot not configured" });
+    }
+
+    await bot.telegram.sendMessage(chatId, message, { parse_mode: "HTML" });
+    res.json({ ok: true });
+  } catch (e) {
+    console.error("Erreur notification Telegram:", e);
+    res.status(500).json({ ok: false, error: e.message });
   }
 });
 
@@ -512,9 +534,7 @@ app.get("/api/custom/classes/openedBB", async (req, res) => {
 // CHECK TELEGRAM ID IN DB
 
 // --- BOT TELEGRAM ---
-if (BOT_TOKEN) {
-  const bot = new Telegraf(BOT_TOKEN);
-
+if (bot) {
   bot.start((ctx) => {
     console.log("🤖 Commande /start reçue");
     ctx.reply(
