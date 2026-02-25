@@ -452,52 +452,7 @@
   <!-- <a href="bb-update.html" class="block w-full bg-blue-500 text-white text-center py-3 font-bold mb-4">
     👉 Aller à la page de Mise à jour BB
   </a> -->
-  <script>
-    // confirmation pour décocher interview
-    function toggleInterviewDate() {
-      const cb = document.getElementById("hasInterview");
-      const container = document.getElementById("interview-date-container");
-      const dateInput = document.getElementById("dateInterview");
 
-      if (cb.checked) {
-        container.classList.remove("hidden");
-        if (typeof tg !== "undefined" && tg.HapticFeedback) {
-          tg.HapticFeedback.selectionChanged();
-        }
-      } else {
-        if (dateInput.value && dateInput.value.trim() !== "") {
-
-          const cancelUncheck = () => {
-            cb.checked = true;
-            container.classList.remove("hidden");
-          };
-
-          const confirmUncheck = () => {
-            container.classList.add("hidden");
-            dateInput.value = "";
-          };
-
-          if (typeof tg !== "undefined" && tg.showConfirm) {
-            tg.showConfirm("Are you sure you want to remove the interview ?", (confirmed) => {
-              if (confirmed) {
-                confirmUncheck();
-              } else {
-                cancelUncheck();
-              }
-            });
-          } else {
-            if (confirm("Are you sure you want to remove the interview ?")) {
-              confirmUncheck();
-            } else {
-              cancelUncheck();
-            }
-          }
-        } else {
-          container.classList.add("hidden");
-        }
-      }
-    }
-  </script>
 </body>
 
 </html>

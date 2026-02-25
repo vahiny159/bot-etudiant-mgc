@@ -273,15 +273,39 @@
 
   <script>
     function toggleInterviewDate() {
-      const isChecked = document.getElementById("hasInterview").checked;
+      const cb = document.getElementById("hasInterview");
       const container = document.getElementById("interview-date-container");
-      if (isChecked) {
+      const dateInput = document.getElementById("dateInterview");
+
+      if (cb.checked) {
         container.classList.remove("hidden");
         if (window.Telegram && window.Telegram.WebApp.HapticFeedback)
           window.Telegram.WebApp.HapticFeedback.selectionChanged();
       } else {
-        container.classList.add("hidden");
-        document.getElementById("dateInterview").value = "";
+        // Si une date est déjà remplie, demander confirmation
+        if (dateInput.value && dateInput.value.trim() !== "") {
+          // Re-cocher immédiatement en attendant la réponse
+          cb.checked = true;
+
+          const tg = window.Telegram?.WebApp;
+          if (tg && tg.showConfirm) {
+            tg.showConfirm("Are you sure you want to remove the interview?", (confirmed) => {
+              if (confirmed) {
+                cb.checked = false;
+                container.classList.add("hidden");
+                dateInput.value = "";
+              }
+            });
+          } else {
+            if (confirm("Are you sure you want to remove the interview?")) {
+              cb.checked = false;
+              container.classList.add("hidden");
+              dateInput.value = "";
+            }
+          }
+        } else {
+          container.classList.add("hidden");
+        }
       }
     }
   </script>
