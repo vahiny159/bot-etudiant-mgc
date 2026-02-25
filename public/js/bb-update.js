@@ -164,9 +164,9 @@ function updateLessonUI() {
     const baseText = LESSONS[code];
 
     if (completedCodes.includes(code)) {
-      opt.innerText = `✅ ${code} - ${baseText} (Fait)`;
+      opt.innerText = `✅ ${code} - ${baseText} (Done)`;
     } else if (code === nextLessonCode) {
-      opt.innerText = `👉 ${code} - ${baseText} (À faire)`;
+      opt.innerText = `👉 ${code} - ${baseText} (To do)`;
     } else {
       opt.innerText = `🔒 ${code} - ${baseText}`;
     }
@@ -274,9 +274,7 @@ function selectTeacher(teacherData, silent = false) {
   const teacherIdApp = attrs.user?.data?.attributes?.username || "";
 
   document.getElementById("display-teacher-name").innerHTML = `
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5 text-gray-400">
-      <path d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.905 59.905 0 0112 3.493a59.902 59.902 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.697 50.697 0 0112 13.489a50.702 50.702 0 017.74-3.342M6.75 15a.75.75 0 100-1.5.75.75 0 000 1.5zm0 0v-3.675A55.378 55.378 0 0112 8.443m-7.007 11.55A5.981 5.981 0 006.75 15.75v-1.5" />
-    </svg>
+    <img src="icons/teacher.svg" alt="Teacher" class="w-5 h-5 object-contain" />
     <span>${attrs.name} ${teacherIdApp ? "(" + teacherIdApp + ")" : ""}</span>
   `;
 
@@ -314,19 +312,19 @@ async function submitBBLesson() {
 
   // validation
   if (!nom || !codeLesson || !dateLesson) {
-    tg.showAlert("⚠️ Veuillez remplir le Nom, la Leçon BB et sa Date.");
+    tg.showAlert("⚠️ Please fill in the Name, BB Lesson, and Date.");
     if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("error");
     return;
   }
 
   if (hasInterview && !dateInterview) {
-    tg.showAlert("⚠️ Vous avez coché 'Interview', veuillez préciser la date.");
+    tg.showAlert("⚠️ You checked 'Interview', please specify the date.");
     return;
   }
 
   btn.disabled = true;
   spinner.classList.remove("hidden");
-  btnText.innerHTML = "<span>Traitement en cours...</span>";
+  btnText.innerHTML = "<span>Processing...</span>";
 
   try {
     // préparation des données du BB Report
@@ -387,7 +385,7 @@ async function submitBBLesson() {
       throw new Error("Erreur lors de la mise à jour de l'étudiant.");
 
     if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("success");
-    tg.showAlert("✅ Leçon et Profil mis à jour avec succès !");
+    tg.showAlert("✅ Lesson and Profile updated successfully !");
 
     if (existingReport) {
       const index = currentStudentReports.findIndex(r => r.id === existingReport.id);
@@ -406,7 +404,7 @@ async function submitBBLesson() {
   } finally {
     btn.disabled = false;
     spinner.classList.add("hidden");
-    btnText.innerHTML = "<span>Enregistrer la leçon</span>";
+    btnText.innerHTML = "<span>Save lesson</span>";
   }
 }
 
@@ -415,14 +413,14 @@ async function deleteBBLesson() {
   if (!currentReportId || !currentStudent) return;
 
   // demande de confirmation à l'utilisateur via Telegram
-  tg.showConfirm("Voulez-vous vraiment annuler la validation de cette leçon ?", async (confirmed) => {
+  tg.showConfirm("Are you sure you want to delete this lesson record ?", async (confirmed) => {
     if (!confirmed) return;
 
     if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred("heavy");
 
     const btnDel = document.getElementById("btn-delete-lesson");
     const originalText = btnDel.innerHTML;
-    btnDel.innerHTML = "Suppression en cours...";
+    btnDel.innerHTML = "Deleting...";
     btnDel.disabled = true;
 
     try {
@@ -451,7 +449,7 @@ async function deleteBBLesson() {
         body: JSON.stringify({ data: { bbLessonNumber: newHighestNum } }),
       });
 
-      tg.showAlert("🗑️ La leçon a été annulée avec succès !");
+      tg.showAlert("🗑️ Lesson record deleted successfully !");
       if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("success");
 
       // On met à jour l'interface sans fermer le dossier
@@ -476,17 +474,17 @@ function showSearchModal(candidates, type) {
   const title = document.getElementById("search-modal-title");
 
   if (candidates.length === 0) {
-    tg.showAlert("Aucun résultat trouvé.");
+    tg.showAlert("No results found.");
     return;
   }
 
   title.innerText =
-    type === "student" ? "Sélectionner l'étudiant" : "Sélectionner le Teacher";
+    type === "student" ? "Select Student" : "Select Teacher";
   list.innerHTML = "";
 
   candidates.forEach((item) => {
     const data = item.attributes || item;
-    const name = data.name || "Inconnu";
+    const name = data.name || "Unknown";
     const smadaId = data.user?.data?.attributes?.username || "---";
 
     const btn = document.createElement("button");
