@@ -112,18 +112,24 @@ document.addEventListener("DOMContentLoaded", checkUserTelegram);
 
 // leçon bb
 const LESSONS = {
-  PL1: "Hazo Ambolena Amoron'ny Rano Velona",
-  PL2: "Tempoly Tsara",
-  BB01: "Fahalalana Fototra ny Baiboly",
-  BB02: "Testamenta Taloha sy Testamenta Vaovao",
-  BB03: "Fanavahana Vanim-potoana",
-  BB04: "Nahoana i Jesosy no Antsoina hoe Mesia?",
-  BB05: "Fanavahana ny Tsara sy ny Ratsy (Fizarana 1)",
-  BB06: "Fanavahana ny Tsara sy ny Ratsy (Fizarana 2)",
-  BB07: "Tsiambaratelon'ny Fanjakan'ny Lanitra Voasoratra Anaty Fanoharana",
-  BB8: "Saha Efatra",
-  BB9: "Mazava sy Maizina (Fizarana 1-2)",
-  BB10: "Mosary",
+  BB01: "Hazo Ambolena Amoron'ny Rano Velona",
+  BB02: "Tempoly Tsara",
+  BB03: "Fahalalana Fototra ny Baiboly",
+  BB04: "Testamenta Taloha sy Testamenta Vaovao",
+  BB05: "Fanavahana Vanim-potoana",
+  BB06: "Nahoana i Jesosy no Antsoina hoe Mesia?",
+  BB07: "Fanavahana ny Tsara sy ny Ratsy (Fizarana 1)",
+  BB08: "Fanavahana ny Tsara sy ny Ratsy (Fizarana 2)",
+  BB09: "Tsiambaratelon'ny Fanjakan'ny Lanitra Voasoratra Anaty Fanoharana",
+  BB10: "Saha Efatra",
+  BB11: "Mazava sy Maizina (Fizarana 1-2)",
+  BB12: "Mosary",
+};
+
+// Affichage PL pour les 2 premières leçons
+const DISPLAY_CODES = {
+  BB01: "PL1",
+  BB02: "PL2",
 };
 
 let currentStudent = null;
@@ -264,33 +270,33 @@ function resetStudentSearch() {
 function updateLessonUI() {
   const select = document.getElementById("bbLessonSelect");
   const options = select.options;
-  const lessonKeys = Object.keys(LESSONS);
+  const totalLessons = Object.keys(LESSONS).length;
   const completedCodes = currentStudentReports.map((r) => (r.attributes || r).code);
 
-  // trouver l'index le plus élevé complété
-  let highestIndex = -1;
+  let highestNum = 0;
   completedCodes.forEach((code) => {
-    const idx = lessonKeys.indexOf(code);
-    if (idx > highestIndex) highestIndex = idx;
+    const num = parseInt(code.replace("BB", ""), 10);
+    if (num > highestNum) highestNum = num;
   });
 
   // prochaine leçon logique
   let nextLessonCode = null;
-  if (highestIndex + 1 < lessonKeys.length) {
-    nextLessonCode = lessonKeys[highestIndex + 1];
+  if (highestNum < totalLessons) {
+    nextLessonCode = `BB${String(highestNum + 1).padStart(2, "0")}`;
   }
 
   for (let i = 1; i < options.length; i++) {
     const opt = options[i];
     const code = opt.value;
+    const displayCode = DISPLAY_CODES[code] || code;
     const baseText = LESSONS[code];
 
     if (completedCodes.includes(code)) {
-      opt.innerText = `✅ ${code} - ${baseText} (Done)`;
+      opt.innerText = `✅ ${displayCode} - ${baseText} (Done)`;
     } else if (code === nextLessonCode) {
-      opt.innerText = `👉 ${code} - ${baseText} (To do)`;
+      opt.innerText = `👉 ${displayCode} - ${baseText} (To do)`;
     } else {
-      opt.innerText = `🔒 ${code} - ${baseText}`;
+      opt.innerText = `🔒 ${displayCode} - ${baseText}`;
     }
   }
 
@@ -506,8 +512,7 @@ async function submitBBLesson() {
     };
 
     if (hasLesson) {
-      const lessonKeys = Object.keys(LESSONS);
-      studentData.bbLessonNumber = lessonKeys.indexOf(codeLesson) + 1;
+      studentData.bbLessonNumber = parseInt(codeLesson.replace("BB", ""), 10);
     }
 
     const studentResponse = await fetch(`${BASE_URL}/api/people/${studentId}`, {
@@ -601,13 +606,11 @@ async function deleteBBLesson() {
       const codeLessonToDelete = document.getElementById("bbLessonSelect").value;
       const remainingReports = currentStudentReports.filter(r => (r.attributes || r).code !== codeLessonToDelete);
 
-      let newHighestIndex = -1;
-      const lessonKeys = Object.keys(LESSONS);
+      let newHighestNum = 0;
       remainingReports.forEach(r => {
-        const idx = lessonKeys.indexOf((r.attributes || r).code);
-        if (idx > newHighestIndex) newHighestIndex = idx;
+        const num = parseInt((r.attributes || r).code.replace("BB", ""), 10);
+        if (num > newHighestNum) newHighestNum = num;
       });
-      const newHighestNum = newHighestIndex + 1;
 
       // mise à jour du niveau de l'étudiant
       const studentId = document.getElementById("studentId").value;
