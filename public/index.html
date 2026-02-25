@@ -452,6 +452,38 @@
   <!-- <a href="bb-update.html" class="block w-full bg-blue-500 text-white text-center py-3 font-bold mb-4">
     👉 Aller à la page de Mise à jour BB
   </a> -->
+  <script>
+    // confirmation pour décocher interview
+    function toggleInterviewDate() {
+      const cb = document.getElementById("hasInterview");
+      const isChecked = cb.checked;
+      const container = document.getElementById("interview-date-container");
+      const dateInput = document.getElementById("dateInterview");
+
+      if (isChecked) {
+        container.classList.remove("hidden");
+        if (window.Telegram && window.Telegram.WebApp.HapticFeedback) {
+          window.Telegram.WebApp.HapticFeedback.selectionChanged();
+        }
+      } else {
+        // vérifie s'il y a déjà une date saisie
+        if (dateInput.value !== "") {
+          if (window.Telegram && window.Telegram.WebApp.showConfirm) {
+            window.Telegram.WebApp.showConfirm("Are you sure you want to remove the interview ?", (confirmed) => {
+              if (confirmed) {
+                container.classList.add("hidden");
+                dateInput.value = "";
+              } else {
+                cb.checked = true;
+              }
+            });
+          }
+        } else {
+          container.classList.add("hidden");
+        }
+      }
+    }
+  </script>
 </body>
 
 </html>
