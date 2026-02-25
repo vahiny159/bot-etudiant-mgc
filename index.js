@@ -518,10 +518,14 @@ if (BOT_TOKEN) {
   bot.start((ctx) => {
     console.log("🤖 Commande /start reçue");
     ctx.reply(
-      "👋 **Bienvenue !**\nCliquez ci-dessous pour remplir une fiche.",
+      "👋 **Bienvenue !**\nChoisissez l'action que vous souhaitez effectuer :",
       Markup.inlineKeyboard([
-        [Markup.button.webApp("📝 Remplir le Formulaire", WEB_APP_URL)],
-      ]),
+        // formulaire d'inscription
+        [Markup.button.webApp("📝 Remplir une Fiche", WEB_APP_URL)],
+
+        //  BB lesson update
+        [Markup.button.webApp("📖 Suivi Leçons BB", `${WEB_APP_URL}/bb-update.html`)],
+      ])
     );
   });
 
