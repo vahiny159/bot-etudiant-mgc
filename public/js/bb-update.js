@@ -126,7 +126,7 @@ const LESSONS = {
   BB12: "Mosary",
 };
 
-// Affichage PL pour les 2 premières leçons
+// Affichage PL pour les 2 premières leçons (mbola provisoir fotsiny aloha ito)
 const DISPLAY_CODES = {
   BB01: "PL1",
   BB02: "PL2",
