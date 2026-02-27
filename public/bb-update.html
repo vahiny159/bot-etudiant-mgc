@@ -73,17 +73,44 @@
       background: transparent;
     }
 
-    /* Theme toggle button */
-    .theme-toggle {
-      width: 44px;
-      height: 44px;
-      border-radius: 12px;
+    /* Theme toggle pill switch */
+    .theme-switch {
+      position: relative;
+      width: 52px;
+      height: 28px;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border: none;
+      padding: 0;
+    }
+
+    .theme-switch .switch-track {
+      position: absolute;
+      inset: 0;
+      border-radius: 999px;
+      transition: background-color 0.3s ease;
+    }
+
+    .theme-switch .switch-thumb {
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: white;
       display: flex;
       align-items: center;
       justify-content: center;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      border: 1px solid;
+      transition: transform 0.3s ease;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+      font-size: 12px;
+      line-height: 1;
+    }
+
+    .dark .theme-switch .switch-thumb {
+      transform: translateX(24px);
     }
 
     /* Smooth transition for dark mode */
@@ -106,18 +133,21 @@
   </div>
 
   <div class="relative z-10 px-4 pt-6">
-    <header class="text-center mb-6 relative">
-      <!-- Theme toggle button -->
-      <button id="theme-toggle" onclick="toggleTheme()"
-        class="theme-toggle absolute top-0 right-0 bg-gray-100 dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-yellow-400 hover:bg-gray-200 dark:hover:bg-gray-700 active:scale-90">
-        <span id="theme-icon" class="text-xl">🌙</span>
-      </button>
+    <header class="text-center mb-6">
       <h1 class="text-3xl font-black tracking-tighter text-gray-900 dark:text-white">
         BB Lesson Tracking
       </h1>
       <p class="text-sm font-medium text-gray-500 dark:text-gray-400 mt-1">
         Report updates
       </p>
+      <!-- Compact theme toggle -->
+      <button id="theme-toggle" onclick="toggleTheme()"
+        class="theme-switch mt-3 mx-auto bg-gray-200 dark:bg-gray-700 active:scale-95" title="Toggle dark mode">
+        <div class="switch-track bg-gray-200 dark:bg-gray-600"></div>
+        <div class="switch-thumb">
+          <span id="theme-icon">🌙</span>
+        </div>
+      </button>
     </header>
 
     <div class="max-w-lg mx-auto space-y-6">
