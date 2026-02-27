@@ -841,7 +841,6 @@ async function submitForm() {
       btnText.innerText = "Enregistrer le dossier";
 
       // --- GRAND NETTOYAGE ---
-      // --- GRAND NETTOYAGE ---
       idHiddenInput.value = "";
       document
         .querySelectorAll(
@@ -854,6 +853,30 @@ async function submitForm() {
         .getElementsByName("sexe_radio")
         .forEach((r) => (r.checked = false));
       document.getElementById("ageCalc").innerText = "";
+
+      // Reset selects
+      const classeSelect = document.getElementById("classeSelect");
+      if (classeSelect) classeSelect.selectedIndex = 0;
+      const bbhallSelect = document.getElementById("bbhallSelect");
+      if (bbhallSelect) bbhallSelect.selectedIndex = 0;
+      const liaisonSelect = document.getElementById("liaison");
+      if (liaisonSelect) liaisonSelect.selectedIndex = 0;
+
+      // Reset other fields
+      const facebookInput = document.getElementById("facebook");
+      if (facebookInput) facebookInput.value = "";
+      const nomTreeInput = document.getElementById("nomTree");
+      if (nomTreeInput) nomTreeInput.value = "";
+
+      // Reset state
+      selectedClass = undefined;
+      dataTree = {};
+
+      // Clear validation red borders
+      document.querySelectorAll(".border-red-500").forEach((el) => {
+        el.classList.remove("border-red-500", "bg-red-50");
+        el.classList.add("border-gray-200");
+      });
 
       // RÉCUPÉRATION DU MATRICULE (POST ou PUT)
       // PUT → result.data.attributes.email = "43010016@mail.com" → on extrait la partie avant "@"
