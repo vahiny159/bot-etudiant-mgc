@@ -7,7 +7,7 @@ function applyTheme(isDark) {
   document.documentElement.classList.toggle('dark', isDark);
   tg.setHeaderColor(isDark ? '#111827' : '#F9FAFB');
   const icon = document.getElementById('theme-icon');
-  if (icon) icon.textContent = isDark ? '☀️' : '🌙';
+  if (icon) icon.textContent = isDark ? '🌙' : '☀️';
   localStorage.setItem('bb-theme', isDark ? 'dark' : 'light');
 }
 
@@ -18,7 +18,7 @@ function toggleTheme() {
 }
 
 // Init theme: light by default, or saved preference
-(function() {
+(function () {
   const saved = localStorage.getItem('bb-theme');
   applyTheme(saved === 'dark');
 })();
