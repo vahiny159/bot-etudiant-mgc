@@ -71,10 +71,19 @@ function showErrorPage(status, message) {
 
 // Check telegram User
 async function checkUserTelegram() {
-  document.body.style.display = "none";
+  // Show skeleton, hide actual content
+  document.body.style.display = "block";
+  const skeleton = document.getElementById("page-skeleton");
+  if (skeleton) skeleton.classList.remove("hidden");
+  // Hide all real content except skeleton
+  document.querySelectorAll(".relative.z-10 > :not(#page-skeleton)").forEach(el => {
+    el.style.display = "none";
+  });
+
   let initData = tg.initData;
 
   if (!initData) {
+    if (skeleton) skeleton.classList.add("hidden");
     showErrorPage(403, "Veuillez ouvrir cette application depuis Telegram.");
     document.body.style.display = "block";
     return;
@@ -93,6 +102,7 @@ async function checkUserTelegram() {
     });
 
     if (!res.ok) {
+      if (skeleton) skeleton.classList.add("hidden");
       if (res.status === 403) {
         showErrorPage(
           403,
@@ -116,13 +126,19 @@ async function checkUserTelegram() {
     const data = await res.json();
 
     if (data.ok) {
-      document.body.style.display = "block";
+      // Hide skeleton, show real content
+      if (skeleton) skeleton.classList.add("hidden");
+      document.querySelectorAll(".relative.z-10 > *").forEach(el => {
+        if (el.id !== "page-skeleton") el.style.display = "";
+      });
     } else {
+      if (skeleton) skeleton.classList.add("hidden");
       showErrorPage(403, `Accès refusé pour <b>${userName}</b>.`);
       document.body.style.display = "block";
     }
   } catch (e) {
     console.error(e);
+    if (skeleton) skeleton.classList.add("hidden");
     showErrorPage(500, "Erreur de connexion au serveur.");
     document.body.style.display = "block";
   }

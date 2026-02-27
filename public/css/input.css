@@ -113,3 +113,129 @@ body,
 .animate-shimmer {
     animation: shimmer 2s infinite;
 }
+
+/* === SKELETON LOADING === */
+.skeleton {
+    position: relative;
+    overflow: hidden;
+    background: #e5e7eb;
+    border-radius: 12px;
+}
+
+.dark .skeleton {
+    background: #374151;
+}
+
+.skeleton::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    animation: shimmer 1.5s infinite;
+}
+
+.dark .skeleton::after {
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.06), transparent);
+}
+
+.skeleton-text {
+    height: 14px;
+    border-radius: 6px;
+}
+
+.skeleton-input {
+    height: 52px;
+    border-radius: 12px;
+}
+
+.skeleton-btn {
+    height: 56px;
+    border-radius: 16px;
+}
+
+/* === OFFLINE BANNER === */
+@keyframes slideDown {
+    from {
+        transform: translateY(-100%);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.offline-banner {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 9999;
+    padding: 10px 16px;
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: white;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 700;
+    display: none;
+    animation: slideDown 0.3s ease-out;
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.offline-banner.show {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+/* === INLINE ERRORS === */
+.field-error {
+    display: none;
+    font-size: 11px;
+    font-weight: 600;
+    color: #ef4444;
+    margin-top: 4px;
+    margin-left: 4px;
+    align-items: center;
+    gap: 4px;
+}
+
+.field-error.show {
+    display: flex;
+}
+
+.dark .field-error {
+    color: #fca5a5;
+}
+
+/* Shake animation */
+@keyframes shake {
+
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+
+    20% {
+        transform: translateX(-6px);
+    }
+
+    40% {
+        transform: translateX(6px);
+    }
+
+    60% {
+        transform: translateX(-4px);
+    }
+
+    80% {
+        transform: translateX(4px);
+    }
+}
+
+.shake {
+    animation: shake 0.4s ease-in-out;
+}

@@ -30,6 +30,7 @@
   <script>
     eruda.init();
   </script>
+  <script src="js/shared.js"></script>
 </head>
 
 <body style="display: none"
@@ -43,7 +44,25 @@
         "></div>
   </div>
 
+  <!-- Offline banner -->
+  <div id="offline-banner" class="offline-banner">
+    📡 Pas de connexion internet
+  </div>
+
   <div class="relative z-10 px-4 pt-6">
+    <!-- Skeleton loading -->
+    <div id="page-skeleton" class="max-w-lg mx-auto space-y-4 py-8">
+      <div class="skeleton skeleton-text w-48 mx-auto"></div>
+      <div class="skeleton skeleton-text w-32 mx-auto mt-2"></div>
+      <div class="skeleton skeleton-input w-full mt-6"></div>
+      <div class="skeleton skeleton-input w-full"></div>
+      <div class="grid grid-cols-2 gap-4">
+        <div class="skeleton skeleton-input"></div>
+        <div class="skeleton skeleton-input"></div>
+      </div>
+      <div class="skeleton skeleton-input w-full"></div>
+      <div class="skeleton skeleton-btn w-full mt-4"></div>
+    </div>
     <header class="text-center mb-8">
       <h1 class="text-3xl font-black tracking-tighter text-gray-900 dark:text-white">
         Inscription MGC
@@ -113,6 +132,7 @@
                     clearError();
                     this.value = this.value.toUpperCase();
                   " />
+              <span class="field-error" id="err-nom">⚠ Nom obligatoire</span>
             </div>
 
             <div>
@@ -142,6 +162,7 @@
                 <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1 ml-1">TÉLÉPHONE *</label>
                 <input type="tel" id="telephone" placeholder="034..."
                   class="input-fast w-full border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3.5 font-medium text-gray-900 dark:text-gray-100" />
+                <span class="field-error" id="err-tel">⚠ Téléphone obligatoire</span>
               </div>
               <div>
                 <label
@@ -152,6 +173,7 @@
 
                 <input type="date" id="dateNaissance"
                   class="input-fast w-full border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3.5 font-medium text-gray-900 dark:text-gray-100" />
+                <span class="field-error" id="err-date">⚠ Date obligatoire</span>
               </div>
             </div>
 
@@ -159,6 +181,7 @@
               <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1 ml-1">FACEBOOK *</label>
               <input type="text" id="facebook" placeholder="Nom ou lien Facebook"
                 class="input-fast w-full border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3.5 font-medium text-gray-900 dark:text-gray-100" />
+              <span class="field-error" id="err-facebook">⚠ Facebook obligatoire</span>
             </div>
             <div>
               <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1 ml-1">

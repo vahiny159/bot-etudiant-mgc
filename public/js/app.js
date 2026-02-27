@@ -54,8 +54,23 @@ inputs.forEach((input) => {
 });
 
 async function init() {
-  document.body.style.display = "none";
+  // Show skeleton, hide form content
+  document.body.style.display = "block";
+  const skeleton = document.getElementById("page-skeleton");
+  if (skeleton) skeleton.classList.remove("hidden");
+
+  // Hide all actual content initially
+  document.querySelectorAll(".relative.z-10 > :not(#page-skeleton):not(#offline-banner)").forEach(el => {
+    if (el.id !== "page-skeleton") el.style.display = "none";
+  });
+
   await checkUserTelegram();
+
+  // Hide skeleton, show content
+  if (skeleton) skeleton.classList.add("hidden");
+  document.querySelectorAll(".relative.z-10 > *").forEach(el => {
+    if (el.id !== "page-skeleton") el.style.display = "";
+  });
 
   // Initialiser la date d'export à aujourd'hui
   const exportDateInput = document.getElementById("exportDate");
@@ -63,6 +78,27 @@ async function init() {
     const today = new Date().toISOString().split('T')[0];
     exportDateInput.value = today;
   }
+}
+
+// --- INLINE ERROR HELPERS ---
+function showFieldError(fieldId, errorId) {
+  const field = document.getElementById(fieldId);
+  const error = document.getElementById(errorId);
+  if (field) {
+    field.classList.remove("border-gray-200");
+    field.classList.add("border-red-500", "bg-red-50", "dark:bg-red-900/10");
+    field.classList.add("shake");
+    setTimeout(() => field.classList.remove("shake"), 400);
+  }
+  if (error) error.classList.add("show");
+}
+
+function clearAllErrors() {
+  document.querySelectorAll(".field-error").forEach(el => el.classList.remove("show"));
+  document.querySelectorAll(".border-red-500").forEach(el => {
+    el.classList.remove("border-red-500", "bg-red-50", "dark:bg-red-900/10");
+    el.classList.add("border-gray-200");
+  });
 }
 
 // ON PAGE LOAD
@@ -764,26 +800,26 @@ async function submitForm() {
   const dateNaissance = document.getElementById("dateNaissance").value;
   const facebook = document.getElementById("facebook").value.trim();
 
-  // Validations — tous les champs Fruit sont obligatoires
-  if (
-    !nom ||
-    !sexe ||
-    !telephone ||
-    !dateNaissance ||
-    !facebook ||
-    !selectedClass
-  ) {
-    if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("error");
-    tg.showAlert("Veuillez remplir tous les champs de la partie Fruit.");
+  // Validations — inline errors
+  let hasError = false;
+  clearAllErrors();
 
-    if (!nom) {
-      nomInput.classList.remove("border-gray-200");
-      nomInput.classList.add("border-red-500", "bg-red-50");
-    }
-    if (!selectedClass) {
-      classInput.classList.remove("border-gray-200");
-      classInput.classList.add("border-red-500", "bg-red-50");
-    }
+  if (!nom) { showFieldError("nomComplet", "err-nom"); hasError = true; }
+  if (!telephone) { showFieldError("telephone", "err-tel"); hasError = true; }
+  if (!dateNaissance) { showFieldError("dateNaissance", "err-date"); hasError = true; }
+  if (!facebook) { showFieldError("facebook", "err-facebook"); hasError = true; }
+  if (!selectedClass) {
+    classInput.classList.remove("border-gray-200");
+    classInput.classList.add("border-red-500", "bg-red-50", "shake");
+    setTimeout(() => classInput.classList.remove("shake"), 400);
+    hasError = true;
+  }
+
+  if (hasError) {
+    if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("error");
+    // Scroll to first error
+    const firstError = document.querySelector(".field-error.show, .border-red-500");
+    if (firstError) firstError.scrollIntoView({ behavior: "smooth", block: "center" });
     return;
   }
 

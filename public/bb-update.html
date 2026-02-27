@@ -17,6 +17,7 @@
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <link rel="stylesheet" href="css/output.css" />
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <script src="js/shared.js"></script>
 </head>
 
 <body style="display: none"
@@ -30,7 +31,22 @@
         "></div>
   </div>
 
+  <!-- Offline banner -->
+  <div id="offline-banner" class="offline-banner">
+    📡 Pas de connexion internet
+  </div>
+
   <div class="relative z-10 px-4 pt-6">
+    <!-- Skeleton loading -->
+    <div id="page-skeleton" class="max-w-lg mx-auto space-y-4 py-8">
+      <div class="skeleton skeleton-text w-48 mx-auto"></div>
+      <div class="skeleton skeleton-text w-32 mx-auto mt-2"></div>
+      <div class="skeleton skeleton-input w-full mt-6"></div>
+      <div class="flex gap-2 mt-2">
+        <div class="skeleton skeleton-input flex-1"></div>
+        <div class="skeleton w-16 h-[52px] rounded-xl"></div>
+      </div>
+    </div>
     <header class="text-center mb-6">
       <h1 class="text-3xl font-black tracking-tighter text-gray-900 dark:text-white">
         BB Lesson Tracking
