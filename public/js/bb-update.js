@@ -168,6 +168,38 @@ let currentStudentReports = [];
 let currentTeacherId = null;
 let currentReportId = null;
 
+// --- DEBOUNCE ---
+function debounce(fn, delay) {
+  let timer;
+  return function (...args) {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn.apply(this, args), delay);
+  };
+}
+
+const debouncedSearchStudent = debounce(() => {
+  const val = document.getElementById('searchStudentInput').value.trim();
+  if (val.length >= 2) searchStudent();
+}, 400);
+
+const debouncedSearchTeacher = debounce(() => {
+  const val = document.getElementById('searchTeacherInput').value.trim();
+  if (val.length >= 2) searchTeacher();
+}, 400);
+
+// Attach debounce listeners after DOM ready
+document.addEventListener('DOMContentLoaded', () => {
+  const studentInput = document.getElementById('searchStudentInput');
+  const teacherInput = document.getElementById('searchTeacherInput');
+
+  if (studentInput) {
+    studentInput.addEventListener('input', debouncedSearchStudent);
+  }
+  if (teacherInput) {
+    teacherInput.addEventListener('input', debouncedSearchTeacher);
+  }
+});
+
 // --- NOTIFICATION TELEGRAM ---
 async function sendTelegramNotification(message) {
   try {
@@ -196,7 +228,6 @@ async function searchStudent() {
   }
 
   btnIcon.innerHTML = `<span class="animate-spin inline-block h-4 w-4 border-2 border-blue-600 border-t-transparent rounded-full"></span>`;
-  input.disabled = true;
 
   try {
     const safeVal = encodeURIComponent(val);
@@ -223,7 +254,6 @@ async function searchStudent() {
     tg.showAlert("Erreur lors de la recherche. Veuillez réessayer.");
   } finally {
     btnIcon.innerHTML = "Go";
-    input.disabled = false;
   }
 }
 
@@ -390,7 +420,6 @@ async function searchTeacher() {
   if (!val) return;
 
   btnIcon.innerText = "⏳";
-  input.disabled = true;
 
   try {
     const safeVal = encodeURIComponent(val);
@@ -416,7 +445,6 @@ async function searchTeacher() {
     tg.showAlert("Impossible de trouver le membre.");
   } finally {
     btnIcon.innerText = "Search";
-    input.disabled = false;
   }
 }
 
