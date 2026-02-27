@@ -672,7 +672,7 @@ async function submitBBLesson() {
       notifMsg =
         `📖 <b>BB Lesson ${actionLabel}</b>\n` +
         `👤 Étudiant : <b>${nom}</b>\n` +
-        `📚 Leçon : <b>${codeLesson} - ${LESSONS[codeLesson]}</b>\n` +
+        `📚 Leçon : <b>${DISPLAY_CODES[codeLesson] || codeLesson} - ${LESSONS[codeLesson]}</b>\n` +
         `📅 Date leçon : ${dateLesson}\n` +
         `🧑‍🏫 BBTeacher : <b>${teacherName}</b>\n` +
         `🎤 Interview : ✅ ${dateInterview}`;
@@ -682,7 +682,7 @@ async function submitBBLesson() {
       notifMsg =
         `📖 <b>BB Lesson ${actionLabel}</b>\n` +
         `👤 Étudiant : <b>${nom}</b>\n` +
-        `📚 Leçon : <b>${codeLesson} - ${LESSONS[codeLesson]}</b>\n` +
+        `📚 Leçon : <b>${DISPLAY_CODES[codeLesson] || codeLesson} - ${LESSONS[codeLesson]}</b>\n` +
         `📅 Date : ${dateLesson}\n` +
         `🧑‍🏫 BBTeacher : <b>${teacherName}</b>`;
     } else {
@@ -759,7 +759,7 @@ async function deleteBBLesson() {
       sendTelegramNotification(
         `🗑️ <b>BB Lesson supprimée</b>\n` +
         `👤 Étudiant : <b>${studentName}</b>\n` +
-        `📚 Leçon : <b>${codeLessonToDelete} - ${LESSONS[codeLessonToDelete] || ""}</b>`
+        `📚 Leçon : <b>${DISPLAY_CODES[codeLessonToDelete] || codeLessonToDelete} - ${LESSONS[codeLessonToDelete] || ""}</b>`
       );
 
       // On met à jour l'interface sans fermer le dossier
