@@ -3,6 +3,7 @@ import "./config.js";
 import express from "express";
 import bodyParser from "body-parser";
 import cors from "cors";
+import rateLimit from "express-rate-limit";
 import { Telegraf, Markup } from "telegraf";
 import path from "path";
 import crypto from "crypto";
@@ -48,18 +49,67 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, "public")));
 
-// --- DONNÉES DE TEST (Base de données temporaire) ---
-// let students = [
-//   {
-//     id: 999,
-//     nomComplet: "Test Doublon",
-//     telephone: "0340000000",
-//     option: "Journalier",
-//     idApp: "TEST-01",
-//     departement: "Informatique",
-//   },
-// ];
-// let nextId = 1000;
+// --- RATE LIMITERS ---
+const globalLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { ok: false, message: "Trop de requêtes, réessayez dans 1 minute." },
+});
+
+const strictLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { ok: false, message: "Trop de tentatives, réessayez dans 1 minute." },
+});
+
+// Apply global limiter to all /api routes
+app.use("/api", globalLimiter);
+
+// --- VALIDATION HELPERS ---
+function validateStudentData(data) {
+  const errors = [];
+
+  if (!data.name || typeof data.name !== "string" || data.name.trim().length < 2) {
+    errors.push("Le nom est obligatoire (min 2 caractères).");
+  }
+
+  if (!data.phone || !/^\d{7,15}$/.test(data.phone.replace(/\s/g, ""))) {
+    errors.push("Le téléphone est invalide (7-15 chiffres).");
+  }
+
+  if (!data.birthday || isNaN(Date.parse(data.birthday))) {
+    errors.push("La date de naissance est invalide.");
+  }
+
+  if (data.gender && !["M", "F"].includes(data.gender)) {
+    errors.push("Le genre doit être M ou F.");
+  }
+
+  return errors;
+}
+
+const VALID_BB_CODES = [
+  "BB01", "BB02", "BB03", "BB04", "BB05", "BB06",
+  "BB07", "BB08", "BB09", "BB10", "BB11", "BB12",
+];
+
+function validateBBReport(data) {
+  const errors = [];
+
+  if (!data.bbCode || !VALID_BB_CODES.includes(data.bbCode)) {
+    errors.push(`Code BB invalide. Valeurs acceptées : ${VALID_BB_CODES.join(", ")}`);
+  }
+
+  if (!data.student || isNaN(Number(data.student))) {
+    errors.push("L'ID de l'étudiant est requis.");
+  }
+
+  return errors;
+}
 
 // --- FONCTION SÉCURITÉ TELEGRAM ---
 const verifyTelegramData = (initData) => {
@@ -89,7 +139,7 @@ const verifyTelegramData = (initData) => {
  * LIST OF API CALL
  */
 // --- CRÉATION STUDENTS---
-app.post("/api/auth/telegram", async (req, res) => {
+app.post("/api/auth/telegram", strictLimiter, async (req, res) => {
   const { initData } = req.body;
 
   if (!initData) {
@@ -151,11 +201,18 @@ app.post("/api/notify/telegram", async (req, res) => {
   }
 });
 
-app.post("/api/classes/:class/people", async (req, res) => {
+app.post("/api/classes/:class/people", strictLimiter, async (req, res) => {
   try {
     const { class: classId } = req.params;
 
     let payload = req.body;
+
+    // --- VALIDATION ---
+    const studentData = payload.data || payload;
+    const errors = validateStudentData(studentData);
+    if (errors.length > 0) {
+      return res.status(400).json({ ok: false, errors });
+    }
 
     let strapiUrl;
 
@@ -193,20 +250,21 @@ app.post("/api/classes/:class/people", async (req, res) => {
 });
 
 // --- MISE À JOUR STUDENTS (PUT) ---
-app.put("/api/people/:id", async (req, res) => {
+app.put("/api/people/:id", strictLimiter, async (req, res) => {
   const idToUpdate = req.params.id;
   console.log(`🔄 Update demandé pour ID : ${idToUpdate}`);
 
   try {
     const payload = req.body;
 
-    let strapiUrl;
-
-    if (process.env.USE_STANDARD_ROUTES === "true") {
-      strapiUrl = `${process.env.STRAPI_API_URL}/api/people/${idToUpdate}`;
-    } else {
-      strapiUrl = `${process.env.STRAPI_API_URL}/api/people/${idToUpdate}`;
+    // --- VALIDATION ---
+    const studentData = payload.data || payload;
+    const errors = validateStudentData(studentData);
+    if (errors.length > 0) {
+      return res.status(400).json({ ok: false, errors });
     }
+
+    const strapiUrl = `${process.env.STRAPI_API_URL}/api/people/${idToUpdate}`;
 
     const response = await fetch(strapiUrl, {
       method: "PUT",
@@ -314,9 +372,16 @@ app.get("/api/people", async (req, res) => {
 });
 
 // --- CREATE BB REPORT ---
-app.post("/api/bb-reports", async (req, res) => {
+app.post("/api/bb-reports", strictLimiter, async (req, res) => {
   console.log("📝 Création BB Report...");
   try {
+    // --- VALIDATION ---
+    const reportData = req.body.data || req.body;
+    const errors = validateBBReport(reportData);
+    if (errors.length > 0) {
+      return res.status(400).json({ ok: false, errors });
+    }
+
     const strapiUrl = `${process.env.STRAPI_API_URL}/api/bb-reports`;
 
     const response = await fetch(strapiUrl, {
@@ -342,7 +407,7 @@ app.post("/api/bb-reports", async (req, res) => {
 });
 
 // --- UPDATE BB REPORT ---
-app.put("/api/bb-reports/:id", async (req, res) => {
+app.put("/api/bb-reports/:id", strictLimiter, async (req, res) => {
   const { id } = req.params;
   console.log(`🔄 Update BB Report ID: ${id}`);
   try {
