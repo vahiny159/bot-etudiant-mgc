@@ -118,6 +118,13 @@
     .input-fast {
       transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
     }
+
+    /* Autocomplete dropdown */
+    .autocomplete-dropdown {
+      max-height: 220px;
+      overflow-y: auto;
+      scrollbar-width: thin;
+    }
   </style>
 </head>
 
@@ -165,12 +172,17 @@
 
           <div class="flex gap-2">
             <input type="text" id="searchStudentInput" placeholder="Name or Smada ID..."
-              onkeydown="if(event.key==='Enter'){event.preventDefault();searchStudent();}"
+              onkeydown="if(event.key==='Enter'){event.preventDefault();searchStudent();}" autocomplete="off"
               class="input-fast flex-1 min-w-0 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3.5 font-semibold text-gray-900 dark:text-gray-100" />
             <button onclick="searchStudent()" id="btn-search-student"
               class="shrink-0 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 rounded-xl px-5 py-3.5 font-bold active:scale-95 transition-transform flex items-center justify-center">
               <span id="search-student-icon">Go</span>
             </button>
+          </div>
+
+          <!-- Inline autocomplete dropdown -->
+          <div id="student-autocomplete"
+            class="hidden autocomplete-dropdown mt-2 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl shadow-lg overflow-hidden">
           </div>
 
           <div id="selected-student-card"

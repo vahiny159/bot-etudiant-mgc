@@ -177,26 +177,95 @@ function debounce(fn, delay) {
   };
 }
 
+// Inline autocomplete search (no modal, shows dropdown below input)
+async function searchStudentInline(val) {
+  const dropdown = document.getElementById('student-autocomplete');
+  if (!dropdown) return;
+
+  if (!val || val.length < 2) {
+    dropdown.classList.add('hidden');
+    dropdown.innerHTML = '';
+    return;
+  }
+
+  try {
+    const safeVal = encodeURIComponent(val);
+    const cleanPhoneVal = encodeURIComponent(val.replace(/\s/g, ''));
+
+    let query = `populate[user]=*&populate[bbReports][populate][teacher][populate][user]=*`;
+    query += `&filters[%24and][0][user][level][%24ne]=member`;
+    query += `&filters[%24and][1][%24or][0][name][%24containsi]=${safeVal}`;
+    query += `&filters[%24and][1][%24or][1][user][username][%24containsi]=${safeVal}`;
+    query += `&filters[%24and][1][%24or][2][phone][%24containsi]=${cleanPhoneVal}`;
+
+    const response = await fetch(`${BASE_URL}/api/people?${query}`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    if (!response.ok) return;
+    const result = await response.json();
+    const candidates = result.data || [];
+
+    // Check if input still has same value (user may have changed it)
+    const currentVal = document.getElementById('searchStudentInput').value.trim();
+    if (currentVal !== val) return;
+
+    if (candidates.length === 0) {
+      dropdown.innerHTML = `<div class="px-4 py-3 text-sm text-gray-400 dark:text-gray-500 text-center">Aucun r\u00e9sultat</div>`;
+      dropdown.classList.remove('hidden');
+      return;
+    }
+
+    dropdown.innerHTML = candidates.map(item => {
+      const data = item.attributes || item;
+      const name = data.name || 'Unknown';
+      const smadaId = data.user?.data?.attributes?.username || '---';
+      return `<button type="button" data-student-id="${item.id}"
+        class="w-full text-left px-4 py-2.5 flex items-center justify-between hover:bg-blue-50 dark:hover:bg-gray-600 transition-colors border-b border-gray-100 dark:border-gray-600 last:border-0 cursor-pointer">
+        <div>
+          <div class="font-bold text-gray-900 dark:text-gray-100 text-sm">${name}</div>
+          <div class="text-xs text-gray-500 dark:text-gray-400 font-mono">ID: ${smadaId}</div>
+        </div>
+        <div class="text-blue-500 dark:text-blue-400 text-sm">\u203a</div>
+      </button>`;
+    }).join('');
+
+    // Attach click handlers
+    dropdown.querySelectorAll('button').forEach(btn => {
+      btn.onclick = () => {
+        const id = btn.dataset.studentId;
+        const student = candidates.find(c => String(c.id) === id);
+        if (student) {
+          dropdown.classList.add('hidden');
+          dropdown.innerHTML = '';
+          selectStudent(student);
+        }
+      };
+    });
+
+    dropdown.classList.remove('hidden');
+  } catch (error) {
+    console.error('Autocomplete error:', error);
+  }
+}
+
 const debouncedSearchStudent = debounce(() => {
   const val = document.getElementById('searchStudentInput').value.trim();
-  if (val.length >= 2) searchStudent();
+  searchStudentInline(val);
 }, 400);
 
-const debouncedSearchTeacher = debounce(() => {
-  const val = document.getElementById('searchTeacherInput').value.trim();
-  if (val.length >= 2) searchTeacher();
-}, 400);
-
-// Attach debounce listeners after DOM ready
+// Attach debounce listener after DOM ready
 document.addEventListener('DOMContentLoaded', () => {
   const studentInput = document.getElementById('searchStudentInput');
-  const teacherInput = document.getElementById('searchTeacherInput');
-
   if (studentInput) {
-    studentInput.addEventListener('input', debouncedSearchStudent);
-  }
-  if (teacherInput) {
-    teacherInput.addEventListener('input', debouncedSearchTeacher);
+    studentInput.addEventListener('input', (e) => {
+      if (e.target.value.trim().length < 2) {
+        const dropdown = document.getElementById('student-autocomplete');
+        if (dropdown) { dropdown.classList.add('hidden'); dropdown.innerHTML = ''; }
+      }
+      debouncedSearchStudent();
+    });
   }
 });
 
@@ -262,6 +331,10 @@ function selectStudent(studentData) {
   if (tg.HapticFeedback) tg.HapticFeedback.selectionChanged();
   closeSearchModal();
 
+  // Hide autocomplete dropdown
+  const dropdown = document.getElementById('student-autocomplete');
+  if (dropdown) { dropdown.classList.add('hidden'); dropdown.innerHTML = ''; }
+
   currentStudent = studentData;
   const attrs = studentData.attributes || studentData;
 
@@ -316,6 +389,10 @@ function resetStudentSearch() {
   document.getElementById("main-form-section").classList.add("hidden", "opacity-0");
   document.getElementById("bottom-action-bar").classList.add("hidden");
   document.getElementById("searchStudentInput").value = "";
+
+  // Hide autocomplete dropdown
+  const dropdown = document.getElementById('student-autocomplete');
+  if (dropdown) { dropdown.classList.add('hidden'); dropdown.innerHTML = ''; }
 
   // reset form
   document.getElementById("bbLessonSelect").selectedIndex = 0;
