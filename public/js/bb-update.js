@@ -1,7 +1,28 @@
 let tg = window.Telegram.WebApp;
 tg.expand();
 tg.ready();
-tg.setHeaderColor("#F9FAFB");
+
+// --- DARK/LIGHT MODE ---
+function applyTheme(isDark) {
+  document.documentElement.classList.toggle('dark', isDark);
+  tg.setHeaderColor(isDark ? '#111827' : '#F9FAFB');
+  const icon = document.getElementById('theme-icon');
+  if (icon) icon.textContent = isDark ? '☀️' : '🌙';
+  localStorage.setItem('bb-theme', isDark ? 'dark' : 'light');
+}
+
+function toggleTheme() {
+  const isDark = !document.documentElement.classList.contains('dark');
+  applyTheme(isDark);
+  if (tg.HapticFeedback) tg.HapticFeedback.selectionChanged();
+}
+
+// Init theme: light by default, or saved preference
+(function() {
+  const saved = localStorage.getItem('bb-theme');
+  applyTheme(saved === 'dark');
+})();
+
 
 const BASE_URL = "";
 
@@ -673,7 +694,7 @@ function showSearchModal(candidates, type) {
 
     const btn = document.createElement("button");
     btn.className =
-      "w-full text-left p-3 bg-gray-50 hover:bg-blue-50 border border-gray-200 rounded-xl mb-2 flex justify-between items-center transition-colors";
+      "w-full text-left p-3 bg-gray-50 dark:bg-gray-700 hover:bg-blue-50 dark:hover:bg-gray-600 border border-gray-200 dark:border-gray-600 rounded-xl mb-2 flex justify-between items-center transition-colors";
 
     btn.onclick = () => {
       if (type === "student") selectStudent(item);
@@ -682,10 +703,10 @@ function showSearchModal(candidates, type) {
 
     btn.innerHTML = `
       <div>
-        <div class="font-bold text-gray-900">${name}</div>
-        <div class="text-xs text-gray-500 font-mono">ID: ${smadaId}</div>
+        <div class="font-bold text-gray-900 dark:text-gray-100">${name}</div>
+        <div class="text-xs text-gray-500 dark:text-gray-400 font-mono">ID: ${smadaId}</div>
       </div>
-      <div class="text-blue-500 text-lg">›</div>
+      <div class="text-blue-500 dark:text-blue-400 text-lg">›</div>
     `;
     list.appendChild(btn);
   });
