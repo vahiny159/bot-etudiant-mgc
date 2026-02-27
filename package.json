@@ -4,6 +4,8 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
+    "css:build": "npx @tailwindcss/cli -i ./public/css/input.css -o ./public/css/output.css --minify",
+    "css:watch": "npx @tailwindcss/cli -i ./public/css/input.css -o ./public/css/output.css --watch",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -18,5 +20,9 @@
     "express": "^5.2.1",
     "mysql2": "^3.16.3",
     "telegraf": "^4.16.3"
+  },
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.2.1",
+    "tailwindcss": "^4.2.1"
   }
 }
