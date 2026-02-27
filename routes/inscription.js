@@ -50,12 +50,12 @@ router.post("/classes/:class/people", async (req, res) => {
 
         let strapiUrl;
         if (process.env.USE_STANDARD_ROUTES === "true") {
-            strapiUrl = `${process.env.STRAPI_API_URL} /api/people`;
+            strapiUrl = `${process.env.STRAPI_API_URL}/api/people`;
             if (payload.data) {
                 payload.data.class = classId;
             }
         } else {
-            strapiUrl = `${process.env.STRAPI_API_URL} /api/classes / ${classId}/people`;
+            strapiUrl = `${process.env.STRAPI_API_URL}/api/classes/${classId}/people`;
         }
 
         const response = await fetch(strapiUrl, {
