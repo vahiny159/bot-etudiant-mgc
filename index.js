@@ -3,7 +3,6 @@ import "./config.js";
 import express from "express";
 import bodyParser from "body-parser";
 import cors from "cors";
-import rateLimit from "express-rate-limit";
 import { Telegraf, Markup } from "telegraf";
 import path from "path";
 import crypto from "crypto";
@@ -48,26 +47,6 @@ const bot = BOT_TOKEN ? new Telegraf(BOT_TOKEN) : null;
 app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, "public")));
-
-// --- RATE LIMITERS ---
-const globalLimiter = rateLimit({
-  windowMs: 60 * 1000, // 1 minute
-  max: 100,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { ok: false, message: "Trop de requêtes, réessayez dans 1 minute." },
-});
-
-const strictLimiter = rateLimit({
-  windowMs: 60 * 1000,
-  max: 10,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { ok: false, message: "Trop de tentatives, réessayez dans 1 minute." },
-});
-
-// Apply global limiter to all /api routes
-app.use("/api", globalLimiter);
 
 // --- VALIDATION HELPERS ---
 function validateStudentData(data) {
@@ -139,7 +118,7 @@ const verifyTelegramData = (initData) => {
  * LIST OF API CALL
  */
 // --- CRÉATION STUDENTS---
-app.post("/api/auth/telegram", strictLimiter, async (req, res) => {
+app.post("/api/auth/telegram", async (req, res) => {
   const { initData } = req.body;
 
   if (!initData) {
@@ -201,7 +180,7 @@ app.post("/api/notify/telegram", async (req, res) => {
   }
 });
 
-app.post("/api/classes/:class/people", strictLimiter, async (req, res) => {
+app.post("/api/classes/:class/people", async (req, res) => {
   try {
     const { class: classId } = req.params;
 
@@ -250,7 +229,7 @@ app.post("/api/classes/:class/people", strictLimiter, async (req, res) => {
 });
 
 // --- MISE À JOUR STUDENTS (PUT) ---
-app.put("/api/people/:id", strictLimiter, async (req, res) => {
+app.put("/api/people/:id", async (req, res) => {
   const idToUpdate = req.params.id;
   console.log(`🔄 Update demandé pour ID : ${idToUpdate}`);
 
@@ -372,7 +351,7 @@ app.get("/api/people", async (req, res) => {
 });
 
 // --- CREATE BB REPORT ---
-app.post("/api/bb-reports", strictLimiter, async (req, res) => {
+app.post("/api/bb-reports", async (req, res) => {
   console.log("📝 Création BB Report...");
   try {
     // --- VALIDATION ---
@@ -407,7 +386,7 @@ app.post("/api/bb-reports", strictLimiter, async (req, res) => {
 });
 
 // --- UPDATE BB REPORT ---
-app.put("/api/bb-reports/:id", strictLimiter, async (req, res) => {
+app.put("/api/bb-reports/:id", async (req, res) => {
   const { id } = req.params;
   console.log(`🔄 Update BB Report ID: ${id}`);
   try {
