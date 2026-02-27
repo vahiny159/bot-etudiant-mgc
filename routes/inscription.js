@@ -3,18 +3,28 @@ import express from "express";
 const router = express.Router();
 
 // --- VALIDATION ---
-function validateStudentData(data) {
+function validateStudentData(data, isUpdate = false) {
     const errors = [];
 
     if (!data.name || typeof data.name !== "string" || data.name.trim().length < 2) {
         errors.push("Le nom est obligatoire (min 2 caractères).");
     }
 
-    if (!data.phone || !/^\d{7,15}$/.test(data.phone.replace(/\s/g, ""))) {
+    // Phone: required for create, optional for update
+    if (!isUpdate) {
+        if (!data.phone || !/^\d{7,15}$/.test(data.phone.replace(/\s/g, ""))) {
+            errors.push("Le téléphone est invalide (7-15 chiffres).");
+        }
+    } else if (data.phone && !/^\d{7,15}$/.test(data.phone.replace(/\s/g, ""))) {
         errors.push("Le téléphone est invalide (7-15 chiffres).");
     }
 
-    if (!data.birthday || isNaN(Date.parse(data.birthday))) {
+    // Birthday: required for create, optional for update
+    if (!isUpdate) {
+        if (!data.birthday || isNaN(Date.parse(data.birthday))) {
+            errors.push("La date de naissance est invalide.");
+        }
+    } else if (data.birthday && isNaN(Date.parse(data.birthday))) {
         errors.push("La date de naissance est invalide.");
     }
 
@@ -31,21 +41,21 @@ router.post("/classes/:class/people", async (req, res) => {
         const { class: classId } = req.params;
         let payload = req.body;
 
-        // --- VALIDATION ---
+        // --- VALIDATION (strict) ---
         const studentData = payload.data || payload;
-        const errors = validateStudentData(studentData);
+        const errors = validateStudentData(studentData, false);
         if (errors.length > 0) {
             return res.status(400).json({ ok: false, errors });
         }
 
         let strapiUrl;
         if (process.env.USE_STANDARD_ROUTES === "true") {
-            strapiUrl = `${process.env.STRAPI_API_URL}/api/people`;
+            strapiUrl = `${process.env.STRAPI_API_URL} /api/people`;
             if (payload.data) {
                 payload.data.class = classId;
             }
         } else {
-            strapiUrl = `${process.env.STRAPI_API_URL}/api/classes/${classId}/people`;
+            strapiUrl = `${process.env.STRAPI_API_URL} /api/classes / ${classId}/people`;
         }
 
         const response = await fetch(strapiUrl, {
@@ -78,9 +88,9 @@ router.put("/people/:id", async (req, res) => {
     try {
         const payload = req.body;
 
-        // --- VALIDATION ---
+        // --- VALIDATION (lenient — partial update allowed) ---
         const studentData = payload.data || payload;
-        const errors = validateStudentData(studentData);
+        const errors = validateStudentData(studentData, true);
         if (errors.length > 0) {
             return res.status(400).json({ ok: false, errors });
         }

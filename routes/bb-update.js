@@ -11,7 +11,8 @@ const VALID_BB_CODES = [
 function validateBBReport(data) {
     const errors = [];
 
-    if (!data.bbCode || !VALID_BB_CODES.includes(data.bbCode)) {
+    const bbCode = data.code || data.bbCode;
+    if (!bbCode || !VALID_BB_CODES.includes(bbCode)) {
         errors.push(`Code BB invalide. Valeurs acceptées : ${VALID_BB_CODES.join(", ")}`);
     }
 
