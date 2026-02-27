@@ -21,7 +21,27 @@ async function sendTelegramNotification(message) {
 let tg = window.Telegram.WebApp;
 tg.expand();
 tg.ready();
-tg.setHeaderColor("#F9FAFB");
+
+// --- DARK/LIGHT MODE ---
+function applyTheme(isDark) {
+  document.documentElement.classList.toggle('dark', isDark);
+  tg.setHeaderColor(isDark ? '#111827' : '#F9FAFB');
+  const icon = document.getElementById('theme-icon');
+  if (icon) icon.textContent = isDark ? '🌙' : '☀️';
+  localStorage.setItem('bb-theme', isDark ? 'dark' : 'light');
+}
+
+function toggleTheme() {
+  const isDark = !document.documentElement.classList.contains('dark');
+  applyTheme(isDark);
+  if (tg.HapticFeedback) tg.HapticFeedback.selectionChanged();
+}
+
+// Init theme: light by default, or saved preference
+(function () {
+  const saved = localStorage.getItem('bb-theme');
+  applyTheme(saved === 'dark');
+})();
 
 // --- GESTION CLAVIER MOBILE (UX) ---
 const inputs = document.querySelectorAll("input, select");
@@ -375,7 +395,7 @@ function showDuplicateModal(candidates) {
 
     const btn = document.createElement("button");
     btn.className =
-      "w-full relative flex items-center justify-between p-4 rounded-2xl bg-white border border-yellow-200 hover:bg-yellow-50 hover:border-yellow-300 hover:shadow-md transition-all active:scale-[0.98] group text-left shadow-sm mb-3";
+      "w-full relative flex items-center justify-between p-4 rounded-2xl bg-white dark:bg-gray-700 border border-yellow-200 dark:border-yellow-700 hover:bg-yellow-50 dark:hover:bg-gray-600 hover:border-yellow-300 hover:shadow-md transition-all active:scale-[0.98] group text-left shadow-sm mb-3";
     btn.onclick = () => loadExistingStudent(s.id);
 
     btn.innerHTML = `
@@ -384,8 +404,8 @@ function showDuplicateModal(candidates) {
           ${displayName.charAt(0).toUpperCase()}
         </div>
         <div>
-          <div class="font-bold text-gray-900 text-base group-hover:text-yellow-800 transition-colors">${displayName}</div>
-          <div class="text-[12px] font-bold text-yellow-600/80 tracking-wide mt-0.5 flex items-center gap-1">
+          <div class="font-bold text-gray-900 dark:text-gray-100 text-base group-hover:text-yellow-800 dark:group-hover:text-yellow-400 transition-colors">${displayName}</div>
+          <div class="text-[12px] font-bold text-yellow-600/80 dark:text-yellow-500 tracking-wide mt-0.5 flex items-center gap-1">
             📞 ${displayPhone}
           </div>
         </div>
