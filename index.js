@@ -13,6 +13,7 @@ import { dirname } from "path";
 import authRoutes from "./routes/auth.js";
 import inscriptionRoutes from "./routes/inscription.js";
 import bbUpdateRoutes from "./routes/bb-update.js";
+import educationRoutes from "./routes/education.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -55,6 +56,7 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use("/api", authRoutes);
 app.use("/api", inscriptionRoutes);
 app.use("/api", bbUpdateRoutes);
+app.use("/api", educationRoutes);
 
 // --- BOT TELEGRAM ---
 if (bot) {
@@ -62,6 +64,7 @@ if (bot) {
   const mainMenuKeyboard = Markup.inlineKeyboard([
     [Markup.button.webApp("📝 Remplir une Fiche", WEB_APP_URL)],
     [Markup.button.webApp("📖 Suivi Leçons BB", `${WEB_APP_URL}/bb-update.html`)],
+    [Markup.button.webApp("📚 Éducation", `${WEB_APP_URL}/education.html`)],
   ]);
 
   bot.start((ctx) => {

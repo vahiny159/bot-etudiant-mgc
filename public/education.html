@@ -1,0 +1,457 @@
+<!doctype html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Éducation - MGC</title>
+    <meta name="description" content="Gestion des examens et attribution de notes - Département Éducation MGC" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet" />
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="css/output.css" />
+    <script src="js/shared.js"></script>
+    <style>
+        /* Tab system */
+        .tab-btn {
+            position: relative;
+            padding: 10px 20px;
+            font-weight: 700;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-radius: 12px;
+            transition: all 0.25s ease;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            color: #9ca3af;
+            flex: 1;
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: white;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.35);
+        }
+
+        .dark .tab-btn.active {
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            box-shadow: 0 4px 15px rgba(79, 70, 229, 0.4);
+        }
+
+        .tab-btn:not(.active):hover {
+            background: rgba(99, 102, 241, 0.08);
+            color: #6366f1;
+        }
+
+        .tab-panel {
+            display: none;
+        }
+
+        .tab-panel.active {
+            display: block;
+            animation: fadeSlideIn 0.3s ease;
+        }
+
+        @keyframes fadeSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Exam card */
+        .exam-card {
+            padding: 14px 16px;
+            border-radius: 14px;
+            border: 1px solid #e5e7eb;
+            background: white;
+            transition: all 0.2s ease;
+            cursor: default;
+        }
+
+        .dark .exam-card {
+            border-color: #374151;
+            background: #1f2937;
+        }
+
+        .exam-card:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+        }
+
+        .dark .exam-card:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Mode selector */
+        .mode-btn {
+            padding: 10px 16px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            border: 2px solid #e5e7eb;
+            background: white;
+            color: #6b7280;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            flex: 1;
+            text-align: center;
+        }
+
+        .dark .mode-btn {
+            border-color: #374151;
+            background: #1f2937;
+            color: #9ca3af;
+        }
+
+        .mode-btn.selected {
+            border-color: #6366f1;
+            background: rgba(99, 102, 241, 0.08);
+            color: #6366f1;
+        }
+
+        .dark .mode-btn.selected {
+            border-color: #818cf8;
+            background: rgba(99, 102, 241, 0.15);
+            color: #a5b4fc;
+        }
+
+        .mode-btn:active {
+            transform: scale(0.96);
+        }
+
+        /* Create exam form slide */
+        .create-form-container {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.35s ease, opacity 0.3s ease;
+            opacity: 0;
+        }
+
+        .create-form-container.open {
+            max-height: 300px;
+            opacity: 1;
+        }
+
+        /* Score input */
+        input[type="number"]::-webkit-inner-spin-button {
+            opacity: 1;
+            height: 32px;
+        }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #9ca3af;
+        }
+
+        .empty-state .emoji {
+            font-size: 40px;
+            margin-bottom: 12px;
+        }
+
+        /* Member card for assign mark */
+        .member-result {
+            padding: 12px 16px;
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
+            background: white;
+            transition: all 0.15s ease;
+            cursor: pointer;
+        }
+
+        .dark .member-result {
+            border-color: #374151;
+            background: #1f2937;
+        }
+
+        .member-result:hover {
+            border-color: #6366f1;
+            background: rgba(99, 102, 241, 0.04);
+        }
+
+        .member-result:active {
+            transform: scale(0.98);
+        }
+    </style>
+</head>
+
+<body style="display: none"
+    class="antialiased pb-32 relative overflow-x-hidden min-h-screen text-gray-900 bg-gray-50 dark:bg-gray-900 dark:text-gray-100">
+    <div class="fixed inset-0 z-0 pointer-events-none">
+        <div
+            class="absolute inset-0 bg-gradient-to-br from-gray-100 via-indigo-50 to-gray-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+        </div>
+        <div class="absolute inset-0 opacity-[0.04]" style="
+          background-image: url(&quot;data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3z' fill='%239C92AC' fill-opacity='1' fill-rule='evenodd'/%3E%3C/svg%3E&quot;);
+        "></div>
+    </div>
+
+    <!-- Offline banner -->
+    <div id="offline-banner" class="offline-banner">
+        📡 Pas de connexion internet
+    </div>
+
+    <div class="relative z-10 px-4 pt-6">
+        <!-- Skeleton loading -->
+        <div id="page-skeleton" class="max-w-lg mx-auto space-y-4 py-8">
+            <div class="skeleton skeleton-text w-48 mx-auto"></div>
+            <div class="skeleton skeleton-text w-32 mx-auto mt-2"></div>
+            <div class="skeleton skeleton-input w-full mt-6"></div>
+            <div class="flex gap-2 mt-2">
+                <div class="skeleton skeleton-input flex-1"></div>
+                <div class="skeleton w-16 h-[52px] rounded-xl"></div>
+            </div>
+        </div>
+
+        <header class="text-center mb-6">
+            <h1 class="text-3xl font-black tracking-tighter text-gray-900 dark:text-white">
+                📚 Éducation
+            </h1>
+            <p class="text-sm font-medium text-gray-500 dark:text-gray-400 mt-1">
+                Gestion des examens & notes
+            </p>
+            <button id="theme-toggle" onclick="toggleTheme()"
+                class="theme-switch mt-3 mx-auto bg-gray-200 dark:bg-gray-700 active:scale-95" title="Toggle dark mode">
+                <div class="switch-track bg-gray-200 dark:bg-gray-600"></div>
+                <div class="switch-thumb">
+                    <span id="theme-icon">☀️</span>
+                </div>
+            </button>
+        </header>
+
+        <div class="max-w-lg mx-auto space-y-5">
+            <!-- Tab bar -->
+            <div
+                class="flex gap-2 bg-white dark:bg-gray-800 p-1.5 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700">
+                <button class="tab-btn active" data-tab="exams" onclick="switchTab('exams')">
+                    📝 Examens
+                </button>
+                <button class="tab-btn" data-tab="assign" onclick="switchTab('assign')">
+                    📊 Attribuer note
+                </button>
+            </div>
+
+            <!-- ==================== TAB: EXAMS ==================== -->
+            <div id="tab-exams" class="tab-panel active space-y-4">
+
+                <!-- Search + Create -->
+                <div class="relative group">
+                    <div
+                        class="absolute -inset-0.5 bg-gradient-to-r from-indigo-300 to-purple-500 dark:from-indigo-600 dark:to-purple-800 rounded-2xl opacity-40 blur">
+                    </div>
+                    <div
+                        class="relative bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-xl border border-indigo-100 dark:border-indigo-900/50">
+
+                        <!-- Search exams -->
+                        <h2
+                            class="text-xs font-bold uppercase tracking-wider text-indigo-700 dark:text-indigo-400 mb-3 flex items-center gap-2">
+                            🔍 Rechercher un examen
+                        </h2>
+                        <div class="flex gap-2">
+                            <input type="text" id="searchExamInput" placeholder="Nom de l'examen..."
+                                onkeydown="if(event.key==='Enter'){event.preventDefault();searchExams();}"
+                                autocomplete="off"
+                                class="input-fast flex-1 min-w-0 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3 font-semibold text-gray-900 dark:text-gray-100" />
+                            <button onclick="searchExams()" id="btn-search-exam"
+                                class="shrink-0 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 rounded-xl px-5 py-3 font-bold active:scale-95 transition-transform">
+                                <span id="search-exam-icon">🔍</span>
+                            </button>
+                        </div>
+
+                        <hr class="border-gray-100 dark:border-gray-700 my-4" />
+
+                        <!-- Create exam toggle -->
+                        <button onclick="toggleCreateForm()" id="btn-toggle-create"
+                            class="w-full flex items-center justify-center gap-2 py-2.5 text-sm font-bold text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 transition-colors">
+                            <span id="create-toggle-icon">➕</span> Créer un nouvel examen
+                        </button>
+
+                        <!-- Create exam form -->
+                        <div id="create-form" class="create-form-container">
+                            <div
+                                class="mt-3 space-y-3 p-4 bg-purple-50 dark:bg-purple-900/10 rounded-xl border border-purple-100 dark:border-purple-800/30">
+                                <div>
+                                    <label
+                                        class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1 ml-1">NOM
+                                        DE L'EXAMEN *</label>
+                                    <input type="text" id="newExamName" placeholder="Ex: Toriteny Alarobia..."
+                                        class="input-fast w-full border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3 text-sm font-semibold" />
+                                </div>
+                                <div>
+                                    <label
+                                        class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1 ml-1">DATE
+                                        *</label>
+                                    <input type="date" id="newExamDate"
+                                        class="input-fast w-full border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3 text-sm font-semibold" />
+                                </div>
+                                <button onclick="createExam()" id="btn-create-exam"
+                                    class="w-full bg-gradient-to-r from-purple-500 to-indigo-500 text-white font-bold py-3 rounded-xl active:scale-[0.98] transition-transform flex items-center justify-center gap-2">
+                                    <span id="create-exam-spinner"
+                                        class="hidden animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></span>
+                                    <span id="create-exam-text">✅ Créer l'examen</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Exam list -->
+                <div
+                    class="relative bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-xl border border-gray-200 dark:border-gray-700">
+                    <h2
+                        class="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-3 flex items-center gap-2">
+                        📋 Derniers examens
+                    </h2>
+                    <div id="exams-list" class="space-y-2">
+                        <!-- filled by JS -->
+                    </div>
+                    <div id="exams-empty" class="empty-state hidden">
+                        <div class="emoji">📭</div>
+                        <p class="font-bold text-sm">Aucun examen trouvé</p>
+                    </div>
+                    <div id="exams-loading" class="text-center py-6">
+                        <span
+                            class="animate-spin inline-block h-6 w-6 border-2 border-indigo-500 border-t-transparent rounded-full"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== TAB: ASSIGN MARK ==================== -->
+            <div id="tab-assign" class="tab-panel space-y-4">
+
+                <!-- Step 1: Search member -->
+                <div class="relative group">
+                    <div
+                        class="absolute -inset-0.5 bg-gradient-to-r from-emerald-300 to-teal-500 dark:from-emerald-600 dark:to-teal-800 rounded-2xl opacity-40 blur">
+                    </div>
+                    <div
+                        class="relative bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-xl border border-emerald-100 dark:border-emerald-900/50">
+                        <h2
+                            class="text-xs font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400 mb-3 flex items-center gap-2">
+                            👤 1. Rechercher un membre
+                        </h2>
+                        <div class="flex gap-2">
+                            <input type="text" id="searchMemberInput" placeholder="Nom ou SMADA ID..."
+                                onkeydown="if(event.key==='Enter'){event.preventDefault();searchMember();}"
+                                autocomplete="off"
+                                class="input-fast flex-1 min-w-0 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3 font-semibold text-gray-900 dark:text-gray-100" />
+                            <button onclick="searchMember()" id="btn-search-member"
+                                class="shrink-0 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 rounded-xl px-5 py-3 font-bold active:scale-95 transition-transform">
+                                <span id="search-member-icon">Go</span>
+                            </button>
+                        </div>
+
+                        <!-- Member autocomplete -->
+                        <div id="member-autocomplete"
+                            class="hidden mt-2 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl shadow-lg overflow-hidden max-h-60 overflow-y-auto">
+                        </div>
+
+                        <!-- Selected member -->
+                        <div id="selected-member-card"
+                            class="hidden mt-3 p-4 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-xl flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div
+                                    class="h-10 w-10 rounded-full bg-emerald-200 dark:bg-emerald-800 text-emerald-700 dark:text-emerald-300 flex items-center justify-center font-bold text-lg">
+                                    👤
+                                </div>
+                                <div>
+                                    <div
+                                        class="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
+                                        Membre sélectionné</div>
+                                    <div id="display-member-name"
+                                        class="font-bold text-gray-900 dark:text-gray-100 text-lg"></div>
+                                    <div id="display-member-id"
+                                        class="text-xs font-mono text-gray-500 dark:text-gray-400"></div>
+                                </div>
+                            </div>
+                            <button onclick="resetMemberSearch()"
+                                class="shrink-0 text-gray-400 hover:text-red-500 p-2 transition-colors text-xl">
+                                ✕
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 2: Assign form (hidden until member selected) -->
+                <div id="assign-form-section" class="hidden opacity-0 transition-all duration-500 space-y-4">
+                    <input type="hidden" id="selectedMemberUserId" value="" />
+
+                    <!-- Exam selection -->
+                    <div
+                        class="relative bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-xl border border-indigo-100 dark:border-indigo-900/30">
+                        <h2
+                            class="text-xs font-bold uppercase tracking-wider text-indigo-700 dark:text-indigo-400 mb-3 flex items-center gap-2">
+                            📝 2. Sélectionner l'examen
+                        </h2>
+                        <div class="relative">
+                            <select id="examSelect"
+                                class="input-fast w-full border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3.5 font-semibold text-gray-900 dark:text-gray-100 appearance-none bg-white dark:bg-gray-700">
+                                <option value="" selected>-- Choisir un examen --</option>
+                            </select>
+                            <div
+                                class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-400">
+                                ▾</div>
+                        </div>
+                    </div>
+
+                    <!-- Mode + Score -->
+                    <div
+                        class="relative bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-xl border border-gray-200 dark:border-gray-700">
+                        <h2
+                            class="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-3 flex items-center gap-2">
+                            📊 3. Mode & Score
+                        </h2>
+
+                        <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-2 ml-1">MODE *</label>
+                        <div class="flex gap-2 mb-4" id="mode-buttons">
+                            <button class="mode-btn" data-mode="ONLINE" onclick="selectMode('ONLINE')">🌐
+                                Online</button>
+                            <button class="mode-btn" data-mode="OFFLINE" onclick="selectMode('OFFLINE')">📝
+                                Offline</button>
+                            <button class="mode-btn" data-mode="ABS" onclick="selectMode('ABS')">❌ Absent</button>
+                        </div>
+
+                        <div id="score-container">
+                            <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1 ml-1">SCORE
+                                (0-100) *</label>
+                            <input type="number" id="scoreInput" min="0" max="100" placeholder="Ex: 85"
+                                class="input-fast w-full border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3.5 font-semibold text-gray-900 dark:text-gray-100 text-lg" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom action bar (assign mark) -->
+    <div class="fixed bottom-0 left-0 right-0 p-4 pt-12 bg-gradient-to-t from-gray-50 via-gray-50 to-transparent dark:from-gray-900 dark:via-gray-900 z-40 hidden"
+        id="bottom-action-bar">
+        <button id="main-btn" onclick="submitMark()"
+            class="relative w-full bg-gradient-to-r from-indigo-500 to-purple-600 dark:from-indigo-600 dark:to-purple-700 text-white font-bold text-lg py-4 rounded-2xl shadow-lg active:scale-[0.98] transition-transform overflow-hidden">
+            <div class="relative flex justify-center items-center">
+                <span id="submit-spinner"
+                    class="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full mr-3 hidden"></span>
+                <span id="submit-btn-text" class="flex items-center gap-2">
+                    📊 Enregistrer la note
+                </span>
+            </div>
+        </button>
+    </div>
+
+    <script src="js/education.js"></script>
+</body>
+
+</html>
