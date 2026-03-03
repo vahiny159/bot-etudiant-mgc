@@ -60,11 +60,10 @@ app.use("/api", educationRoutes);
 
 // --- BOT TELEGRAM ---
 if (bot) {
-  // Menu d'actions (réutilisé par /start et /menu)
   const mainMenuKeyboard = Markup.inlineKeyboard([
     [Markup.button.webApp("📝 Remplir une Fiche", WEB_APP_URL)],
     [Markup.button.webApp("📖 Suivi Leçons BB", `${WEB_APP_URL}/bb-update.html`)],
-    [Markup.button.webApp("📚 Éducation", `${WEB_APP_URL}/education.html`)],
+    // [Markup.button.webApp("📚 Éducation", `${WEB_APP_URL}/education.html`)],
   ]);
 
   bot.start((ctx) => {
@@ -98,13 +97,11 @@ if (bot) {
     .then(async () => {
       console.log("🧹 Webhook supprimé.");
 
-      // Enregistrer les commandes visibles dans le menu Telegram
       await bot.telegram.setMyCommands([
         { command: "menu", description: "📋 Afficher le menu principal" },
       ]);
       console.log("📋 Commandes du menu enregistrées.");
 
-      // Bouton Menu → ouvre directement la WebApp
       await bot.telegram.setChatMenuButton({
         menu_button: {
           type: "web_app",

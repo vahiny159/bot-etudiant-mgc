@@ -81,7 +81,6 @@ async function checkUserTelegram() {
             document.querySelectorAll(".relative.z-10 > *").forEach(el => {
                 if (el.id !== "page-skeleton") el.style.display = "";
             });
-            // Load exams on init
             loadExams();
             loadExamsForDropdown();
         } else {
@@ -107,7 +106,6 @@ function switchTab(tab) {
     document.querySelector(`.tab-btn[data-tab="${tab}"]`).classList.add('active');
     document.getElementById(`tab-${tab}`).classList.add('active');
 
-    // Show/hide bottom bar only on assign tab with member selected
     const bar = document.getElementById('bottom-action-bar');
     if (tab === 'assign' && currentMember) {
         bar.classList.remove('hidden');
@@ -284,7 +282,6 @@ async function createExam() {
 let currentMember = null;
 let selectedMode = null;
 
-// --- Load exams in dropdown ---
 async function loadExamsForDropdown() {
     try {
         const query = `filters[$and][0][level]=member&sort[0]=date%3Adesc&pagination[page]=1&pagination[pageSize]=50`;
@@ -294,7 +291,6 @@ async function loadExamsForDropdown() {
         const exams = result.data || [];
 
         const select = document.getElementById('examSelect');
-        // Keep the first option
         select.innerHTML = '<option value="" selected>-- Choisir un examen --</option>';
         exams.forEach(exam => {
             const a = exam.attributes || exam;
@@ -390,12 +386,10 @@ function selectMember(personData) {
     document.getElementById('selected-member-card').classList.remove('hidden');
     document.getElementById('selectedMemberUserId').value = userId;
 
-    // Show assign form
     const formSection = document.getElementById('assign-form-section');
     formSection.classList.remove('hidden');
     requestAnimationFrame(() => formSection.classList.remove('opacity-0'));
 
-    // Show bottom action bar
     document.getElementById('bottom-action-bar').classList.remove('hidden');
 }
 
@@ -538,7 +532,7 @@ async function sendTelegramNotification(message) {
     }
 }
 
-// ===================== SEARCH MODAL (same as bb-update) =====================
+// ===================== SEARCH MODAL =====================
 function showSearchModal(candidates, type) {
     const modal = document.getElementById("search-modal");
     const list = document.getElementById("search-results-list");
