@@ -59,6 +59,26 @@ function dismissToast(toast) {
     setTimeout(() => toast.remove(), 300);
 }
 
+// ===================== RIPPLE EFFECT =====================
+document.addEventListener('click', function (e) {
+    const btn = e.target.closest('.ripple');
+    if (!btn) return;
+
+    const rect = btn.getBoundingClientRect();
+    const size = Math.max(rect.width, rect.height);
+    const x = e.clientX - rect.left - size / 2;
+    const y = e.clientY - rect.top - size / 2;
+
+    const circle = document.createElement('span');
+    circle.className = 'ripple-circle';
+    circle.style.width = circle.style.height = size + 'px';
+    circle.style.left = x + 'px';
+    circle.style.top = y + 'px';
+
+    btn.appendChild(circle);
+    setTimeout(() => circle.remove(), 600);
+});
+
 // ===================== AUTH =====================
 function showErrorPage(status, message) {
     document.body.innerHTML = `

@@ -428,6 +428,32 @@
                 width: 0%;
             }
         }
+
+        /* Ripple effect */
+        .ripple {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ripple-circle {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.35);
+            transform: scale(0);
+            animation: rippleAnim 0.6s ease-out forwards;
+            pointer-events: none;
+        }
+
+        .dark .ripple-circle {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        @keyframes rippleAnim {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
     </style>
     <script src="js/shared.js"></script>
 </head>
@@ -484,11 +510,11 @@
 
             <div
                 class="flex gap-2 bg-white dark:bg-gray-800 p-1.5 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700">
-                <button class="tab-btn active flex items-center justify-center gap-1.5" data-tab="exams"
+                <button class="tab-btn ripple active flex items-center justify-center gap-1.5" data-tab="exams"
                     onclick="switchTab('exams')">
                     <img src="icons/exam.svg" alt="" class="w-4 h-4 object-contain" /> Exams
                 </button>
-                <button class="tab-btn flex items-center justify-center gap-1.5" data-tab="assign"
+                <button class="tab-btn ripple flex items-center justify-center gap-1.5" data-tab="assign"
                     onclick="switchTab('assign')">
                     <img src="icons/chart.svg" alt="" class="w-4 h-4 object-contain" /> Assign Mark
                 </button>
@@ -514,7 +540,7 @@
                                 autocomplete="off"
                                 class="input-fast flex-1 min-w-0 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3.5 font-semibold text-gray-900 dark:text-gray-100" />
                             <button onclick="searchExams()" id="btn-search-exam"
-                                class="shrink-0 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 rounded-xl px-5 py-3.5 font-bold active:scale-95 transition-transform flex items-center justify-center">
+                                class="ripple shrink-0 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 rounded-xl px-5 py-3.5 font-bold active:scale-95 transition-transform flex items-center justify-center">
                                 <span id="search-exam-icon">Go</span>
                             </button>
                         </div>
@@ -545,7 +571,7 @@
                                         class="input-fast w-full border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3 text-sm font-semibold" />
                                 </div>
                                 <button onclick="createExam()" id="btn-create-exam"
-                                    class="w-full bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold py-3.5 rounded-xl active:scale-[0.98] transition-transform flex items-center justify-center gap-2">
+                                    class="ripple w-full bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold py-3.5 rounded-xl active:scale-[0.98] transition-transform flex items-center justify-center gap-2">
                                     <span id="create-exam-spinner"
                                         class="hidden animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></span>
                                     <span id="create-exam-text" class="flex items-center gap-1.5"><img
@@ -636,7 +662,7 @@
                                 autocomplete="off"
                                 class="input-fast flex-1 min-w-0 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3.5 font-semibold text-gray-900 dark:text-gray-100" />
                             <button onclick="searchMember()" id="btn-search-member"
-                                class="shrink-0 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 rounded-xl px-5 py-3.5 font-bold active:scale-95 transition-transform flex items-center justify-center">
+                                class="ripple shrink-0 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 rounded-xl px-5 py-3.5 font-bold active:scale-95 transition-transform flex items-center justify-center">
                                 <span id="search-member-icon">Go</span>
                             </button>
                         </div>
@@ -705,16 +731,16 @@
                                 <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-2 ml-1">MODE
                                     *</label>
                                 <div class="flex gap-2" id="mode-buttons">
-                                    <button class="mode-btn flex items-center justify-center gap-1.5" data-mode="ONLINE"
-                                        onclick="selectMode('ONLINE')">
+                                    <button class="mode-btn ripple flex items-center justify-center gap-1.5"
+                                        data-mode="ONLINE" onclick="selectMode('ONLINE')">
                                         <img src="icons/online.svg" alt="" class="w-4 h-4 object-contain" />
                                         Online</button>
-                                    <button class="mode-btn flex items-center justify-center gap-1.5"
+                                    <button class="mode-btn ripple flex items-center justify-center gap-1.5"
                                         data-mode="OFFLINE" onclick="selectMode('OFFLINE')">
                                         <img src="icons/offline.svg" alt="" class="w-4 h-4 object-contain" />
                                         Offline</button>
-                                    <button class="mode-btn flex items-center justify-center gap-1.5" data-mode="ABS"
-                                        onclick="selectMode('ABS')">
+                                    <button class="mode-btn ripple flex items-center justify-center gap-1.5"
+                                        data-mode="ABS" onclick="selectMode('ABS')">
                                         <img src="icons/absent.svg" alt="" class="w-4 h-4 object-contain" />
                                         Absent</button>
                                 </div>
@@ -738,7 +764,7 @@
     <div class="fixed bottom-0 left-0 right-0 p-4 pt-12 bg-gradient-to-t from-gray-50 via-gray-50 to-transparent dark:from-gray-900 dark:via-gray-900 z-40 hidden"
         id="bottom-action-bar">
         <button id="main-btn" onclick="submitMark()"
-            class="relative w-full bg-gradient-to-r from-emerald-500 to-teal-600 dark:from-emerald-600 dark:to-teal-700 text-white font-bold text-lg py-4 rounded-2xl shadow-lg active:scale-[0.98] transition-transform overflow-hidden group">
+            class="ripple relative w-full bg-gradient-to-r from-emerald-500 to-teal-600 dark:from-emerald-600 dark:to-teal-700 text-white font-bold text-lg py-4 rounded-2xl shadow-lg active:scale-[0.98] transition-transform overflow-hidden group">
             <div class="relative flex justify-center items-center">
                 <span id="submit-spinner"
                     class="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full mr-3 hidden"></span>
@@ -759,7 +785,7 @@
             </div>
             <div id="search-results-list" class="space-y-2 mb-4 max-h-60 overflow-y-auto pr-1"></div>
             <button onclick="closeSearchModal()"
-                class="w-full py-3 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-xl font-bold text-sm">
+                class="ripple w-full py-3 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-xl font-bold text-sm">
                 Cancel
             </button>
         </div>
