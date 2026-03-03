@@ -281,6 +281,7 @@ async function createExam() {
 // ===================== ASSIGN MARK TAB =====================
 let currentMember = null;
 let selectedMode = null;
+let memberScores = []; // existing quiz-scores for the current member
 
 async function loadExamsForDropdown() {
     try {
@@ -357,11 +358,85 @@ function selectMember(personData) {
     requestAnimationFrame(() => formSection.classList.remove('opacity-0'));
 
     document.getElementById('bottom-action-bar').classList.remove('hidden');
+
+    // Fetch existing scores for this member
+    loadMemberScores(userId);
+}
+
+async function loadMemberScores(userId) {
+    memberScores = [];
+    try {
+        const query = `filters[user][id][$eq]=${userId}&populate[quiz_question]=*&pagination[pageSize]=100`;
+        const res = await fetch(`${BASE_URL}/api/quiz-scores?${query}`);
+        if (res.ok) {
+            const result = await res.json();
+            memberScores = result.data || [];
+            // Auto-fill if an exam is already selected
+            checkExistingScore();
+        }
+    } catch (e) {
+        console.error("Error loading member scores:", e);
+    }
+}
+
+function checkExistingScore() {
+    const examSelect = document.getElementById('examSelect');
+    const examId = examSelect.value;
+    const scoreInput = document.getElementById('scoreInput');
+    const infoBadge = document.getElementById('existing-score-info');
+
+    // Reset
+    if (infoBadge) infoBadge.remove();
+
+    if (!examId || memberScores.length === 0) {
+        return;
+    }
+
+    // Find existing score for this exam
+    const existing = memberScores.find(s => {
+        const qId = s.attributes?.quiz_question?.data?.id || s.quiz_question?.data?.id || s.quiz_question?.id || '';
+        return String(qId) === String(examId);
+    });
+
+    const badge = document.createElement('div');
+    badge.id = 'existing-score-info';
+
+    if (existing) {
+        const attrs = existing.attributes || existing;
+        const mode = attrs.mode || '';
+        const score = attrs.score ?? '';
+
+        // Auto-fill mode
+        if (mode && ['ONLINE', 'OFFLINE', 'ABS'].includes(mode)) {
+            selectMode(mode);
+        }
+
+        // Auto-fill score
+        if (mode !== 'ABS') {
+            scoreInput.value = score;
+        }
+
+        badge.className = 'mt-2 text-xs font-bold text-amber-600 dark:text-amber-400 flex items-center gap-1';
+        badge.innerHTML = `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 100 20 10 10 0 000-20z"/></svg> Existing record — Mode: ${mode}, Score: ${score}`;
+    } else {
+        // Reset fields for new record
+        selectedMode = null;
+        document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('selected-online', 'selected-offline', 'selected-absent'));
+        scoreInput.value = '';
+        document.getElementById('score-container').style.opacity = '1';
+        scoreInput.disabled = false;
+
+        badge.className = 'mt-2 text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1';
+        badge.innerHTML = `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg> New record`;
+    }
+
+    examSelect.parentElement.after(badge);
 }
 
 function resetMemberSearch() {
     currentMember = null;
     selectedMode = null;
+    memberScores = [];
     document.getElementById('searchMemberInput').value = '';
     document.getElementById('selected-member-card').classList.add('hidden');
     document.getElementById('assign-form-section').classList.add('hidden', 'opacity-0');
@@ -370,6 +445,9 @@ function resetMemberSearch() {
     document.getElementById('examSelect').selectedIndex = 0;
     document.getElementById('scoreInput').value = '';
     document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('selected-online', 'selected-offline', 'selected-absent'));
+
+    const infoBadge = document.getElementById('existing-score-info');
+    if (infoBadge) infoBadge.remove();
 
     const dropdown = document.getElementById('member-autocomplete');
     dropdown.classList.add('hidden');

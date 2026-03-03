@@ -73,6 +73,35 @@ router.post("/quiz-questions", async (req, res) => {
     }
 });
 
+// --- GET QUIZ SCORES (for loading existing marks) ---
+router.get("/quiz-scores", async (req, res) => {
+    console.log("📊 Fetching quiz scores...");
+    try {
+        const rawQuery = req.originalUrl.split("?")[1] || "";
+        const strapiUrl = `${process.env.STRAPI_API_URL}/api/quiz-scores${rawQuery ? "?" + rawQuery : ""}`;
+
+        console.log("📍 URL Strapi:", strapiUrl);
+
+        const response = await fetch(strapiUrl, {
+            headers: {
+                Authorization: `Bearer ${process.env.APP_TOKEN}`,
+                "Content-Type": "application/json",
+            },
+        });
+        const result = await response.json();
+
+        if (!response.ok) {
+            console.error("Error Strapi quiz-scores GET:", result);
+            return res.status(response.status).json(result);
+        }
+
+        res.json(result);
+    } catch (e) {
+        console.error("Error fetching quiz scores:", e);
+        res.status(500).json({ error: e.message });
+    }
+});
+
 // --- ASSIGN MARK (quiz-score) ---
 router.post("/quiz-scores", async (req, res) => {
     console.log("📊 Attribution de note...");

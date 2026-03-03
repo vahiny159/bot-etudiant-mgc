@@ -531,7 +531,7 @@
                             <img src="icons/exam.svg" alt="" class="w-4 h-4 object-contain" /> 2. Select Exam
                         </h2>
                         <div class="relative">
-                            <select id="examSelect"
+                            <select id="examSelect" onchange="checkExistingScore()"
                                 class="input-fast w-full border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3.5 font-semibold text-gray-900 dark:text-gray-100 appearance-none bg-white dark:bg-gray-700">
                                 <option value="" selected>-- Choose an exam --</option>
                             </select>
