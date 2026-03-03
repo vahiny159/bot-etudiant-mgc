@@ -63,7 +63,7 @@ if (bot) {
   const mainMenuKeyboard = Markup.inlineKeyboard([
     [Markup.button.webApp("📝 Remplir une Fiche", WEB_APP_URL)],
     [Markup.button.webApp("📖 Suivi Leçons BB", `${WEB_APP_URL}/bb-update.html`)],
-    // [Markup.button.webApp("📚 Éducation", `${WEB_APP_URL}/education.html`)],
+    [Markup.button.webApp("📚 Éducation", `${WEB_APP_URL}/education.html`)],
   ]);
 
   bot.start((ctx) => {
