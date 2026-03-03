@@ -24,6 +24,41 @@ function toggleTheme() {
 
 const BASE_URL = "";
 
+// ===================== TOAST NOTIFICATIONS =====================
+const toastIcons = {
+    success: `<svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`,
+    error: `<svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`,
+    warning: `<svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4.5c-.77-.833-2.694-.833-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>`,
+    info: `<svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 100 20 10 10 0 000-20z"/></svg>`
+};
+
+function showToast(message, type = 'info', duration = 3000) {
+    const container = document.getElementById('toast-container');
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    toast.innerHTML = `${toastIcons[type] || toastIcons.info}<span style="flex:1">${message}</span><div class="toast-progress" style="animation-duration:${duration}ms"></div>`;
+
+    // Click to dismiss
+    toast.addEventListener('click', () => dismissToast(toast));
+
+    container.appendChild(toast);
+
+    // Auto-dismiss
+    setTimeout(() => dismissToast(toast), duration);
+
+    // Haptic
+    if (tg.HapticFeedback) {
+        if (type === 'success') tg.HapticFeedback.notificationOccurred('success');
+        else if (type === 'error' || type === 'warning') tg.HapticFeedback.notificationOccurred('error');
+    }
+}
+
+function dismissToast(toast) {
+    if (toast.classList.contains('removing')) return;
+    toast.classList.add('removing');
+    setTimeout(() => toast.remove(), 300);
+}
+
 // ===================== AUTH =====================
 function showErrorPage(status, message) {
     document.body.innerHTML = `
@@ -169,7 +204,7 @@ async function searchExams() {
         renderExams(result.data || []);
     } catch (e) {
         console.error("Error searching exams:", e);
-        tg.showAlert("Search error.");
+        showToast("Search error.", "error");
     } finally {
         btnIcon.textContent = 'Go';
         loadingEl.classList.add('hidden');
@@ -223,12 +258,12 @@ async function createExam() {
     const btn = document.getElementById('btn-create-exam');
 
     if (!name) {
-        tg.showAlert("Exam name is required.");
+        showToast("Exam name is required.", "warning");
         if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("error");
         return;
     }
     if (!date) {
-        tg.showAlert("Date is required.");
+        showToast("Date is required.", "warning");
         if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("error");
         return;
     }
@@ -250,7 +285,7 @@ async function createExam() {
         const result = await res.json();
 
         if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("success");
-        tg.showAlert("Exam created successfully!");
+        showToast("Exam created successfully!", "success");
 
         // Telegram notification
         const examName = result.data?.attributes?.content || name;
@@ -335,7 +370,7 @@ async function searchMember() {
         showSearchModal(candidates, "member");
     } catch (e) {
         console.error("Error searching member:", e);
-        tg.showAlert("Erreur lors de la recherche.");
+        showToast("Search error.", "error");
     } finally {
         btnIcon.textContent = "Go";
     }
@@ -493,19 +528,19 @@ async function submitMark() {
 
     // Validation
     if (!userId) {
-        tg.showAlert("Please select a member.");
+        showToast("Please select a member.", "warning");
         return;
     }
     if (!examId) {
-        tg.showAlert("Please select an exam.");
+        showToast("Please select an exam.", "warning");
         return;
     }
     if (!selectedMode) {
-        tg.showAlert("Please select a mode (Online/Offline/Absent).");
+        showToast("Please select a mode (Online/Offline/Absent).", "warning");
         return;
     }
     if (selectedMode !== 'ABS' && (isNaN(score) || score < 0 || score > 100)) {
-        tg.showAlert("Score must be between 0 and 100.");
+        showToast("Score must be between 0 and 100.", "warning");
         return;
     }
 
@@ -537,7 +572,7 @@ async function submitMark() {
         const result = await res.json();
 
         if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("success");
-        tg.showAlert("Mark saved successfully!");
+        showToast("Mark saved successfully!", "success");
 
         // Telegram notification
         const memberName = currentMember?.attributes?.name || currentMember?.name || '';
@@ -586,7 +621,7 @@ function showSearchModal(candidates, type) {
     const title = document.getElementById("search-modal-title");
 
     if (candidates.length === 0) {
-        tg.showAlert("No results found.");
+        showToast("No results found.", "info");
         return;
     }
 
