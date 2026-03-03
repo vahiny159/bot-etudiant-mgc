@@ -50,13 +50,13 @@ async function checkUserTelegram() {
     let initData = tg.initData;
     if (!initData) {
         if (skeleton) skeleton.classList.add("hidden");
-        showErrorPage(403, "Veuillez ouvrir cette application depuis Telegram.");
+        showErrorPage(403, "Please open this application from Telegram.");
         document.body.style.display = "block";
         return;
     }
 
     const tgUser = tg.initDataUnsafe?.user;
-    const userName = tgUser?.username ? `@${tgUser.username}` : tgUser?.first_name || "Utilisateur";
+    const userName = tgUser?.username ? `@${tgUser.username}` : tgUser?.first_name || "User";
 
     try {
         const res = await fetch("/api/auth/telegram", {
@@ -67,10 +67,10 @@ async function checkUserTelegram() {
 
         if (!res.ok) {
             if (skeleton) skeleton.classList.add("hidden");
-            if (res.status === 403) showErrorPage(403, `Accès refusé pour <b>${userName}</b>.`);
-            else if (res.status === 404) showErrorPage(404, `<b>${userName}</b> est introuvable.`);
-            else if (res.status === 401) showErrorPage(401, "Signature Telegram invalide.");
-            else showErrorPage(res.status, "Erreur de vérification.");
+            if (res.status === 403) showErrorPage(403, `Access denied for <b>${userName}</b>.`);
+            else if (res.status === 404) showErrorPage(404, `<b>${userName}</b> not found.`);
+            else if (res.status === 401) showErrorPage(401, "Invalid Telegram signature.");
+            else showErrorPage(res.status, "Verification error.");
             document.body.style.display = "block";
             return;
         }
@@ -85,13 +85,13 @@ async function checkUserTelegram() {
             loadExamsForDropdown();
         } else {
             if (skeleton) skeleton.classList.add("hidden");
-            showErrorPage(403, `Accès refusé pour <b>${userName}</b>.`);
+            showErrorPage(403, `Access denied for <b>${userName}</b>.`);
             document.body.style.display = "block";
         }
     } catch (e) {
         console.error(e);
         if (skeleton) skeleton.classList.add("hidden");
-        showErrorPage(500, "Erreur de connexion au serveur.");
+        showErrorPage(500, "Server connection error.");
         document.body.style.display = "block";
     }
 }
@@ -136,8 +136,8 @@ async function loadExams() {
         allExams = result.data || [];
         renderExams(allExams);
     } catch (e) {
-        console.error("Erreur chargement examens:", e);
-        listEl.innerHTML = `<p class="text-red-500 text-sm text-center py-4">❌ Erreur de chargement</p>`;
+        console.error("Error loading exams:", e);
+        listEl.innerHTML = `<p class="text-red-500 text-sm text-center py-4">Loading error</p>`;
     } finally {
         loadingEl.classList.add('hidden');
     }
@@ -168,8 +168,8 @@ async function searchExams() {
         const result = await res.json();
         renderExams(result.data || []);
     } catch (e) {
-        console.error("Erreur recherche examens:", e);
-        tg.showAlert("Erreur lors de la recherche.");
+        console.error("Error searching exams:", e);
+        tg.showAlert("Search error.");
     } finally {
         btnIcon.textContent = 'Go';
         loadingEl.classList.add('hidden');
@@ -223,19 +223,19 @@ async function createExam() {
     const btn = document.getElementById('btn-create-exam');
 
     if (!name) {
-        tg.showAlert("⚠️ Le nom de l'examen est requis.");
+        tg.showAlert("Exam name is required.");
         if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("error");
         return;
     }
     if (!date) {
-        tg.showAlert("⚠️ La date est requise.");
+        tg.showAlert("Date is required.");
         if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("error");
         return;
     }
 
     btn.disabled = true;
     spinner.classList.remove('hidden');
-    text.textContent = 'Création...';
+    text.textContent = 'Creating...';
 
     try {
         const res = await fetch(`${BASE_URL}/api/quiz-questions`, {
@@ -246,11 +246,11 @@ async function createExam() {
             }),
         });
 
-        if (!res.ok) throw new Error("Erreur lors de la création");
+        if (!res.ok) throw new Error("Error creating exam");
         const result = await res.json();
 
         if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("success");
-        tg.showAlert("✅ Examen créé avec succès !");
+        tg.showAlert("Exam created successfully!");
 
         // Telegram notification
         const examName = result.data?.attributes?.content || name;
@@ -268,13 +268,13 @@ async function createExam() {
         loadExamsForDropdown();
 
     } catch (e) {
-        console.error("Erreur création examen:", e);
+        console.error("Error creating exam:", e);
         tg.showAlert(`❌ ${e.message}`);
         if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("error");
     } finally {
         btn.disabled = false;
         spinner.classList.add('hidden');
-        text.innerHTML = '<span class="flex items-center gap-1.5"><img src="icons/check-circle.svg" alt="" class="w-4 h-4 object-contain invert" /> Cr\u00e9er l\'examen</span>';
+        text.innerHTML = '<span class="flex items-center gap-1.5"><img src="icons/check-circle.svg" alt="" class="w-4 h-4 object-contain invert" /> Create Exam</span>';
     }
 }
 
@@ -291,7 +291,7 @@ async function loadExamsForDropdown() {
         const exams = result.data || [];
 
         const select = document.getElementById('examSelect');
-        select.innerHTML = '<option value="" selected>-- Choisir un examen --</option>';
+        select.innerHTML = '<option value="" selected>-- Choose an exam --</option>';
         exams.forEach(exam => {
             const a = exam.attributes || exam;
             const date = a.date ? new Date(a.date).toLocaleDateString('fr-FR') : '';
@@ -301,7 +301,7 @@ async function loadExamsForDropdown() {
             select.appendChild(opt);
         });
     } catch (e) {
-        console.error("Erreur chargement dropdown examens:", e);
+        console.error("Error loading exam dropdown:", e);
     }
 }
 
@@ -326,13 +326,13 @@ async function searchMember() {
         query += `&filters[%24and][1][%24or][1][user][username][%24containsi]=${safeVal}`;
 
         const response = await fetch(`${BASE_URL}/api/people?${query}`);
-        if (!response.ok) throw new Error("Erreur serveur");
+        if (!response.ok) throw new Error("Server error");
         const result = await response.json();
         const candidates = result.data || [];
 
         showSearchModal(candidates, "member");
     } catch (e) {
-        console.error("Erreur recherche membre:", e);
+        console.error("Error searching member:", e);
         tg.showAlert("Erreur lors de la recherche.");
     } finally {
         btnIcon.textContent = "Go";
@@ -347,7 +347,7 @@ function selectMember(personData) {
     const userId = attrs.user?.data?.id || '';
     const username = attrs.user?.data?.attributes?.username || '---';
 
-    document.getElementById('display-member-name').textContent = attrs.name || 'Inconnu';
+    document.getElementById('display-member-name').textContent = attrs.name || 'Unknown';
     document.getElementById('display-member-id').textContent = `SMADA: ${username} | UserID: ${userId}`;
     document.getElementById('selected-member-card').classList.remove('hidden');
     document.getElementById('selectedMemberUserId').value = userId;
@@ -412,25 +412,25 @@ async function submitMark() {
 
     // Validation
     if (!userId) {
-        tg.showAlert("⚠️ Veuillez sélectionner un membre.");
+        tg.showAlert("Please select a member.");
         return;
     }
     if (!examId) {
-        tg.showAlert("⚠️ Veuillez sélectionner un examen.");
+        tg.showAlert("Please select an exam.");
         return;
     }
     if (!selectedMode) {
-        tg.showAlert("⚠️ Veuillez sélectionner un mode (Online/Offline/Absent).");
+        tg.showAlert("Please select a mode (Online/Offline/Absent).");
         return;
     }
     if (selectedMode !== 'ABS' && (isNaN(score) || score < 0 || score > 100)) {
-        tg.showAlert("⚠️ Le score doit être entre 0 et 100.");
+        tg.showAlert("Score must be between 0 and 100.");
         return;
     }
 
     btn.disabled = true;
     spinner.classList.remove('hidden');
-    btnText.innerHTML = '<span>Enregistrement...</span>';
+    btnText.innerHTML = '<span>Saving...</span>';
 
     try {
         const payload = {
@@ -450,13 +450,13 @@ async function submitMark() {
 
         if (!res.ok) {
             const err = await res.json();
-            throw new Error(err.errors?.join(', ') || "Erreur serveur");
+            throw new Error(err.errors?.join(', ') || "Server error");
         }
 
         const result = await res.json();
 
         if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("success");
-        tg.showAlert("✅ Note attribuée avec succès !");
+        tg.showAlert("Mark saved successfully!");
 
         // Telegram notification
         const memberName = currentMember?.attributes?.name || currentMember?.name || '';
@@ -473,13 +473,13 @@ async function submitMark() {
         resetMemberSearch();
 
     } catch (e) {
-        console.error("Erreur attribution note:", e);
+        console.error("Error assigning mark:", e);
         tg.showAlert(`❌ ${e.message}`);
         if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("error");
     } finally {
         btn.disabled = false;
         spinner.classList.add('hidden');
-        btnText.innerHTML = '<img src="icons/check-circle.svg" alt="" class="w-5 h-5 object-contain invert" /> Enregistrer la note';
+        btnText.innerHTML = '<img src="icons/check-circle.svg" alt="" class="w-5 h-5 object-contain invert" /> Save Mark';
     }
 }
 
@@ -494,7 +494,7 @@ async function sendTelegramNotification(message) {
             body: JSON.stringify({ chatId, message }),
         });
     } catch (e) {
-        console.error("Notification Telegram échouée:", e);
+        console.error("Telegram notification failed:", e);
     }
 }
 
@@ -505,11 +505,11 @@ function showSearchModal(candidates, type) {
     const title = document.getElementById("search-modal-title");
 
     if (candidates.length === 0) {
-        tg.showAlert("Aucun résultat trouvé.");
+        tg.showAlert("No results found.");
         return;
     }
 
-    title.innerText = "Sélectionner un membre";
+    title.innerText = "Select a member";
     list.innerHTML = "";
 
     candidates.forEach((item) => {
