@@ -369,7 +369,7 @@ function resetMemberSearch() {
     document.getElementById('selectedMemberUserId').value = '';
     document.getElementById('examSelect').selectedIndex = 0;
     document.getElementById('scoreInput').value = '';
-    document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('selected'));
+    document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('selected-online', 'selected-offline', 'selected-absent'));
 
     const dropdown = document.getElementById('member-autocomplete');
     dropdown.classList.add('hidden');
@@ -379,8 +379,10 @@ function resetMemberSearch() {
 // --- Mode selection ---
 function selectMode(mode) {
     selectedMode = mode;
+    const colorMap = { ONLINE: 'selected-online', OFFLINE: 'selected-offline', ABS: 'selected-absent' };
     document.querySelectorAll('.mode-btn').forEach(b => {
-        b.classList.toggle('selected', b.dataset.mode === mode);
+        b.classList.remove('selected-online', 'selected-offline', 'selected-absent');
+        if (b.dataset.mode === mode) b.classList.add(colorMap[mode]);
     });
 
     const scoreContainer = document.getElementById('score-container');

@@ -274,16 +274,40 @@
             color: #9ca3af;
         }
 
-        .mode-btn.selected {
-            border-color: #10b981;
-            background: rgba(16, 185, 129, 0.08);
-            color: #10b981;
+        .mode-btn.selected-online {
+            border-color: #3b82f6;
+            background: rgba(59, 130, 246, 0.08);
+            color: #3b82f6;
         }
 
-        .dark .mode-btn.selected {
-            border-color: #6ee7b7;
-            background: rgba(16, 185, 129, 0.15);
-            color: #a7f3d0;
+        .dark .mode-btn.selected-online {
+            border-color: #93c5fd;
+            background: rgba(59, 130, 246, 0.15);
+            color: #bfdbfe;
+        }
+
+        .mode-btn.selected-offline {
+            border-color: #f59e0b;
+            background: rgba(245, 158, 11, 0.08);
+            color: #d97706;
+        }
+
+        .dark .mode-btn.selected-offline {
+            border-color: #fcd34d;
+            background: rgba(245, 158, 11, 0.15);
+            color: #fde68a;
+        }
+
+        .mode-btn.selected-absent {
+            border-color: #ef4444;
+            background: rgba(239, 68, 68, 0.08);
+            color: #ef4444;
+        }
+
+        .dark .mode-btn.selected-absent {
+            border-color: #fca5a5;
+            background: rgba(239, 68, 68, 0.15);
+            color: #fecaca;
         }
 
         .mode-btn:active {
@@ -501,9 +525,9 @@
                     <input type="hidden" id="selectedMemberUserId" value="" />
 
                     <div
-                        class="relative bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-xl border border-emerald-400/20 dark:border-emerald-500/10">
+                        class="relative bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-xl border border-yellow-400/20 dark:border-yellow-500/10">
                         <h2
-                            class="text-xs font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400 mb-4 flex items-center gap-2">
+                            class="text-xs font-bold uppercase tracking-wider text-yellow-700 dark:text-yellow-400 mb-4 flex items-center gap-2">
                             <img src="icons/exam.svg" alt="" class="w-4 h-4 object-contain" /> 2. Select Exam
                         </h2>
                         <div class="relative">
@@ -519,9 +543,9 @@
                     </div>
 
                     <div
-                        class="relative bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-xl border border-gray-200 dark:border-gray-700">
+                        class="relative bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-xl border border-violet-400/20 dark:border-violet-500/10">
                         <h2
-                            class="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-4 flex items-center gap-2">
+                            class="text-xs font-bold uppercase tracking-wider text-violet-700 dark:text-violet-400 mb-4 flex items-center gap-2">
                             <img src="icons/chart.svg" alt="" class="w-4 h-4 object-contain" /> 3. Mode & Score
                         </h2>
 
