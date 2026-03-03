@@ -11,9 +11,185 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
         rel="stylesheet" />
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <link rel="stylesheet" href="css/output.css" />
-    <script src="js/shared.js"></script>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                    },
+                },
+            },
+        }
+    </script>
     <style>
+        /* === SHARED STYLES (same as bb-update) === */
+        body {
+            -webkit-tap-highlight-color: transparent;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .input-fast {
+            background: #f9fafb;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .input-fast:focus {
+            background: #ffffff;
+            border-color: #8b5cf6;
+            box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.15);
+            outline: none;
+        }
+
+        .dark .input-fast {
+            background: #374151;
+            color: #f3f4f6;
+        }
+
+        .dark .input-fast:focus {
+            background: #1f2937;
+            border-color: #8b5cf6;
+            box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.1);
+        }
+
+        ::-webkit-scrollbar {
+            width: 0px;
+            background: transparent;
+        }
+
+        /* Theme toggle pill switch */
+        .theme-switch {
+            position: relative;
+            width: 52px;
+            height: 28px;
+            border-radius: 999px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            padding: 0;
+        }
+
+        .theme-switch .switch-track {
+            position: absolute;
+            inset: 0;
+            border-radius: 999px;
+            transition: background-color 0.3s ease;
+        }
+
+        .theme-switch .switch-thumb {
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.3s ease;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+            font-size: 12px;
+            line-height: 1;
+        }
+
+        .dark .theme-switch .switch-thumb {
+            transform: translateX(24px);
+        }
+
+        body,
+        .input-fast {
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+        }
+
+        /* Autocomplete dropdown */
+        .autocomplete-dropdown {
+            max-height: 220px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+        }
+
+        /* Skeleton loading */
+        @keyframes shimmer {
+            100% {
+                transform: translateX(100%);
+            }
+        }
+
+        .skeleton {
+            position: relative;
+            overflow: hidden;
+            background: #e5e7eb;
+            border-radius: 12px;
+        }
+
+        .dark .skeleton {
+            background: #374151;
+        }
+
+        .skeleton::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            transform: translateX(-100%);
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            animation: shimmer 1.5s infinite;
+        }
+
+        .dark .skeleton::after {
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.06), transparent);
+        }
+
+        .skeleton-text {
+            height: 14px;
+            border-radius: 6px;
+        }
+
+        .skeleton-input {
+            height: 52px;
+            border-radius: 12px;
+        }
+
+        /* Offline banner */
+        @keyframes slideDown {
+            from {
+                transform: translateY(-100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .offline-banner {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 9999;
+            padding: 10px 16px;
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+            text-align: center;
+            font-size: 13px;
+            font-weight: 700;
+            display: none;
+            animation: slideDown 0.3s ease-out;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+        }
+
+        .offline-banner.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
         /* Tab system */
         .tab-btn {
             position: relative;
@@ -32,19 +208,19 @@
         }
 
         .tab-btn.active {
-            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            background: linear-gradient(135deg, #7c3aed, #6d28d9);
             color: white;
-            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.35);
+            box-shadow: 0 4px 15px rgba(124, 58, 237, 0.35);
         }
 
         .dark .tab-btn.active {
-            background: linear-gradient(135deg, #4f46e5, #7c3aed);
-            box-shadow: 0 4px 15px rgba(79, 70, 229, 0.4);
+            background: linear-gradient(135deg, #6d28d9, #5b21b6);
+            box-shadow: 0 4px 15px rgba(109, 40, 217, 0.4);
         }
 
         .tab-btn:not(.active):hover {
-            background: rgba(99, 102, 241, 0.08);
-            color: #6366f1;
+            background: rgba(124, 58, 237, 0.08);
+            color: #7c3aed;
         }
 
         .tab-panel {
@@ -68,28 +244,17 @@
             }
         }
 
-        /* Exam card */
-        .exam-card {
-            padding: 14px 16px;
-            border-radius: 14px;
-            border: 1px solid #e5e7eb;
-            background: white;
-            transition: all 0.2s ease;
-            cursor: default;
+        /* Create exam form slide */
+        .create-form-container {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.35s ease, opacity 0.3s ease;
+            opacity: 0;
         }
 
-        .dark .exam-card {
-            border-color: #374151;
-            background: #1f2937;
-        }
-
-        .exam-card:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
-        }
-
-        .dark .exam-card:hover {
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        .create-form-container.open {
+            max-height: 300px;
+            opacity: 1;
         }
 
         /* Mode selector */
@@ -116,83 +281,35 @@
         }
 
         .mode-btn.selected {
-            border-color: #6366f1;
-            background: rgba(99, 102, 241, 0.08);
-            color: #6366f1;
+            border-color: #7c3aed;
+            background: rgba(124, 58, 237, 0.08);
+            color: #7c3aed;
         }
 
         .dark .mode-btn.selected {
-            border-color: #818cf8;
-            background: rgba(99, 102, 241, 0.15);
-            color: #a5b4fc;
+            border-color: #a78bfa;
+            background: rgba(124, 58, 237, 0.15);
+            color: #c4b5fd;
         }
 
         .mode-btn:active {
             transform: scale(0.96);
         }
 
-        /* Create exam form slide */
-        .create-form-container {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.35s ease, opacity 0.3s ease;
-            opacity: 0;
-        }
-
-        .create-form-container.open {
-            max-height: 300px;
-            opacity: 1;
-        }
-
-        /* Score input */
         input[type="number"]::-webkit-inner-spin-button {
             opacity: 1;
             height: 32px;
         }
-
-        /* Empty state */
-        .empty-state {
-            text-align: center;
-            padding: 40px 20px;
-            color: #9ca3af;
-        }
-
-        .empty-state .emoji {
-            font-size: 40px;
-            margin-bottom: 12px;
-        }
-
-        /* Member card for assign mark */
-        .member-result {
-            padding: 12px 16px;
-            border-radius: 12px;
-            border: 1px solid #e5e7eb;
-            background: white;
-            transition: all 0.15s ease;
-            cursor: pointer;
-        }
-
-        .dark .member-result {
-            border-color: #374151;
-            background: #1f2937;
-        }
-
-        .member-result:hover {
-            border-color: #6366f1;
-            background: rgba(99, 102, 241, 0.04);
-        }
-
-        .member-result:active {
-            transform: scale(0.98);
-        }
     </style>
+    <script src="js/shared.js"></script>
 </head>
 
 <body style="display: none"
     class="antialiased pb-32 relative overflow-x-hidden min-h-screen text-gray-900 bg-gray-50 dark:bg-gray-900 dark:text-gray-100">
+    <!-- Background pattern (same as bb-update) -->
     <div class="fixed inset-0 z-0 pointer-events-none">
         <div
-            class="absolute inset-0 bg-gradient-to-br from-gray-100 via-indigo-50 to-gray-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+            class="absolute inset-0 bg-gradient-to-br from-gray-100 via-purple-50 to-gray-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
         </div>
         <div class="absolute inset-0 opacity-[0.04]" style="
           background-image: url(&quot;data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3z' fill='%239C92AC' fill-opacity='1' fill-rule='evenodd'/%3E%3C/svg%3E&quot;);
@@ -223,6 +340,7 @@
             <p class="text-sm font-medium text-gray-500 dark:text-gray-400 mt-1">
                 Gestion des examens & notes
             </p>
+            <!-- Compact theme toggle (same as bb-update) -->
             <button id="theme-toggle" onclick="toggleTheme()"
                 class="theme-switch mt-3 mx-auto bg-gray-200 dark:bg-gray-700 active:scale-95" title="Toggle dark mode">
                 <div class="switch-track bg-gray-200 dark:bg-gray-600"></div>
@@ -232,10 +350,11 @@
             </button>
         </header>
 
-        <div class="max-w-lg mx-auto space-y-5">
+        <div class="max-w-lg mx-auto space-y-6">
+
             <!-- Tab bar -->
             <div
-                class="flex gap-2 bg-white dark:bg-gray-800 p-1.5 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700">
+                class="flex gap-2 bg-white dark:bg-gray-800 p-1.5 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700">
                 <button class="tab-btn active" data-tab="exams" onclick="switchTab('exams')">
                     📝 Examens
                 </button>
@@ -245,29 +364,28 @@
             </div>
 
             <!-- ==================== TAB: EXAMS ==================== -->
-            <div id="tab-exams" class="tab-panel active space-y-4">
+            <div id="tab-exams" class="tab-panel active space-y-6">
 
-                <!-- Search + Create -->
-                <div class="relative group">
+                <!-- Search + Create card (same glow pattern as bb-update search) -->
+                <div class="relative group" id="search-exam-section">
                     <div
-                        class="absolute -inset-0.5 bg-gradient-to-r from-indigo-300 to-purple-500 dark:from-indigo-600 dark:to-purple-800 rounded-2xl opacity-40 blur">
+                        class="absolute -inset-0.5 bg-gradient-to-r from-purple-300 to-violet-500 dark:from-purple-600 dark:to-violet-800 rounded-2xl opacity-40 blur">
                     </div>
                     <div
-                        class="relative bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-xl border border-indigo-100 dark:border-indigo-900/50">
-
-                        <!-- Search exams -->
+                        class="relative bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-xl border border-purple-100 dark:border-purple-900/50">
                         <h2
-                            class="text-xs font-bold uppercase tracking-wider text-indigo-700 dark:text-indigo-400 mb-3 flex items-center gap-2">
+                            class="text-xs font-bold uppercase tracking-wider text-purple-700 dark:text-purple-400 mb-4 flex items-center gap-2">
                             🔍 Rechercher un examen
                         </h2>
+
                         <div class="flex gap-2">
                             <input type="text" id="searchExamInput" placeholder="Nom de l'examen..."
                                 onkeydown="if(event.key==='Enter'){event.preventDefault();searchExams();}"
                                 autocomplete="off"
-                                class="input-fast flex-1 min-w-0 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3 font-semibold text-gray-900 dark:text-gray-100" />
+                                class="input-fast flex-1 min-w-0 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3.5 font-semibold text-gray-900 dark:text-gray-100" />
                             <button onclick="searchExams()" id="btn-search-exam"
-                                class="shrink-0 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 rounded-xl px-5 py-3 font-bold active:scale-95 transition-transform">
-                                <span id="search-exam-icon">🔍</span>
+                                class="shrink-0 bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800 rounded-xl px-5 py-3.5 font-bold active:scale-95 transition-transform flex items-center justify-center">
+                                <span id="search-exam-icon">Go</span>
                             </button>
                         </div>
 
@@ -275,14 +393,14 @@
 
                         <!-- Create exam toggle -->
                         <button onclick="toggleCreateForm()" id="btn-toggle-create"
-                            class="w-full flex items-center justify-center gap-2 py-2.5 text-sm font-bold text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 transition-colors">
+                            class="w-full flex items-center justify-center gap-2 py-2.5 text-sm font-bold text-violet-600 dark:text-violet-400 hover:text-violet-700 dark:hover:text-violet-300 transition-colors">
                             <span id="create-toggle-icon">➕</span> Créer un nouvel examen
                         </button>
 
-                        <!-- Create exam form -->
+                        <!-- Create exam form (slide) -->
                         <div id="create-form" class="create-form-container">
                             <div
-                                class="mt-3 space-y-3 p-4 bg-purple-50 dark:bg-purple-900/10 rounded-xl border border-purple-100 dark:border-purple-800/30">
+                                class="mt-3 space-y-3 p-4 bg-violet-50 dark:bg-violet-900/10 rounded-xl border border-violet-100 dark:border-violet-800/30">
                                 <div>
                                     <label
                                         class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1 ml-1">NOM
@@ -298,7 +416,7 @@
                                         class="input-fast w-full border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3 text-sm font-semibold" />
                                 </div>
                                 <button onclick="createExam()" id="btn-create-exam"
-                                    class="w-full bg-gradient-to-r from-purple-500 to-indigo-500 text-white font-bold py-3 rounded-xl active:scale-[0.98] transition-transform flex items-center justify-center gap-2">
+                                    class="w-full bg-gradient-to-r from-violet-500 to-purple-600 text-white font-bold py-3.5 rounded-xl active:scale-[0.98] transition-transform flex items-center justify-center gap-2">
                                     <span id="create-exam-spinner"
                                         class="hidden animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></span>
                                     <span id="create-exam-text">✅ Créer l'examen</span>
@@ -308,69 +426,70 @@
                     </div>
                 </div>
 
-                <!-- Exam list -->
+                <!-- Exam list card (same card style as bb-update form section) -->
                 <div
-                    class="relative bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-xl border border-gray-200 dark:border-gray-700">
+                    class="relative bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-xl border border-violet-400/20 dark:border-violet-500/10">
                     <h2
-                        class="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-3 flex items-center gap-2">
+                        class="text-xs font-bold uppercase tracking-wider text-violet-700 dark:text-violet-400 mb-4 flex items-center gap-2">
                         📋 Derniers examens
                     </h2>
                     <div id="exams-list" class="space-y-2">
-                        <!-- filled by JS -->
                     </div>
-                    <div id="exams-empty" class="empty-state hidden">
-                        <div class="emoji">📭</div>
-                        <p class="font-bold text-sm">Aucun examen trouvé</p>
+                    <div id="exams-empty" class="hidden text-center py-8">
+                        <div class="text-4xl mb-3">📭</div>
+                        <p class="font-bold text-sm text-gray-400 dark:text-gray-500">Aucun examen trouvé</p>
                     </div>
                     <div id="exams-loading" class="text-center py-6">
                         <span
-                            class="animate-spin inline-block h-6 w-6 border-2 border-indigo-500 border-t-transparent rounded-full"></span>
+                            class="animate-spin inline-block h-6 w-6 border-2 border-purple-500 border-t-transparent rounded-full"></span>
                     </div>
                 </div>
             </div>
 
             <!-- ==================== TAB: ASSIGN MARK ==================== -->
-            <div id="tab-assign" class="tab-panel space-y-4">
+            <div id="tab-assign" class="tab-panel space-y-6">
 
-                <!-- Step 1: Search member -->
-                <div class="relative group">
+                <!-- Step 1: Search member (same pattern as bb-update student search) -->
+                <div class="relative group" id="search-member-section">
                     <div
-                        class="absolute -inset-0.5 bg-gradient-to-r from-emerald-300 to-teal-500 dark:from-emerald-600 dark:to-teal-800 rounded-2xl opacity-40 blur">
+                        class="absolute -inset-0.5 bg-gradient-to-r from-purple-300 to-violet-500 dark:from-purple-600 dark:to-violet-800 rounded-2xl opacity-40 blur">
                     </div>
                     <div
-                        class="relative bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-xl border border-emerald-100 dark:border-emerald-900/50">
+                        class="relative bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-xl border border-purple-100 dark:border-purple-900/50">
                         <h2
-                            class="text-xs font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400 mb-3 flex items-center gap-2">
+                            class="text-xs font-bold uppercase tracking-wider text-purple-700 dark:text-purple-400 mb-4 flex items-center gap-2">
                             👤 1. Rechercher un membre
                         </h2>
+
                         <div class="flex gap-2">
                             <input type="text" id="searchMemberInput" placeholder="Nom ou SMADA ID..."
                                 onkeydown="if(event.key==='Enter'){event.preventDefault();searchMember();}"
                                 autocomplete="off"
-                                class="input-fast flex-1 min-w-0 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3 font-semibold text-gray-900 dark:text-gray-100" />
+                                class="input-fast flex-1 min-w-0 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3.5 font-semibold text-gray-900 dark:text-gray-100" />
                             <button onclick="searchMember()" id="btn-search-member"
-                                class="shrink-0 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 rounded-xl px-5 py-3 font-bold active:scale-95 transition-transform">
+                                class="shrink-0 bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800 rounded-xl px-5 py-3.5 font-bold active:scale-95 transition-transform flex items-center justify-center">
                                 <span id="search-member-icon">Go</span>
                             </button>
                         </div>
 
-                        <!-- Member autocomplete -->
+                        <!-- Inline autocomplete dropdown -->
                         <div id="member-autocomplete"
-                            class="hidden mt-2 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl shadow-lg overflow-hidden max-h-60 overflow-y-auto">
+                            class="hidden autocomplete-dropdown mt-2 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl shadow-lg overflow-hidden">
                         </div>
 
-                        <!-- Selected member -->
+                        <!-- Selected member card (same pattern as bb-update selected-student) -->
                         <div id="selected-member-card"
-                            class="hidden mt-3 p-4 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-xl flex items-center justify-between">
+                            class="hidden mt-4 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl flex items-center justify-between">
                             <div class="flex items-center gap-3">
                                 <div
-                                    class="h-10 w-10 rounded-full bg-emerald-200 dark:bg-emerald-800 text-emerald-700 dark:text-emerald-300 flex items-center justify-center font-bold text-lg">
+                                    class="h-10 w-10 rounded-full bg-green-200 dark:bg-green-800 text-green-700 dark:text-green-300 flex items-center justify-center font-bold">
                                     👤
                                 </div>
                                 <div>
                                     <div
-                                        class="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
-                                        Membre sélectionné</div>
+                                        class="text-[10px] font-bold text-green-600 dark:text-green-400 uppercase tracking-wider">
+                                        Membre
+                                        sélectionné</div>
                                     <div id="display-member-name"
                                         class="font-bold text-gray-900 dark:text-gray-100 text-lg"></div>
                                     <div id="display-member-id"
@@ -385,15 +504,15 @@
                     </div>
                 </div>
 
-                <!-- Step 2: Assign form (hidden until member selected) -->
-                <div id="assign-form-section" class="hidden opacity-0 transition-all duration-500 space-y-4">
+                <!-- Step 2+3: Assign form (hidden until member selected) -->
+                <div id="assign-form-section" class="hidden opacity-0 transition-all duration-500 space-y-6">
                     <input type="hidden" id="selectedMemberUserId" value="" />
 
-                    <!-- Exam selection -->
+                    <!-- Exam selection (same card style as bb-update lesson card) -->
                     <div
-                        class="relative bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-xl border border-indigo-100 dark:border-indigo-900/30">
+                        class="relative bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-xl border border-violet-400/20 dark:border-violet-500/10">
                         <h2
-                            class="text-xs font-bold uppercase tracking-wider text-indigo-700 dark:text-indigo-400 mb-3 flex items-center gap-2">
+                            class="text-xs font-bold uppercase tracking-wider text-violet-700 dark:text-violet-400 mb-4 flex items-center gap-2">
                             📝 2. Sélectionner l'examen
                         </h2>
                         <div class="relative">
@@ -402,45 +521,53 @@
                                 <option value="" selected>-- Choisir un examen --</option>
                             </select>
                             <div
-                                class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-400">
-                                ▾</div>
+                                class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-500">
+                                ▾
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Mode + Score -->
+                    <!-- Mode + Score (same card style as bb-update options) -->
                     <div
-                        class="relative bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-xl border border-gray-200 dark:border-gray-700">
+                        class="relative bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-xl border border-gray-200 dark:border-gray-700">
                         <h2
-                            class="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-3 flex items-center gap-2">
+                            class="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-4 flex items-center gap-2">
                             📊 3. Mode & Score
                         </h2>
 
-                        <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-2 ml-1">MODE *</label>
-                        <div class="flex gap-2 mb-4" id="mode-buttons">
-                            <button class="mode-btn" data-mode="ONLINE" onclick="selectMode('ONLINE')">🌐
-                                Online</button>
-                            <button class="mode-btn" data-mode="OFFLINE" onclick="selectMode('OFFLINE')">📝
-                                Offline</button>
-                            <button class="mode-btn" data-mode="ABS" onclick="selectMode('ABS')">❌ Absent</button>
-                        </div>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-2 ml-1">MODE
+                                    *</label>
+                                <div class="flex gap-2" id="mode-buttons">
+                                    <button class="mode-btn" data-mode="ONLINE" onclick="selectMode('ONLINE')">🌐
+                                        Online</button>
+                                    <button class="mode-btn" data-mode="OFFLINE" onclick="selectMode('OFFLINE')">📝
+                                        Offline</button>
+                                    <button class="mode-btn" data-mode="ABS" onclick="selectMode('ABS')">❌
+                                        Absent</button>
+                                </div>
+                            </div>
 
-                        <div id="score-container">
-                            <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1 ml-1">SCORE
-                                (0-100) *</label>
-                            <input type="number" id="scoreInput" min="0" max="100" placeholder="Ex: 85"
-                                class="input-fast w-full border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3.5 font-semibold text-gray-900 dark:text-gray-100 text-lg" />
+                            <div id="score-container">
+                                <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1 ml-1">SCORE
+                                    (0-100) *</label>
+                                <input type="number" id="scoreInput" min="0" max="100" placeholder="Ex: 85"
+                                    class="input-fast w-full border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3.5 font-semibold text-gray-900 dark:text-gray-100 text-lg" />
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
+
         </div>
     </div>
 
-    <!-- Bottom action bar (assign mark) -->
+    <!-- Bottom action bar (same as bb-update) -->
     <div class="fixed bottom-0 left-0 right-0 p-4 pt-12 bg-gradient-to-t from-gray-50 via-gray-50 to-transparent dark:from-gray-900 dark:via-gray-900 z-40 hidden"
         id="bottom-action-bar">
         <button id="main-btn" onclick="submitMark()"
-            class="relative w-full bg-gradient-to-r from-indigo-500 to-purple-600 dark:from-indigo-600 dark:to-purple-700 text-white font-bold text-lg py-4 rounded-2xl shadow-lg active:scale-[0.98] transition-transform overflow-hidden">
+            class="relative w-full bg-gradient-to-r from-violet-500 to-purple-600 dark:from-violet-600 dark:to-purple-700 text-white font-bold text-lg py-4 rounded-2xl shadow-lg active:scale-[0.98] transition-transform overflow-hidden group">
             <div class="relative flex justify-center items-center">
                 <span id="submit-spinner"
                     class="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full mr-3 hidden"></span>
@@ -449,6 +576,22 @@
                 </span>
             </div>
         </button>
+    </div>
+
+    <!-- Search modal (same as bb-update) -->
+    <div id="search-modal"
+        class="fixed inset-0 z-[60] flex items-center justify-center bg-gray-900/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
+        <div class="relative bg-white/95 dark:bg-gray-800/95 w-11/12 max-w-sm rounded-3xl p-6 shadow-2xl border border-gray-200 dark:border-gray-700 transform scale-95 transition-transform duration-300"
+            id="search-modal-content">
+            <div class="text-center mb-4">
+                <h3 class="text-lg font-black text-gray-900 dark:text-white" id="search-modal-title">Résultats</h3>
+            </div>
+            <div id="search-results-list" class="space-y-2 mb-4 max-h-60 overflow-y-auto pr-1"></div>
+            <button onclick="closeSearchModal()"
+                class="w-full py-3 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-xl font-bold text-sm">
+                Annuler
+            </button>
+        </div>
     </div>
 
     <script src="js/education.js"></script>

@@ -194,7 +194,7 @@ function renderExams(exams) {
         const date = a.date ? new Date(a.date).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
         const delay = i * 30;
         return `
-      <div class="exam-card" style="animation-delay: ${delay}ms; animation: fadeSlideIn 0.3s ease ${delay}ms both;">
+      <div class="p-3.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:shadow-md transition-all" style="animation: fadeSlideIn 0.3s ease ${delay}ms both;">
         <div class="flex items-center justify-between">
           <div class="flex-1 min-w-0">
             <div class="font-bold text-gray-900 dark:text-gray-100 text-sm truncate">${a.content}</div>
@@ -320,7 +320,7 @@ async function searchMember() {
         return;
     }
 
-    btnIcon.innerHTML = `<span class="animate-spin inline-block h-4 w-4 border-2 border-emerald-600 border-t-transparent rounded-full"></span>`;
+    btnIcon.innerHTML = `<span class="animate-spin inline-block h-4 w-4 border-2 border-purple-600 border-t-transparent rounded-full"></span>`;
 
     try {
         const safeVal = encodeURIComponent(val);
@@ -536,4 +536,56 @@ async function sendTelegramNotification(message) {
     } catch (e) {
         console.error("Notification Telegram échouée:", e);
     }
+}
+
+// ===================== SEARCH MODAL (same as bb-update) =====================
+function showSearchModal(candidates, type) {
+    const modal = document.getElementById("search-modal");
+    const list = document.getElementById("search-results-list");
+    const title = document.getElementById("search-modal-title");
+
+    if (candidates.length === 0) {
+        tg.showAlert("Aucun résultat trouvé.");
+        return;
+    }
+
+    title.innerText = "Sélectionner un membre";
+    list.innerHTML = "";
+
+    candidates.forEach((item) => {
+        const data = item.attributes || item;
+        const name = data.name || "Unknown";
+        const smadaId = data.user?.data?.attributes?.username || "---";
+
+        const btn = document.createElement("button");
+        btn.className =
+            "w-full text-left p-3 bg-gray-50 dark:bg-gray-700 hover:bg-purple-50 dark:hover:bg-gray-600 border border-gray-200 dark:border-gray-600 rounded-xl mb-2 flex justify-between items-center transition-colors";
+
+        btn.onclick = () => {
+            selectMember(item);
+            closeSearchModal();
+        };
+
+        btn.innerHTML = `
+      <div>
+        <div class="font-bold text-gray-900 dark:text-gray-100">${name}</div>
+        <div class="text-xs text-gray-500 dark:text-gray-400 font-mono">ID: ${smadaId}</div>
+      </div>
+      <div class="text-purple-500 dark:text-purple-400 text-lg">›</div>
+    `;
+        list.appendChild(btn);
+    });
+
+    modal.classList.remove("hidden");
+    requestAnimationFrame(() => {
+        modal.classList.remove("opacity-0");
+        document.getElementById("search-modal-content").classList.remove("scale-95");
+    });
+}
+
+function closeSearchModal() {
+    const modal = document.getElementById("search-modal");
+    modal.classList.add("opacity-0");
+    document.getElementById("search-modal-content").classList.add("scale-95");
+    setTimeout(() => modal.classList.add("hidden"), 300);
 }
