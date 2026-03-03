@@ -325,6 +325,7 @@ async function searchMember() {
         query += `&filters[%24and][0][user][level][%24eq]=member`;
         query += `&filters[%24and][1][%24or][0][name][%24containsi]=${safeVal}`;
         query += `&filters[%24and][1][%24or][1][user][username][%24containsi]=${safeVal}`;
+        query += `&filters[%24and][1][%24or][2][phone][%24containsi]=${safeVal}`;
 
         const response = await fetch(`${BASE_URL}/api/people?${query}`);
         if (!response.ok) throw new Error("Server error");
