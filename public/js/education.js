@@ -309,14 +309,13 @@ async function loadExamsForDropdown() {
 async function searchMember() {
     const val = document.getElementById('searchMemberInput').value.trim();
     const btnIcon = document.getElementById('search-member-icon');
-    const dropdown = document.getElementById('member-autocomplete');
 
     if (!val) {
         if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("error");
         return;
     }
 
-    btnIcon.innerHTML = `<span class="animate-spin inline-block h-4 w-4 border-2 border-purple-600 border-t-transparent rounded-full"></span>`;
+    btnIcon.innerHTML = `<span class="animate-spin inline-block h-4 w-4 border-2 border-emerald-600 border-t-transparent rounded-full"></span>`;
 
     try {
         const safeVal = encodeURIComponent(val);
@@ -331,40 +330,7 @@ async function searchMember() {
         const result = await response.json();
         const candidates = result.data || [];
 
-        if (candidates.length === 0) {
-            dropdown.innerHTML = `<div class="px-4 py-3 text-sm text-gray-400 text-center">Aucun résultat</div>`;
-            dropdown.classList.remove('hidden');
-            return;
-        }
-
-        dropdown.innerHTML = candidates.map(item => {
-            const data = item.attributes || item;
-            const name = data.name || 'Unknown';
-            const smadaId = data.user?.data?.attributes?.username || '---';
-            const userId = data.user?.data?.id || '';
-            return `<button type="button" data-person-id="${item.id}" data-user-id="${userId}"
-        class="member-result w-full text-left px-4 py-2.5 flex items-center justify-between border-b border-gray-100 dark:border-gray-600 last:border-0">
-        <div>
-          <div class="font-bold text-gray-900 dark:text-gray-100 text-sm">${name}</div>
-          <div class="text-xs text-gray-500 dark:text-gray-400 font-mono">SMADA: ${smadaId}</div>
-        </div>
-        <div class="text-indigo-500 text-sm">›</div>
-      </button>`;
-        }).join('');
-
-        dropdown.querySelectorAll('button').forEach(btn => {
-            btn.onclick = () => {
-                const personId = btn.dataset.personId;
-                const person = candidates.find(c => String(c.id) === personId);
-                if (person) {
-                    dropdown.classList.add('hidden');
-                    dropdown.innerHTML = '';
-                    selectMember(person);
-                }
-            };
-        });
-
-        dropdown.classList.remove('hidden');
+        showSearchModal(candidates, "member");
     } catch (e) {
         console.error("Erreur recherche membre:", e);
         tg.showAlert("Erreur lors de la recherche.");
@@ -553,7 +519,7 @@ function showSearchModal(candidates, type) {
 
         const btn = document.createElement("button");
         btn.className =
-            "w-full text-left p-3 bg-gray-50 dark:bg-gray-700 hover:bg-purple-50 dark:hover:bg-gray-600 border border-gray-200 dark:border-gray-600 rounded-xl mb-2 flex justify-between items-center transition-colors";
+            "w-full text-left p-3 bg-gray-50 dark:bg-gray-700 hover:bg-emerald-50 dark:hover:bg-gray-600 border border-gray-200 dark:border-gray-600 rounded-xl mb-2 flex justify-between items-center transition-colors";
 
         btn.onclick = () => {
             selectMember(item);
@@ -565,7 +531,7 @@ function showSearchModal(candidates, type) {
         <div class="font-bold text-gray-900 dark:text-gray-100">${name}</div>
         <div class="text-xs text-gray-500 dark:text-gray-400 font-mono">ID: ${smadaId}</div>
       </div>
-      <div class="text-purple-500 dark:text-purple-400 text-lg">›</div>
+      <div class="text-emerald-500 dark:text-emerald-400 text-lg">›</div>
     `;
         list.appendChild(btn);
     });
