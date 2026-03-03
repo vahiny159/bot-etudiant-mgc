@@ -581,6 +581,44 @@
             <!-- ==================== TAB: ASSIGN MARK ==================== -->
             <div id="tab-assign" class="tab-panel space-y-6">
 
+                <!-- Stepper progress bar -->
+                <div class="flex items-center justify-between px-2" id="stepper">
+                    <div class="flex flex-col items-center flex-1">
+                        <div id="step-circle-1"
+                            class="w-9 h-9 rounded-full flex items-center justify-center text-sm font-black border-2 transition-all duration-300 border-emerald-500 bg-emerald-500 text-white shadow-lg shadow-emerald-500/30">
+                            1</div>
+                        <span
+                            class="text-[10px] font-bold mt-1.5 text-emerald-600 dark:text-emerald-400 transition-colors duration-300"
+                            id="step-label-1">Member</span>
+                    </div>
+                    <div class="flex-1 h-0.5 mx-1 rounded-full bg-gray-200 dark:bg-gray-700 relative overflow-hidden -mt-4"
+                        id="step-line-1">
+                        <div class="absolute inset-0 bg-emerald-500 rounded-full transform origin-left scale-x-0 transition-transform duration-500"
+                            id="step-line-fill-1"></div>
+                    </div>
+                    <div class="flex flex-col items-center flex-1">
+                        <div id="step-circle-2"
+                            class="w-9 h-9 rounded-full flex items-center justify-center text-sm font-black border-2 transition-all duration-300 border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-800 text-gray-400">
+                            2</div>
+                        <span
+                            class="text-[10px] font-bold mt-1.5 text-gray-400 dark:text-gray-500 transition-colors duration-300"
+                            id="step-label-2">Exam</span>
+                    </div>
+                    <div class="flex-1 h-0.5 mx-1 rounded-full bg-gray-200 dark:bg-gray-700 relative overflow-hidden -mt-4"
+                        id="step-line-2">
+                        <div class="absolute inset-0 bg-emerald-500 rounded-full transform origin-left scale-x-0 transition-transform duration-500"
+                            id="step-line-fill-2"></div>
+                    </div>
+                    <div class="flex flex-col items-center flex-1">
+                        <div id="step-circle-3"
+                            class="w-9 h-9 rounded-full flex items-center justify-center text-sm font-black border-2 transition-all duration-300 border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-800 text-gray-400">
+                            3</div>
+                        <span
+                            class="text-[10px] font-bold mt-1.5 text-gray-400 dark:text-gray-500 transition-colors duration-300"
+                            id="step-label-3">Score</span>
+                    </div>
+                </div>
+
                 <div class="relative group" id="search-member-section">
                     <div
                         class="absolute -inset-0.5 bg-gradient-to-r from-emerald-300 to-teal-500 dark:from-emerald-600 dark:to-teal-800 rounded-2xl opacity-40 blur">

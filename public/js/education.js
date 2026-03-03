@@ -318,6 +318,44 @@ let currentMember = null;
 let selectedMode = null;
 let memberScores = []; // existing quiz-scores for the current member
 
+// ===================== STEPPER =====================
+function updateStepper() {
+    const hasMember = !!currentMember;
+    const hasExam = !!document.getElementById('examSelect')?.value;
+    const hasMode = !!selectedMode;
+
+    // Determine completed steps
+    const step = hasMember ? (hasExam ? (hasMode ? 4 : 3) : 2) : 1;
+
+    for (let i = 1; i <= 3; i++) {
+        const circle = document.getElementById(`step-circle-${i}`);
+        const label = document.getElementById(`step-label-${i}`);
+        const lineFill = document.getElementById(`step-line-fill-${i}`);
+
+        if (!circle) continue;
+
+        if (i < step) {
+            // Completed
+            circle.className = 'w-9 h-9 rounded-full flex items-center justify-center text-sm font-black border-2 transition-all duration-300 border-emerald-500 bg-emerald-500 text-white shadow-lg shadow-emerald-500/30';
+            circle.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>`;
+            label.className = 'text-[10px] font-bold mt-1.5 text-emerald-600 dark:text-emerald-400 transition-colors duration-300';
+            if (lineFill) lineFill.style.transform = 'scaleX(1)';
+        } else if (i === step) {
+            // Active
+            circle.className = 'w-9 h-9 rounded-full flex items-center justify-center text-sm font-black border-2 transition-all duration-300 border-emerald-500 bg-emerald-500 text-white shadow-lg shadow-emerald-500/30';
+            circle.textContent = i;
+            label.className = 'text-[10px] font-bold mt-1.5 text-emerald-600 dark:text-emerald-400 transition-colors duration-300';
+            if (lineFill) lineFill.style.transform = 'scaleX(0)';
+        } else {
+            // Inactive
+            circle.className = 'w-9 h-9 rounded-full flex items-center justify-center text-sm font-black border-2 transition-all duration-300 border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-800 text-gray-400';
+            circle.textContent = i;
+            label.className = 'text-[10px] font-bold mt-1.5 text-gray-400 dark:text-gray-500 transition-colors duration-300';
+            if (lineFill) lineFill.style.transform = 'scaleX(0)';
+        }
+    }
+}
+
 async function loadExamsForDropdown() {
     try {
         const query = `filters[$and][0][level]=member&sort[0]=date%3Adesc&pagination[page]=1&pagination[pageSize]=50`;
@@ -397,6 +435,7 @@ function selectMember(personData) {
 
     // Fetch existing scores for this member
     loadMemberScores(userId);
+    updateStepper();
 }
 
 async function loadMemberScores(userId) {
@@ -467,6 +506,7 @@ function checkExistingScore() {
     }
 
     examSelect.parentElement.after(badge);
+    updateStepper();
 }
 
 function resetMemberSearch() {
@@ -488,6 +528,7 @@ function resetMemberSearch() {
     const dropdown = document.getElementById('member-autocomplete');
     dropdown.classList.add('hidden');
     dropdown.innerHTML = '';
+    updateStepper();
 }
 
 // --- Mode selection ---
@@ -512,6 +553,7 @@ function selectMode(mode) {
     }
 
     if (tg.HapticFeedback) tg.HapticFeedback.selectionChanged();
+    updateStepper();
 }
 
 // --- Submit mark ---
