@@ -155,7 +155,7 @@ async function searchExams() {
         return;
     }
 
-    btnIcon.textContent = '⏳';
+    btnIcon.innerHTML = '<span class="animate-spin inline-block h-4 w-4 border-2 border-emerald-600 border-t-transparent rounded-full"></span>';
     loadingEl.classList.remove('hidden');
     emptyEl.classList.add('hidden');
     listEl.innerHTML = '';
@@ -171,7 +171,7 @@ async function searchExams() {
         console.error("Erreur recherche examens:", e);
         tg.showAlert("Erreur lors de la recherche.");
     } finally {
-        btnIcon.textContent = '🔍';
+        btnIcon.textContent = 'Go';
         loadingEl.classList.add('hidden');
     }
 }
@@ -197,7 +197,7 @@ function renderExams(exams) {
           <div class="flex-1 min-w-0">
             <div class="font-bold text-gray-900 dark:text-gray-100 text-sm truncate">${a.content}</div>
             <div class="text-xs text-gray-500 dark:text-gray-400 mt-0.5 flex items-center gap-2">
-              <span>📅 ${date}</span>
+              <span><img src="icons/calendar.svg" alt="" class="w-3.5 h-3.5 object-contain inline-block align-text-bottom" /> ${date}</span>
               <span class="text-gray-300 dark:text-gray-600">•</span>
               <span class="font-mono">ID: ${exam.id}</span>
             </div>
@@ -212,7 +212,7 @@ function toggleCreateForm() {
     const form = document.getElementById('create-form');
     const icon = document.getElementById('create-toggle-icon');
     form.classList.toggle('open');
-    icon.textContent = form.classList.contains('open') ? '➖' : '➕';
+    icon.src = form.classList.contains('open') ? 'icons/minus.svg' : 'icons/plus.svg';
 }
 
 async function createExam() {
@@ -274,7 +274,7 @@ async function createExam() {
     } finally {
         btn.disabled = false;
         spinner.classList.add('hidden');
-        text.textContent = '✅ Créer l\'examen';
+        text.innerHTML = '<span class="flex items-center gap-1.5"><img src="icons/check-circle.svg" alt="" class="w-4 h-4 object-contain invert" /> Cr\u00e9er l\'examen</span>';
     }
 }
 
@@ -479,7 +479,7 @@ async function submitMark() {
     } finally {
         btn.disabled = false;
         spinner.classList.add('hidden');
-        btnText.innerHTML = '📊 Enregistrer la note';
+        btnText.innerHTML = '<img src="icons/check-circle.svg" alt="" class="w-5 h-5 object-contain invert" /> Enregistrer la note';
     }
 }
 

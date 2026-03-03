@@ -311,7 +311,7 @@
 
     <!-- Offline banner -->
     <div id="offline-banner" class="offline-banner">
-        📡 Pas de connexion internet
+        <img src="icons/wifi-off.svg" alt="" class="w-4 h-4 object-contain invert" /> Pas de connexion internet
     </div>
 
     <div class="relative z-10 px-4 pt-6">
@@ -327,8 +327,9 @@
         </div>
 
         <header class="text-center mb-6">
-            <h1 class="text-3xl font-black tracking-tighter text-gray-900 dark:text-white">
-                📚 Éducation
+            <h1
+                class="text-3xl font-black tracking-tighter text-gray-900 dark:text-white flex items-center justify-center gap-2">
+                <img src="icons/graduation.svg" alt="" class="w-8 h-8 object-contain" /> Éducation
             </h1>
             <p class="text-sm font-medium text-gray-500 dark:text-gray-400 mt-1">
                 Gestion des examens & notes
@@ -346,11 +347,13 @@
 
             <div
                 class="flex gap-2 bg-white dark:bg-gray-800 p-1.5 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700">
-                <button class="tab-btn active" data-tab="exams" onclick="switchTab('exams')">
-                    📝 Examens
+                <button class="tab-btn active flex items-center justify-center gap-1.5" data-tab="exams"
+                    onclick="switchTab('exams')">
+                    <img src="icons/exam.svg" alt="" class="w-4 h-4 object-contain" /> Examens
                 </button>
-                <button class="tab-btn" data-tab="assign" onclick="switchTab('assign')">
-                    📊 Attribuer note
+                <button class="tab-btn flex items-center justify-center gap-1.5" data-tab="assign"
+                    onclick="switchTab('assign')">
+                    <img src="icons/chart.svg" alt="" class="w-4 h-4 object-contain" /> Attribuer note
                 </button>
             </div>
 
@@ -365,7 +368,7 @@
                         class="relative bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-xl border border-emerald-100 dark:border-emerald-900/50">
                         <h2
                             class="text-xs font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400 mb-4 flex items-center gap-2">
-                            🔍 Rechercher un examen
+                            <img src="icons/search.svg" alt="" class="w-4 h-4 object-contain" /> Rechercher un examen
                         </h2>
 
                         <div class="flex gap-2">
@@ -383,7 +386,8 @@
 
                         <button onclick="toggleCreateForm()" id="btn-toggle-create"
                             class="w-full flex items-center justify-center gap-2 py-2.5 text-sm font-bold text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors">
-                            <span id="create-toggle-icon">➕</span> Créer un nouvel examen
+                            <img id="create-toggle-icon" src="icons/plus.svg" alt="" class="w-4 h-4 object-contain" />
+                            Créer un nouvel examen
                         </button>
 
                         <div id="create-form" class="create-form-container">
@@ -407,7 +411,9 @@
                                     class="w-full bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold py-3.5 rounded-xl active:scale-[0.98] transition-transform flex items-center justify-center gap-2">
                                     <span id="create-exam-spinner"
                                         class="hidden animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></span>
-                                    <span id="create-exam-text">✅ Créer l'examen</span>
+                                    <span id="create-exam-text" class="flex items-center gap-1.5"><img
+                                            src="icons/check-circle.svg" alt="" class="w-4 h-4 object-contain invert" />
+                                        Créer l'examen</span>
                                 </button>
                             </div>
                         </div>
@@ -419,12 +425,13 @@
                     class="relative bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-xl border border-emerald-400/20 dark:border-emerald-500/10">
                     <h2
                         class="text-xs font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400 mb-4 flex items-center gap-2">
-                        📋 Derniers examens
+                        <img src="icons/clipboard.svg" alt="" class="w-4 h-4 object-contain" /> Derniers examens
                     </h2>
                     <div id="exams-list" class="space-y-2">
                     </div>
                     <div id="exams-empty" class="hidden text-center py-8">
-                        <div class="text-4xl mb-3">📭</div>
+                        <img src="icons/inbox-empty.svg" alt=""
+                            class="w-12 h-12 object-contain mx-auto mb-3 opacity-40" />
                         <p class="font-bold text-sm text-gray-400 dark:text-gray-500">Aucun examen trouvé</p>
                     </div>
                     <div id="exams-loading" class="text-center py-6">
@@ -445,7 +452,7 @@
                         class="relative bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-xl border border-emerald-100 dark:border-emerald-900/50">
                         <h2
                             class="text-xs font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400 mb-4 flex items-center gap-2">
-                            👤 1. Rechercher un membre
+                            <img src="icons/user.svg" alt="" class="w-4 h-4 object-contain" /> 1. Rechercher un membre
                         </h2>
 
                         <div class="flex gap-2">
@@ -468,7 +475,7 @@
                             <div class="flex items-center gap-3">
                                 <div
                                     class="h-10 w-10 rounded-full bg-green-200 dark:bg-green-800 text-green-700 dark:text-green-300 flex items-center justify-center font-bold">
-                                    👤
+                                    <img src="icons/user.svg" alt="" class="w-5 h-5 object-contain" />
                                 </div>
                                 <div>
                                     <div
@@ -482,8 +489,9 @@
                                 </div>
                             </div>
                             <button onclick="resetMemberSearch()"
-                                class="shrink-0 text-gray-400 hover:text-red-500 p-2 transition-colors text-xl">
-                                ✕
+                                class="shrink-0 text-gray-400 hover:text-red-500 p-2 transition-colors">
+                                <img src="icons/close.svg" alt="Fermer"
+                                    class="w-5 h-5 object-contain opacity-60 hover:opacity-100" />
                             </button>
                         </div>
                     </div>
@@ -496,7 +504,7 @@
                         class="relative bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-xl border border-emerald-400/20 dark:border-emerald-500/10">
                         <h2
                             class="text-xs font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400 mb-4 flex items-center gap-2">
-                            📝 2. Sélectionner l'examen
+                            <img src="icons/exam.svg" alt="" class="w-4 h-4 object-contain" /> 2. Sélectionner l'examen
                         </h2>
                         <div class="relative">
                             <select id="examSelect"
@@ -505,7 +513,7 @@
                             </select>
                             <div
                                 class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-500">
-                                ▾
+                                <img src="icons/chevron-down.svg" alt="" class="w-4 h-4 object-contain opacity-50" />
                             </div>
                         </div>
                     </div>
@@ -514,7 +522,7 @@
                         class="relative bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-xl border border-gray-200 dark:border-gray-700">
                         <h2
                             class="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-4 flex items-center gap-2">
-                            📊 3. Mode & Score
+                            <img src="icons/chart.svg" alt="" class="w-4 h-4 object-contain" /> 3. Mode & Score
                         </h2>
 
                         <div class="space-y-4">
@@ -522,11 +530,17 @@
                                 <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-2 ml-1">MODE
                                     *</label>
                                 <div class="flex gap-2" id="mode-buttons">
-                                    <button class="mode-btn" data-mode="ONLINE" onclick="selectMode('ONLINE')">🌐
+                                    <button class="mode-btn flex items-center justify-center gap-1.5" data-mode="ONLINE"
+                                        onclick="selectMode('ONLINE')">
+                                        <img src="icons/globe.svg" alt="" class="w-4 h-4 object-contain" />
                                         Online</button>
-                                    <button class="mode-btn" data-mode="OFFLINE" onclick="selectMode('OFFLINE')">📝
+                                    <button class="mode-btn flex items-center justify-center gap-1.5"
+                                        data-mode="OFFLINE" onclick="selectMode('OFFLINE')">
+                                        <img src="icons/exam.svg" alt="" class="w-4 h-4 object-contain" />
                                         Offline</button>
-                                    <button class="mode-btn" data-mode="ABS" onclick="selectMode('ABS')">❌
+                                    <button class="mode-btn flex items-center justify-center gap-1.5" data-mode="ABS"
+                                        onclick="selectMode('ABS')">
+                                        <img src="icons/x-circle.svg" alt="" class="w-4 h-4 object-contain" />
                                         Absent</button>
                                 </div>
                             </div>
@@ -554,7 +568,8 @@
                 <span id="submit-spinner"
                     class="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full mr-3 hidden"></span>
                 <span id="submit-btn-text" class="flex items-center gap-2">
-                    📊 Enregistrer la note
+                    <img src="icons/check-circle.svg" alt="" class="w-5 h-5 object-contain invert" /> Enregistrer la
+                    note
                 </span>
             </div>
         </button>
