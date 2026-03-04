@@ -669,7 +669,7 @@ async function sendTelegramNotification(message) {
         await fetch("/api/notify/telegram", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ chatId, message }),
+            body: JSON.stringify({ chatId, message, source: "edu" }),
         });
     } catch (e) {
         console.error("Telegram notification failed:", e);

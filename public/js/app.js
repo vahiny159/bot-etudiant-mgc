@@ -10,7 +10,7 @@ async function sendTelegramNotification(message) {
     await fetch("/api/notify/telegram", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ chatId, message }),
+      body: JSON.stringify({ chatId, message, source: "inscription" }),
     });
   } catch (e) {
     console.error("Notification Telegram échouée:", e);

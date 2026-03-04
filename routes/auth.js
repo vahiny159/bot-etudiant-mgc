@@ -84,31 +84,35 @@ router.post("/auth/telegram", async (req, res) => {
 // --- NOTIFICATION TELEGRAM ---
 router.post("/notify/telegram", async (req, res) => {
     try {
-        const { chatId, message } = req.body;
+        const { chatId, message, source } = req.body;
 
         if (!chatId || !message) {
             return res.status(400).json({ ok: false, message: "chatId and message required" });
         }
 
-        // Try all registered bots — the user may have opened the app from any of them
-        const bots = [
-            req.app.locals.bot,    // Bot Inscription
-            req.app.locals.botEdu, // Bot Education
-        ].filter(Boolean);
+        // Pick the right bot based on source
+        let botsToTry;
+        if (source === "edu") {
+            botsToTry = [req.app.locals.botEdu, req.app.locals.bot].filter(Boolean);
+        } else if (source === "inscription") {
+            botsToTry = [req.app.locals.bot, req.app.locals.botEdu].filter(Boolean);
+        } else {
+            // No source — try all
+            botsToTry = [req.app.locals.bot, req.app.locals.botEdu].filter(Boolean);
+        }
 
-        if (bots.length === 0) {
+        if (botsToTry.length === 0) {
             return res.status(503).json({ ok: false, message: "No bots configured" });
         }
 
         let sent = false;
-        for (const bot of bots) {
+        for (const [i, bot] of botsToTry.entries()) {
             try {
                 await bot.telegram.sendMessage(chatId, message, { parse_mode: "HTML" });
                 sent = true;
-                break; // stop after first success
+                break;
             } catch (e) {
-                // This bot couldn't reach the user (wrong bot), try next
-                console.warn(`Bot [${bots.indexOf(bot)}] couldn't send: ${e.message}`);
+                console.warn(`Bot [${i}] couldn't send: ${e.message}`);
             }
         }
 
