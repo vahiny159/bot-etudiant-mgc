@@ -882,7 +882,7 @@ function showSearchModal(candidates, type) {
   const title = document.getElementById("search-modal-title");
 
   if (candidates.length === 0) {
-    tg.showAlert("No results found.");
+    showToast("No results found.", "info");
     return;
   }
 
