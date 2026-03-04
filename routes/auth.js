@@ -90,13 +90,32 @@ router.post("/notify/telegram", async (req, res) => {
             return res.status(400).json({ ok: false, message: "chatId and message required" });
         }
 
-        // Access bot from app locals (set in index.js)
-        const bot = req.app.locals.bot;
-        if (!bot) {
-            return res.status(503).json({ ok: false, message: "Bot not configured" });
+        // Try all registered bots — the user may have opened the app from any of them
+        const bots = [
+            req.app.locals.bot,    // Bot Inscription
+            req.app.locals.botEdu, // Bot Education
+        ].filter(Boolean);
+
+        if (bots.length === 0) {
+            return res.status(503).json({ ok: false, message: "No bots configured" });
         }
 
-        await bot.telegram.sendMessage(chatId, message, { parse_mode: "HTML" });
+        let sent = false;
+        for (const bot of bots) {
+            try {
+                await bot.telegram.sendMessage(chatId, message, { parse_mode: "HTML" });
+                sent = true;
+                break; // stop after first success
+            } catch (e) {
+                // This bot couldn't reach the user (wrong bot), try next
+                console.warn(`Bot [${bots.indexOf(bot)}] couldn't send: ${e.message}`);
+            }
+        }
+
+        if (!sent) {
+            return res.status(500).json({ ok: false, error: "None of the bots could send the message" });
+        }
+
         res.json({ ok: true });
     } catch (e) {
         console.error("Erreur notification Telegram:", e);

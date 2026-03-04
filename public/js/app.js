@@ -578,7 +578,7 @@ async function loadExistingStudent(id) {
     }
 
     if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("success");
-    tg.showAlert(`📂 Profil chargé : ${student.name}`);
+    showToast(`Profil chargé : ${student.name}`, "success");
 
     const banner = document.getElementById("edit-banner");
     if (banner) {
@@ -944,7 +944,7 @@ async function submitForm() {
     btn.disabled = false;
     spinner.classList.add("hidden");
     btnText.innerText = "Réessayer";
-    tg.showAlert("Erreur : " + error.message);
+    showToast("Erreur : " + error.message, "error");
   }
 }
 

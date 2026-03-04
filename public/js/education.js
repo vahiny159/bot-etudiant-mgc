@@ -324,7 +324,7 @@ async function createExam() {
 
     } catch (e) {
         console.error("Error creating exam:", e);
-        tg.showAlert(`❌ ${e.message}`);
+        showToast(e.message, "error");
         if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("error");
     } finally {
         btn.disabled = false;
@@ -652,7 +652,7 @@ async function submitMark() {
 
     } catch (e) {
         console.error("Error assigning mark:", e);
-        tg.showAlert(`❌ ${e.message}`);
+        showToast(e.message, "error");
         if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("error");
     } finally {
         btn.disabled = false;

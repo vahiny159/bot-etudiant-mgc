@@ -316,7 +316,7 @@ async function searchStudent() {
     showSearchModal(candidates, "student");
   } catch (error) {
     console.error("Erreur recherche étudiant:", error);
-    tg.showAlert("Erreur lors de la recherche. Veuillez réessayer.");
+    showToast("Erreur lors de la recherche. Veuillez réessayer.", "error");
   } finally {
     btnIcon.innerHTML = "Go";
   }
@@ -518,7 +518,7 @@ async function searchTeacher() {
     showSearchModal(candidates, "teacher");
   } catch (error) {
     console.error("Erreur recherche teacher:", error);
-    tg.showAlert("Impossible de trouver le membre.");
+    showToast("Impossible de trouver le membre.", "warning");
   } finally {
     btnIcon.innerText = "Search";
   }
@@ -574,19 +574,19 @@ async function submitBBLesson() {
 
   // validation
   if (!nom) {
-    tg.showAlert("⚠️ Please fill in the student name.");
+    showToast("Please fill in the student name.", "warning");
     if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("error");
     return;
   }
 
   if (codeLesson && !dateLesson) {
-    tg.showAlert("⚠️ You selected a lesson but no date.\n\nAdd a date, or select '-- No lesson --' if you only want to save the interview.");
+    showToast("You selected a lesson but no date. Add a date, or select '-- No lesson --'.", "warning");
     if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("error");
     return;
   }
 
   if (hasInterview && !dateInterview) {
-    tg.showAlert("⚠️ You checked 'Interview', please specify the date.");
+    showToast("You checked 'Interview', please specify the date.", "warning");
     return;
   }
 
