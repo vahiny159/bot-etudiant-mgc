@@ -536,7 +536,7 @@
 
                         <div class="flex gap-2">
                             <input type="text" id="searchExamInput" placeholder="Exam name..."
-                                onkeydown="if(event.key==='Enter'){event.preventDefault();searchExams();}"
+                                onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();searchExams();}"
                                 autocomplete="off"
                                 class="input-fast flex-1 min-w-0 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3.5 font-semibold text-gray-900 dark:text-gray-100" />
                             <button onclick="searchExams()" id="btn-search-exam"
