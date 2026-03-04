@@ -717,13 +717,13 @@ function showSearchModal(candidates, type) {
     modal.classList.remove("hidden");
     requestAnimationFrame(() => {
         modal.classList.remove("opacity-0");
-        document.getElementById("search-modal-content").classList.remove("scale-95");
+        document.getElementById("search-modal-content").classList.remove("translate-y-full");
     });
 }
 
 function closeSearchModal() {
     const modal = document.getElementById("search-modal");
     modal.classList.add("opacity-0");
-    document.getElementById("search-modal-content").classList.add("scale-95");
+    document.getElementById("search-modal-content").classList.add("translate-y-full");
     setTimeout(() => modal.classList.add("hidden"), 300);
 }
