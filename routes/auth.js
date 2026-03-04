@@ -4,7 +4,12 @@ import { checkIdTelegram } from "../services/user.service.js";
 
 const router = express.Router();
 
-const BOT_TOKEN = process.env.BOT_TOKEN;
+// Collect all available bot tokens (try each until one validates)
+const BOT_TOKENS = [
+    process.env.BOT_TOKEN_INSCRIPTION,
+    process.env.BOT_TOKEN_EDU,
+    process.env.BOT_TOKEN, // legacy fallback
+].filter(Boolean);
 
 // --- FONCTION SÉCURITÉ TELEGRAM ---
 const verifyTelegramData = (initData) => {
@@ -18,17 +23,20 @@ const verifyTelegramData = (initData) => {
         .map(([key, val]) => `${key}=${val}`)
         .join("\n");
 
-    const secretKey = crypto
-        .createHmac("sha256", "WebAppData")
-        .update(BOT_TOKEN)
-        .digest();
+    // Try each token — valid if any one matches
+    return BOT_TOKENS.some((token) => {
+        const secretKey = crypto
+            .createHmac("sha256", "WebAppData")
+            .update(token)
+            .digest();
 
-    const calculatedHash = crypto
-        .createHmac("sha256", secretKey)
-        .update(dataCheckString)
-        .digest("hex");
+        const calculatedHash = crypto
+            .createHmac("sha256", secretKey)
+            .update(dataCheckString)
+            .digest("hex");
 
-    return calculatedHash === hash;
+        return calculatedHash === hash;
+    });
 };
 
 // --- AUTH TELEGRAM ---
