@@ -759,8 +759,8 @@ async function submitBBLesson() {
     if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("success");
 
     const successMsg = hasLesson
-      ? "✅ Lesson and Profile updated successfully !"
-      : "✅ Interview saved successfully !";
+      ? "Lesson and Profile updated successfully !"
+      : "Interview saved successfully !";
     showToast(successMsg, "success");
 
     // --- NOTIFICATION TELEGRAM ---
