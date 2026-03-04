@@ -26,6 +26,51 @@ function toggleTheme() {
 
 const BASE_URL = "";
 
+// ===================== TOAST NOTIFICATIONS =====================
+const toastIcons = {
+  success: `<svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`,
+  error: `<svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`,
+  warning: `<svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4.5c-.77-.833-2.694-.833-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>`,
+  info: `<svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 100 20 10 10 0 000-20z"/></svg>`
+};
+
+function showToast(message, type = 'info', duration = 3000) {
+  const container = document.getElementById('toast-container');
+  const toast = document.createElement('div');
+  toast.className = `toast toast-${type}`;
+  toast.innerHTML = `${toastIcons[type] || toastIcons.info}<span style="flex:1">${message}</span><div class="toast-progress" style="animation-duration:${duration}ms"></div>`;
+  toast.addEventListener('click', () => dismissToast(toast));
+  container.appendChild(toast);
+  setTimeout(() => dismissToast(toast), duration);
+  if (tg.HapticFeedback) {
+    if (type === 'success') tg.HapticFeedback.notificationOccurred('success');
+    else if (type === 'error' || type === 'warning') tg.HapticFeedback.notificationOccurred('error');
+  }
+}
+
+function dismissToast(toast) {
+  if (toast.classList.contains('removing')) return;
+  toast.classList.add('removing');
+  setTimeout(() => toast.remove(), 300);
+}
+
+// ===================== RIPPLE EFFECT =====================
+document.addEventListener('click', function (e) {
+  const btn = e.target.closest('.ripple');
+  if (!btn) return;
+  const rect = btn.getBoundingClientRect();
+  const size = Math.max(rect.width, rect.height);
+  const x = e.clientX - rect.left - size / 2;
+  const y = e.clientY - rect.top - size / 2;
+  const circle = document.createElement('span');
+  circle.className = 'ripple-circle';
+  circle.style.width = circle.style.height = size + 'px';
+  circle.style.left = x + 'px';
+  circle.style.top = y + 'px';
+  btn.appendChild(circle);
+  setTimeout(() => circle.remove(), 600);
+});
+
 // --- SÉCURITÉ TELEGRAM ---
 
 // Error page to display
@@ -183,6 +228,39 @@ let currentStudent = null;
 let currentStudentReports = [];
 let currentTeacherId = null;
 let currentReportId = null;
+
+// ===================== STEPPER =====================
+function updateStepper() {
+  const hasStudent = !!currentStudent;
+  const hasLesson = !!document.getElementById('bbLessonSelect')?.value;
+  const hasOptions = !!currentTeacherId || !!document.getElementById('hasInterview')?.checked;
+
+  const step = hasStudent ? (hasLesson ? (hasOptions ? 4 : 3) : 2) : 1;
+
+  for (let i = 1; i <= 3; i++) {
+    const circle = document.getElementById(`step-circle-${i}`);
+    const label = document.getElementById(`step-label-${i}`);
+    const lineFill = document.getElementById(`step-line-fill-${i}`);
+    if (!circle) continue;
+
+    if (i < step) {
+      circle.className = 'w-9 h-9 rounded-full flex items-center justify-center text-sm font-black border-2 transition-all duration-300 border-blue-500 bg-blue-500 text-white shadow-lg shadow-blue-500/30';
+      circle.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>`;
+      label.className = 'text-[10px] font-bold mt-1.5 text-blue-600 dark:text-blue-400 transition-colors duration-300';
+      if (lineFill) lineFill.style.transform = 'scaleX(1)';
+    } else if (i === step) {
+      circle.className = 'w-9 h-9 rounded-full flex items-center justify-center text-sm font-black border-2 transition-all duration-300 border-blue-500 bg-blue-500 text-white shadow-lg shadow-blue-500/30';
+      circle.textContent = i;
+      label.className = 'text-[10px] font-bold mt-1.5 text-blue-600 dark:text-blue-400 transition-colors duration-300';
+      if (lineFill) lineFill.style.transform = 'scaleX(0)';
+    } else {
+      circle.className = 'w-9 h-9 rounded-full flex items-center justify-center text-sm font-black border-2 transition-all duration-300 border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-800 text-gray-400';
+      circle.textContent = i;
+      label.className = 'text-[10px] font-bold mt-1.5 text-gray-400 dark:text-gray-500 transition-colors duration-300';
+      if (lineFill) lineFill.style.transform = 'scaleX(0)';
+    }
+  }
+}
 
 // --- DEBOUNCE ---
 function debounce(fn, delay) {
@@ -396,6 +474,7 @@ function selectStudent(studentData) {
   updateLessonUI();
 
   document.getElementById("bbLessonSelect").dispatchEvent(new Event("change"));
+  updateStepper();
 }
 
 function resetStudentSearch() {
@@ -419,6 +498,7 @@ function resetStudentSearch() {
   document.getElementById("hasInterview").checked = false;
   document.getElementById("interview-date-container").classList.add("hidden");
   document.getElementById("dateInterview").value = "";
+  updateStepper();
 }
 
 // gestion leçon
@@ -502,6 +582,7 @@ document.getElementById("bbLessonSelect").addEventListener("change", function (e
     currentReportId = null;
     resetTeacherSearch();
   }
+  updateStepper();
 });
 
 // recherche bbt
@@ -558,6 +639,7 @@ function selectTeacher(teacherData, silent = false) {
   document.getElementById("btn-search-teacher").classList.add("hidden");
   document.getElementById("selected-teacher-card").classList.remove("hidden");
   document.getElementById("selected-teacher-card").classList.add("flex");
+  updateStepper();
 }
 
 function resetTeacherSearch() {
@@ -676,7 +758,7 @@ async function submitBBLesson() {
     const successMsg = hasLesson
       ? "✅ Lesson and Profile updated successfully !"
       : "✅ Interview saved successfully !";
-    tg.showAlert(successMsg);
+    showToast(successMsg, "success");
 
     // --- NOTIFICATION TELEGRAM ---
     const teacherName = document.getElementById("display-teacher-name")?.innerText?.trim() || "Non assigné";
@@ -717,7 +799,7 @@ async function submitBBLesson() {
 
   } catch (error) {
     console.error("Erreur Submit:", error);
-    tg.showAlert(`❌ ${error.message}`);
+    showToast(error.message, "error");
     if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("error");
   } finally {
     btn.disabled = false;
@@ -767,7 +849,7 @@ async function deleteBBLesson() {
         body: JSON.stringify({ data: { bbLessonNumber: newHighestNum } }),
       });
 
-      tg.showAlert("🗑️ Lesson record deleted successfully !");
+      showToast("Lesson record deleted successfully!", "success");
       if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("success");
 
       // Notification Telegram
@@ -785,7 +867,7 @@ async function deleteBBLesson() {
 
     } catch (error) {
       console.error(error);
-      tg.showAlert(`Erreur: ${error.message}`);
+      showToast(error.message, "error");
     } finally {
       btnDel.innerHTML = originalText;
       btnDel.disabled = false;
@@ -837,13 +919,13 @@ function showSearchModal(candidates, type) {
     modal.classList.remove("opacity-0");
     document
       .getElementById("search-modal-content")
-      .classList.remove("scale-95");
+      .classList.remove("translate-y-full");
   });
 }
 
 function closeSearchModal() {
   const modal = document.getElementById("search-modal");
   modal.classList.add("opacity-0");
-  document.getElementById("search-modal-content").classList.add("scale-95");
+  document.getElementById("search-modal-content").classList.add("translate-y-full");
   setTimeout(() => modal.classList.add("hidden"), 300);
 }
