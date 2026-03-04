@@ -244,20 +244,23 @@ function updateStepper() {
     if (!circle) continue;
 
     if (i < step) {
-      circle.className = 'w-9 h-9 rounded-full flex items-center justify-center text-sm font-black border-2 transition-all duration-300 border-blue-500 bg-blue-500 text-white shadow-lg shadow-blue-500/30';
+      // Completed
+      circle.className = 'step-circle completed';
       circle.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>`;
-      label.className = 'text-[10px] font-bold mt-1.5 text-blue-600 dark:text-blue-400 transition-colors duration-300';
-      if (lineFill) lineFill.style.transform = 'scaleX(1)';
+      label.className = 'step-label active';
+      if (lineFill) lineFill.classList.add('filled');
     } else if (i === step) {
-      circle.className = 'w-9 h-9 rounded-full flex items-center justify-center text-sm font-black border-2 transition-all duration-300 border-blue-500 bg-blue-500 text-white shadow-lg shadow-blue-500/30';
+      // Active
+      circle.className = 'step-circle active';
       circle.textContent = i;
-      label.className = 'text-[10px] font-bold mt-1.5 text-blue-600 dark:text-blue-400 transition-colors duration-300';
-      if (lineFill) lineFill.style.transform = 'scaleX(0)';
+      label.className = 'step-label active';
+      if (lineFill) lineFill.classList.remove('filled');
     } else {
-      circle.className = 'w-9 h-9 rounded-full flex items-center justify-center text-sm font-black border-2 transition-all duration-300 border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-800 text-gray-400';
+      // Inactive
+      circle.className = 'step-circle';
       circle.textContent = i;
-      label.className = 'text-[10px] font-bold mt-1.5 text-gray-400 dark:text-gray-500 transition-colors duration-300';
-      if (lineFill) lineFill.style.transform = 'scaleX(0)';
+      label.className = 'step-label';
+      if (lineFill) lineFill.classList.remove('filled');
     }
   }
 }
@@ -916,16 +919,14 @@ function showSearchModal(candidates, type) {
 
   modal.classList.remove("hidden");
   requestAnimationFrame(() => {
-    modal.classList.remove("opacity-0");
-    document
-      .getElementById("search-modal-content")
-      .classList.remove("translate-y-full");
+    modal.classList.add("visible");
+    document.getElementById("search-modal-content").classList.add("open");
   });
 }
 
 function closeSearchModal() {
   const modal = document.getElementById("search-modal");
-  modal.classList.add("opacity-0");
-  document.getElementById("search-modal-content").classList.add("translate-y-full");
+  modal.classList.remove("visible");
+  document.getElementById("search-modal-content").classList.remove("open");
   setTimeout(() => modal.classList.add("hidden"), 300);
 }

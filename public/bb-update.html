@@ -167,6 +167,161 @@
         opacity: 0;
       }
     }
+
+    /* ===== Stepper ===== */
+    .stepper {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 8px;
+    }
+
+    .step-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      flex: 1;
+    }
+
+    .step-circle {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 900;
+      border: 2px solid #d1d5db;
+      background: #f3f4f6;
+      color: #9ca3af;
+      transition: all 0.3s;
+    }
+
+    .dark .step-circle {
+      border-color: #4b5563;
+      background: #1f2937;
+    }
+
+    .step-circle.active,
+    .step-circle.completed {
+      border-color: #3b82f6;
+      background: #3b82f6;
+      color: white;
+      box-shadow: 0 4px 14px rgba(59, 130, 246, 0.3);
+    }
+
+    .step-label {
+      font-size: 10px;
+      font-weight: 700;
+      margin-top: 6px;
+      color: #9ca3af;
+      transition: color 0.3s;
+    }
+
+    .dark .step-label {
+      color: #6b7280;
+    }
+
+    .step-label.active {
+      color: #2563eb;
+    }
+
+    .dark .step-label.active {
+      color: #60a5fa;
+    }
+
+    .step-line {
+      flex: 1;
+      height: 2px;
+      margin: 0 4px;
+      border-radius: 1px;
+      background: #e5e7eb;
+      position: relative;
+      overflow: hidden;
+      margin-top: -16px;
+    }
+
+    .dark .step-line {
+      background: #374151;
+    }
+
+    .step-line-fill {
+      position: absolute;
+      inset: 0;
+      background: #3b82f6;
+      border-radius: 1px;
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.5s;
+    }
+
+    .step-line-fill.filled {
+      transform: scaleX(1);
+    }
+
+    /* ===== Bottom sheet modal ===== */
+    .bottom-sheet-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 60;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      background: rgba(17, 24, 39, 0.6);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .bottom-sheet-overlay.hidden {
+      display: none;
+    }
+
+    .bottom-sheet-overlay.visible {
+      opacity: 1;
+    }
+
+    .bottom-sheet {
+      position: relative;
+      background: white;
+      width: 100%;
+      max-width: 32rem;
+      border-radius: 1.5rem 1.5rem 0 0;
+      padding: 1.5rem 1.5rem 2rem;
+      box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.15);
+      border-top: 1px solid #e5e7eb;
+      transform: translateY(100%);
+      transition: transform 0.3s ease-out;
+    }
+
+    .dark .bottom-sheet {
+      background: #1f2937;
+      border-color: #374151;
+    }
+
+    .bottom-sheet.open {
+      transform: translateY(0);
+    }
+
+    .bottom-sheet-handle {
+      width: 40px;
+      height: 4px;
+      background: #d1d5db;
+      border-radius: 2px;
+      margin: 0 auto 16px;
+    }
+
+    .dark .bottom-sheet-handle {
+      background: #4b5563;
+    }
+
+    .bottom-sheet-results {
+      max-height: 50vh;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
   </style>
 
   <!-- Offline banner -->
@@ -208,39 +363,24 @@
     <div class="max-w-lg mx-auto space-y-6">
 
       <!-- Stepper progress bar -->
-      <div class="flex items-center justify-between px-2" id="stepper">
-        <div class="flex flex-col items-center flex-1">
-          <div id="step-circle-1"
-            class="w-9 h-9 rounded-full flex items-center justify-center text-sm font-black border-2 transition-all duration-300 border-blue-500 bg-blue-500 text-white shadow-lg shadow-blue-500/30">
-            1</div>
-          <span class="text-[10px] font-bold mt-1.5 text-blue-600 dark:text-blue-400 transition-colors duration-300"
-            id="step-label-1">Student</span>
+      <div class="stepper" id="stepper">
+        <div class="step-item">
+          <div id="step-circle-1" class="step-circle active">1</div>
+          <span id="step-label-1" class="step-label active">Student</span>
         </div>
-        <div class="flex-1 h-0.5 mx-1 rounded-full bg-gray-200 dark:bg-gray-700 relative overflow-hidden -mt-4"
-          id="step-line-1">
-          <div
-            class="absolute inset-0 bg-blue-500 rounded-full transform origin-left scale-x-0 transition-transform duration-500"
-            id="step-line-fill-1"></div>
+        <div class="step-line" id="step-line-1">
+          <div class="step-line-fill" id="step-line-fill-1"></div>
         </div>
-        <div class="flex flex-col items-center flex-1">
-          <div id="step-circle-2"
-            class="w-9 h-9 rounded-full flex items-center justify-center text-sm font-black border-2 transition-all duration-300 border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-800 text-gray-400">
-            2</div>
-          <span class="text-[10px] font-bold mt-1.5 text-gray-400 dark:text-gray-500 transition-colors duration-300"
-            id="step-label-2">Lesson</span>
+        <div class="step-item">
+          <div id="step-circle-2" class="step-circle">2</div>
+          <span id="step-label-2" class="step-label">Lesson</span>
         </div>
-        <div class="flex-1 h-0.5 mx-1 rounded-full bg-gray-200 dark:bg-gray-700 relative overflow-hidden -mt-4"
-          id="step-line-2">
-          <div
-            class="absolute inset-0 bg-blue-500 rounded-full transform origin-left scale-x-0 transition-transform duration-500"
-            id="step-line-fill-2"></div>
+        <div class="step-line" id="step-line-2">
+          <div class="step-line-fill" id="step-line-fill-2"></div>
         </div>
-        <div class="flex flex-col items-center flex-1">
-          <div id="step-circle-3"
-            class="w-9 h-9 rounded-full flex items-center justify-center text-sm font-black border-2 transition-all duration-300 border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-800 text-gray-400">
-            3</div>
-          <span class="text-[10px] font-bold mt-1.5 text-gray-400 dark:text-gray-500 transition-colors duration-300"
-            id="step-label-3">Options</span>
+        <div class="step-item">
+          <div id="step-circle-3" class="step-circle">3</div>
+          <span id="step-label-3" class="step-label">Options</span>
         </div>
       </div>
 
@@ -433,22 +573,15 @@
   </div>
 
   <!-- Bottom sheet modal -->
-  <div id="search-modal"
-    class="fixed inset-0 z-[60] flex items-end justify-center bg-gray-900/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300"
-    onclick="if(event.target===this)closeSearchModal()">
-    <div
-      class="relative bg-white dark:bg-gray-800 w-full max-w-lg rounded-t-3xl p-6 pb-8 shadow-2xl border-t border-gray-200 dark:border-gray-700 transform translate-y-full transition-transform duration-300 ease-out"
-      id="search-modal-content">
-      <!-- Drag handle -->
-      <div class="flex justify-center mb-4">
-        <div class="w-10 h-1 bg-gray-300 dark:bg-gray-600 rounded-full"></div>
-      </div>
-      <div class="text-center mb-4">
+  <div id="search-modal" class="bottom-sheet-overlay hidden" onclick="if(event.target===this)closeSearchModal()">
+    <div id="search-modal-content" class="bottom-sheet">
+      <div class="bottom-sheet-handle"></div>
+      <div style="text-align:center;margin-bottom:16px">
         <h3 class="text-lg font-black text-gray-900 dark:text-white" id="search-modal-title">Results</h3>
       </div>
-      <div id="search-results-list" class="space-y-2 mb-5 max-h-[50vh] overflow-y-auto pr-1"></div>
+      <div id="search-results-list" class="bottom-sheet-results space-y-2 mb-4"></div>
       <button onclick="closeSearchModal()"
-        class="ripple w-full py-3.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-xl font-bold text-sm">
+        class="ripple w-full py-3 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-xl font-bold text-sm">
         Cancel
       </button>
     </div>
