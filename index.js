@@ -108,7 +108,7 @@ async function launchBotEdu() {
   const eduUrl = `${WEB_APP_URL}/education.html`;
 
   const menu = Markup.inlineKeyboard([
-    [Markup.button.webApp("📚 Éducation MGC", eduUrl)],
+    [Markup.button.webApp("📚 Lauch edu bot", eduUrl)],
   ]);
 
   bot.start((ctx) => {
